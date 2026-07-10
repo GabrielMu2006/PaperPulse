@@ -42,8 +42,20 @@ final class PaperEntity {
     var pdfPath: String?
     var arxivURL: URL?
     var createdAt: Date
+    var isFavorite: Bool
+    var isRead: Bool
 
-    init(id: String, title: String, authors: [String], abstract: String, pdfPath: String?, arxivURL: URL?, createdAt: Date = Date()) {
+    init(
+        id: String,
+        title: String,
+        authors: [String],
+        abstract: String,
+        pdfPath: String?,
+        arxivURL: URL?,
+        createdAt: Date = Date(),
+        isFavorite: Bool = false,
+        isRead: Bool = false
+    ) {
         self.id = id
         self.title = title
         self.authors = authors
@@ -51,6 +63,8 @@ final class PaperEntity {
         self.pdfPath = pdfPath
         self.arxivURL = arxivURL
         self.createdAt = createdAt
+        self.isFavorite = isFavorite
+        self.isRead = isRead
     }
 }
 
