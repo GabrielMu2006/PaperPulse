@@ -20,7 +20,20 @@ public struct ArxivSource: PaperSource {
         ]
         let response = try await httpClient.perform(URLRequest(url: components.url!))
         try response.requireSuccess()
-        return try parser.parse(response.data)
+        return try parser.parse(response.data).map { candidate in
+            var candidate = candidate
+            candidate.provenance = [
+                PaperProvenance(source: .arxiv, sourceID: candidate.sourceID, sourceURL: candidate.absURL)
+            ]
+            if let pdfURL = candidate.openAccessPDFURL {
+                candidate.openAccessEvidence = OpenAccessEvidence(
+                    status: .verified,
+                    source: .arxiv,
+                    url: pdfURL
+                )
+            }
+            return candidate
+        }
     }
 
     private func arxivQuery(feed: FeedConfig, window: DateInterval) -> String {
@@ -49,8 +62,10 @@ public struct ArxivSource: PaperSource {
 
 public struct SemanticScholarSource: PaperSource {
     private let httpClient: HTTPClient
+    private let apiKey: String
 
-    public init(httpClient: HTTPClient = URLSessionHTTPClient()) {
+    public init(apiKey: String = "", httpClient: HTTPClient = URLSessionHTTPClient()) {
+        self.apiKey = apiKey
         self.httpClient = httpClient
     }
 
@@ -61,23 +76,36 @@ public struct SemanticScholarSource: PaperSource {
             URLQueryItem(name: "limit", value: String(max(feed.authorityPolicy.dailyLimit * 3, 10))),
             URLQueryItem(name: "fields", value: "title,abstract,authors,year,externalIds,openAccessPdf,url,publicationDate,citationCount,venue")
         ]
-        let response = try await httpClient.perform(URLRequest(url: components.url!))
+        var request = URLRequest(url: components.url!)
+        if !apiKey.isEmpty {
+            request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        }
+        let response = try await httpClient.perform(request)
         try response.requireSuccess()
         let decoded = try JSONDecoder().decode(SemanticScholarResponse.self, from: response.data)
-        return decoded.data.map { item in
-            PaperCandidate(
+        return (decoded.data ?? []).compactMap { item in
+            guard let paperID = item.paperId, let title = item.title else { return nil }
+            let openAccessPDFURL = item.openAccessPdf?.url.flatMap(URL.init(string:))
+            return PaperCandidate(
                 source: .semanticScholar,
-                sourceID: item.paperId,
+                sourceID: paperID,
+                baseID: item.externalIds?.arxiv.flatMap(PaperCandidate.arxivBaseID),
                 doi: item.externalIds?.doi,
-                title: item.title,
+                title: title,
                 summary: item.abstract ?? "",
-                authors: item.authors.map(\.name),
+                authors: (item.authors ?? []).map(\.name),
                 publishedAt: item.publicationDate.flatMap(PaperPulseDateParser.dateOnly),
                 absURL: item.url.flatMap(URL.init(string:)),
-                pdfURL: item.openAccessPdf?.url.flatMap(URL.init(string:)),
+                pdfURL: openAccessPDFURL,
                 venue: item.venue,
                 citationCount: item.citationCount,
-                openAccessPDFURL: item.openAccessPdf?.url.flatMap(URL.init(string:))
+                openAccessPDFURL: openAccessPDFURL,
+                provenance: [
+                    PaperProvenance(source: .semanticScholar, sourceID: paperID, sourceURL: item.url.flatMap(URL.init(string:)))
+                ],
+                openAccessEvidence: openAccessPDFURL.map {
+                    OpenAccessEvidence(status: .verified, source: .semanticScholar, url: $0)
+                }
             )
         }
     }
@@ -85,14 +113,14 @@ public struct SemanticScholarSource: PaperSource {
 }
 
 private struct SemanticScholarResponse: Decodable {
-    var data: [SemanticScholarPaper]
+    var data: [SemanticScholarPaper]?
 }
 
 private struct SemanticScholarPaper: Decodable {
-    var paperId: String
-    var title: String
+    var paperId: String?
+    var title: String?
     var abstract: String?
-    var authors: [SemanticScholarAuthor]
+    var authors: [SemanticScholarAuthor]?
     var externalIds: ExternalIDs?
     var openAccessPdf: OpenPDF?
     var url: String?
@@ -102,9 +130,11 @@ private struct SemanticScholarPaper: Decodable {
 
     struct ExternalIDs: Decodable {
         var doi: String?
+        var arxiv: String?
 
         enum CodingKeys: String, CodingKey {
             case doi = "DOI"
+            case arxiv = "ArXiv"
         }
     }
 
@@ -135,21 +165,29 @@ public struct OpenAlexSource: PaperSource {
         let response = try await httpClient.perform(URLRequest(url: components.url!))
         try response.requireSuccess()
         let decoded = try JSONDecoder().decode(OpenAlexResponse.self, from: response.data)
-        return decoded.results.map { work in
-            PaperCandidate(
+        return (decoded.results ?? []).compactMap { work in
+            guard let id = work.id, let title = work.title ?? work.displayName else { return nil }
+            let openAccessPDFURL = work.openAccess?.oaURL.flatMap(URL.init(string:))
+            return PaperCandidate(
                 source: .openAlex,
-                sourceID: work.id,
+                sourceID: id,
                 doi: work.doi?.replacingOccurrences(of: "https://doi.org/", with: ""),
-                title: work.title ?? work.displayName,
+                title: title,
                 summary: work.abstractInvertedIndex?.plainText ?? "",
-                authors: work.authorships.map { $0.author.displayName },
-                institutions: work.authorships.flatMap { $0.institutions.map(\.displayName) },
+                authors: (work.authorships ?? []).compactMap { $0.author?.displayName },
+                institutions: (work.authorships ?? []).flatMap { ($0.institutions ?? []).compactMap(\.displayName) },
                 publishedAt: work.publicationDate.flatMap(PaperPulseDateParser.dateOnly),
-                absURL: work.id.hasPrefix("http") ? URL(string: work.id) : nil,
-                pdfURL: work.openAccess?.oaURL.flatMap(URL.init(string:)),
+                absURL: id.hasPrefix("http") ? URL(string: id) : nil,
+                pdfURL: openAccessPDFURL,
                 venue: work.primaryLocation?.source?.displayName,
                 citationCount: work.citedByCount,
-                openAccessPDFURL: work.openAccess?.oaURL.flatMap(URL.init(string:))
+                openAccessPDFURL: openAccessPDFURL,
+                provenance: [
+                    PaperProvenance(source: .openAlex, sourceID: id, sourceURL: id.hasPrefix("http") ? URL(string: id) : nil)
+                ],
+                openAccessEvidence: openAccessPDFURL.map {
+                    OpenAccessEvidence(status: .verified, source: .openAlex, url: $0)
+                }
             )
         }
     }
@@ -160,17 +198,17 @@ public struct OpenAlexSource: PaperSource {
 }
 
 private struct OpenAlexResponse: Decodable {
-    var results: [OpenAlexWork]
+    var results: [OpenAlexWork]?
 }
 
 private struct OpenAlexWork: Decodable {
-    var id: String
+    var id: String?
     var doi: String?
     var title: String?
-    var displayName: String
+    var displayName: String?
     var publicationDate: String?
     var citedByCount: Int?
-    var authorships: [Authorship]
+    var authorships: [Authorship]?
     var openAccess: OpenAccess?
     var primaryLocation: Location?
     var abstractInvertedIndex: [String: [Int]]?
@@ -186,8 +224,8 @@ private struct OpenAlexWork: Decodable {
     }
 
     struct Authorship: Decodable {
-        var author: Author
-        var institutions: [Institution]
+        var author: Author?
+        var institutions: [Institution]?
     }
 
     struct Author: Decodable {
@@ -253,19 +291,23 @@ public struct CrossrefSource: PaperSource {
         let response = try await httpClient.perform(URLRequest(url: components.url!))
         try response.requireSuccess()
         let decoded = try JSONDecoder().decode(CrossrefResponse.self, from: response.data)
-        return decoded.message.items.map { item in
-            PaperCandidate(
+        return decoded.message.items.enumerated().map { index, item in
+            let pdfURL = item.link?.first(where: { $0.contentType == "application/pdf" })?.url.flatMap(URL.init(string:))
+            let sourceID = item.doi ?? item.url ?? item.title?.first ?? "crossref-\(index)"
+            return PaperCandidate(
                 source: .crossref,
-                sourceID: item.doi ?? item.url ?? item.title.first ?? UUID().uuidString,
+                sourceID: sourceID,
                 doi: item.doi,
-                title: item.title.first ?? "Untitled",
+                title: item.title?.first ?? "Untitled",
                 summary: item.abstract ?? "",
                 authors: item.author?.map { [$0.given, $0.family].compactMap { $0 }.joined(separator: " ") } ?? [],
                 publishedAt: item.issued?.date,
                 absURL: item.url.flatMap(URL.init(string:)),
-                pdfURL: item.link?.first(where: { $0.contentType == "application/pdf" })?.url.flatMap(URL.init(string:)),
+                pdfURL: pdfURL,
                 venue: item.containerTitle?.first,
-                openAccessPDFURL: item.link?.first(where: { $0.contentType == "application/pdf" })?.url.flatMap(URL.init(string:))
+                provenance: [
+                    PaperProvenance(source: .crossref, sourceID: sourceID, sourceURL: item.url.flatMap(URL.init(string:)))
+                ]
             )
         }
     }
@@ -284,7 +326,7 @@ private struct CrossrefResponse: Decodable {
 
     struct Item: Decodable {
         var doi: String?
-        var title: [String]
+        var title: [String]?
         var abstract: String?
         var author: [Author]?
         var issued: Issued?
@@ -307,14 +349,14 @@ private struct CrossrefResponse: Decodable {
     }
 
     struct Issued: Decodable {
-        var dateParts: [[Int]]
+        var dateParts: [[Int]]?
 
         enum CodingKeys: String, CodingKey {
             case dateParts = "date-parts"
         }
 
         var date: Date? {
-            guard let first = dateParts.first, let year = first.first else { return nil }
+            guard let first = dateParts?.first, let year = first.first else { return nil }
             var components = DateComponents()
             components.calendar = Calendar(identifier: .gregorian)
             components.timeZone = TimeZone(secondsFromGMT: 0)
@@ -363,7 +405,7 @@ public struct UnpaywallPDFEnricher: PaperMetadataEnricher {
     }
 
     public func enrich(_ candidate: PaperCandidate) async throws -> PaperCandidate {
-        guard candidate.openAccessPDFURL == nil, candidate.pdfURL == nil else {
+        guard candidate.openAccessPDFURL == nil else {
             return candidate
         }
         guard let doi = candidate.doi, !doi.isEmpty else {
@@ -375,6 +417,10 @@ public struct UnpaywallPDFEnricher: PaperMetadataEnricher {
 
         var enriched = candidate
         enriched.openAccessPDFURL = pdfURL
+        enriched.openAccessEvidence = OpenAccessEvidence(status: .verified, source: .unpaywall, url: pdfURL)
+        enriched.provenance.append(
+            PaperProvenance(source: .unpaywall, sourceID: doi, sourceURL: URL(string: "https://api.unpaywall.org/v2/\(doi)"))
+        )
         return enriched
     }
 }

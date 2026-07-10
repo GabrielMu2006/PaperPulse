@@ -3,6 +3,67 @@ import XCTest
 @testable import PaperCore
 
 final class AcademicSourceTests: XCTestCase {
+    func testArxivSourceAddsProvenanceAndVerifiedOpenAccessEvidence() async throws {
+        let response = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom">
+          <entry>
+            <id>http://arxiv.org/abs/2607.05174v2</id>
+            <title>Verified arXiv paper</title>
+            <summary>Open paper.</summary>
+            <published>2026-07-08T09:00:00Z</published>
+            <updated>2026-07-08T10:00:00Z</updated>
+            <link href="https://arxiv.org/pdf/2607.05174v2.pdf" title="pdf" type="application/pdf"/>
+          </entry>
+        </feed>
+        """
+        let client = StubHTTPClient { request in
+            XCTAssertEqual(request.url?.host, "export.arxiv.org")
+            return HTTPResponse(data: Data(response.utf8), statusCode: 200, mimeType: "application/atom+xml", finalURL: try XCTUnwrap(request.url))
+        }
+
+        let papers = try await ArxivSource(httpClient: client).search(
+            feed: FeedConfig(name: "Agents"),
+            window: DateInterval(start: Self.date("2026-07-01"), end: Self.date("2026-07-09"))
+        )
+
+        XCTAssertEqual(papers[0].provenance.map(\.source), [.arxiv])
+        XCTAssertEqual(papers[0].provenance[0].sourceID, "2607.05174v2")
+        XCTAssertEqual(papers[0].openAccessEvidence?.status, .verified)
+        XCTAssertEqual(papers[0].openAccessEvidence?.source, .arxiv)
+        XCTAssertEqual(papers[0].openAccessEvidence?.url, papers[0].openAccessPDFURL)
+    }
+
+    func testSemanticScholarSendsOnlyNonemptyAPIKeyAndParsesVerifiedOA() async throws {
+        let response = """
+        { "data": [{
+          "paperId": "semantic-123",
+          "title": "Semantic Agent Paper",
+          "authors": [{ "name": "Ada Lovelace" }],
+          "externalIds": { "DOI": "10.1000/semantic", "ArXiv": "2607.00001v3" },
+          "openAccessPdf": { "url": "https://repository.example/semantic.pdf" }
+        }] }
+        """
+        let keyedClient = StubHTTPClient { request in
+            XCTAssertEqual(request.value(forHTTPHeaderField: "x-api-key"), "secret-key")
+            return HTTPResponse(data: Data(response.utf8), statusCode: 200, mimeType: "application/json", finalURL: try XCTUnwrap(request.url))
+        }
+        let unkeyedClient = StubHTTPClient { request in
+            XCTAssertNil(request.value(forHTTPHeaderField: "x-api-key"))
+            return HTTPResponse(data: Data(response.utf8), statusCode: 200, mimeType: "application/json", finalURL: try XCTUnwrap(request.url))
+        }
+        let feed = FeedConfig(name: "Agents")
+        let window = DateInterval(start: Self.date("2026-07-01"), end: Self.date("2026-07-09"))
+
+        let keyed = try await SemanticScholarSource(apiKey: "secret-key", httpClient: keyedClient).search(feed: feed, window: window)
+        _ = try await SemanticScholarSource(apiKey: "", httpClient: unkeyedClient).search(feed: feed, window: window)
+
+        XCTAssertEqual(keyed[0].baseID, "2607.00001")
+        XCTAssertEqual(keyed[0].provenance.map(\.source), [.semanticScholar])
+        XCTAssertEqual(keyed[0].openAccessEvidence?.status, .verified)
+        XCTAssertEqual(keyed[0].openAccessEvidence?.source, .semanticScholar)
+    }
+
     func testOpenAlexSourceBuildsDateFilteredRequestAndParsesWorkMetadata() async throws {
         let response = """
         {
@@ -69,6 +130,8 @@ final class AcademicSourceTests: XCTestCase {
         XCTAssertEqual(papers[0].citationCount, 42)
         XCTAssertEqual(papers[0].venue, "Proceedings of ExampleConf")
         XCTAssertEqual(papers[0].openAccessPDFURL?.absoluteString, "https://publisher.example/paper.pdf")
+        XCTAssertEqual(papers[0].provenance.map(\.source), [.openAlex])
+        XCTAssertEqual(papers[0].openAccessEvidence?.status, .verified)
     }
 
     func testCrossrefSourceBuildsDateFilteredRequestAndParsesWorkMetadata() async throws {
@@ -133,7 +196,9 @@ final class AcademicSourceTests: XCTestCase {
         XCTAssertEqual(papers[0].authors, ["Ada Lovelace"])
         XCTAssertEqual(papers[0].venue, "Journal of Agent Systems")
         XCTAssertEqual(papers[0].pdfURL?.absoluteString, "https://publisher.example/crossref-agent.pdf")
-        XCTAssertEqual(papers[0].openAccessPDFURL?.absoluteString, "https://publisher.example/crossref-agent.pdf")
+        XCTAssertNil(papers[0].openAccessPDFURL)
+        XCTAssertNil(papers[0].openAccessEvidence)
+        XCTAssertEqual(papers[0].provenance.map(\.source), [.crossref])
     }
 
     func testUnpaywallPDFEnricherAddsOpenAccessPDFURLForDOICandidate() async throws {
@@ -163,6 +228,24 @@ final class AcademicSourceTests: XCTestCase {
 
         XCTAssertEqual(enriched.openAccessPDFURL?.absoluteString, "https://repository.example/agent.pdf")
         XCTAssertNil(enriched.pdfURL)
+        XCTAssertEqual(enriched.openAccessEvidence?.status, .verified)
+        XCTAssertEqual(enriched.openAccessEvidence?.source, .unpaywall)
+        XCTAssertEqual(enriched.provenance.map(\.source), [.unpaywall])
+    }
+
+    func testSemanticScholarRejectsMalformedPayload() async {
+        let client = StubHTTPClient { request in
+            HTTPResponse(data: Data("not json".utf8), statusCode: 200, mimeType: "application/json", finalURL: try XCTUnwrap(request.url))
+        }
+
+        await XCTAssertThrowsErrorAsync(
+            try await SemanticScholarSource(httpClient: client).search(
+                feed: FeedConfig(name: "Agents"),
+                window: DateInterval(start: Self.date("2026-07-01"), end: Self.date("2026-07-09"))
+            )
+        ) { error in
+            XCTAssertTrue(error is DecodingError)
+        }
     }
 
     private static func date(_ value: String) -> Date {

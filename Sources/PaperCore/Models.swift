@@ -850,6 +850,16 @@ public struct PipelineFailure: Codable, Hashable, Sendable {
     }
 }
 
+public struct DiscoveryResult: Codable, Hashable, Sendable {
+    public var candidates: [PaperCandidate]
+    public var failures: [PipelineFailure]
+
+    public init(candidates: [PaperCandidate], failures: [PipelineFailure]) {
+        self.candidates = candidates
+        self.failures = failures
+    }
+}
+
 public struct PipelineResult: Codable, Hashable, Sendable {
     public var run: SearchRun
     public var rankedCandidates: [RankedPaper]

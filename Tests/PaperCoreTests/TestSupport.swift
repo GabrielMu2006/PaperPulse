@@ -18,6 +18,41 @@ struct StubPaperSource: PaperSource {
     }
 }
 
+actor PaperSourceInvocationRecorder {
+    private var values: [DateInterval] = []
+
+    func record(_ window: DateInterval) {
+        values.append(window)
+    }
+
+    func windows() -> [DateInterval] {
+        values
+    }
+}
+
+struct RecordingPaperSource: PaperSource {
+    private let recorder = PaperSourceInvocationRecorder()
+    var results: [PaperCandidate]
+    var error: Error?
+
+    init(results: [PaperCandidate] = [], error: Error? = nil) {
+        self.results = results
+        self.error = error
+    }
+
+    func search(feed: FeedConfig, window: DateInterval) async throws -> [PaperCandidate] {
+        await recorder.record(window)
+        if let error {
+            throw error
+        }
+        return results
+    }
+
+    func windows() async -> [DateInterval] {
+        await recorder.windows()
+    }
+}
+
 struct StubDownloader: PaperDownloader {
     func download(_ paper: PaperCandidate, to directory: URL) async throws -> LocalPaperFile {
         LocalPaperFile(
