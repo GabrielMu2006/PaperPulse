@@ -1,0 +1,42 @@
+name: PaperPulse
+options:
+  minimumXcodeGenVersion: 2.42.0
+packages:
+  PaperCore:
+    path: .
+targets:
+  PaperPulseiOS:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Apps/PaperPulseiOS/Sources
+      - path: Apps/PaperPulseiOS/Resources
+    info:
+      path: Apps/PaperPulseiOS/Resources/Info.plist
+      properties:
+        UILaunchStoryboardName: LaunchScreen
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.gabrielmu.PaperPulse.iOS
+      PRODUCT_NAME: PaperPulse
+      INFOPLIST_KEY_CFBundleDisplayName: PaperPulse
+    dependencies:
+      - package: PaperCore
+        product: PaperCore
+  PaperPulseMac:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Apps/PaperPulseMac/Sources
+      - path: Apps/PaperPulseMac/Resources
+    info:
+      path: Apps/PaperPulseMac/Resources/Info.plist
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.gabrielmu.PaperPulse.macOS
+      PRODUCT_NAME: PaperPulse
+      INFOPLIST_KEY_CFBundleDisplayName: PaperPulse
+      CODE_SIGN_ENTITLEMENTS: Apps/PaperPulseMac/Resources/PaperPulseMac.entitlements
+    dependencies:
+      - package: PaperCore
+        product: PaperCore

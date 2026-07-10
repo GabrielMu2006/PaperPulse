@@ -1,0 +1,28 @@
+[
+  {
+    "id": "2607.05174v1",
+    "base_id": "2607.05174",
+    "title": "AgentGym2: Benchmarking Large Language Model Agents in De-Idealized Real-World Environments",
+    "summary": "AgentGym2 evaluates LLM agents in de-idealized environments.",
+    "authors": ["Zhiheng Xi", "Dingwen Yang"],
+    "published": "2026-07-06T00:00:00Z",
+    "updated": "2026-07-06T00:00:00Z",
+    "categories": ["cs.AI"],
+    "abs_url": "https://arxiv.org/abs/2607.05174",
+    "pdf_url": "https://arxiv.org/pdf/2607.05174v1.pdf",
+    "score": 52
+  },
+  {
+    "id": "2607.04686v1",
+    "base_id": "2607.04686",
+    "title": "ToolFailBench: Diagnosing Tool-Use Failures in LLM Agents",
+    "summary": "ToolFailBench diagnoses tool-use failures.",
+    "authors": ["Harsh Soni"],
+    "published": "2026-07-06T00:00:00Z",
+    "updated": "2026-07-06T00:00:00Z",
+    "categories": ["cs.AI"],
+    "abs_url": "https://arxiv.org/abs/2607.04686",
+    "pdf_url": "https://arxiv.org/pdf/2607.04686v1.pdf",
+    "score": 48
+  }
+]

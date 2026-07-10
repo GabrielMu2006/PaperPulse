@@ -1,0 +1,557 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		002EB65A4E0ED3F840866648 /* SwiftDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2726A87A2B8E96DDA161185A /* SwiftDataModels.swift */; };
+		0AEE52FCE28B702495A0A38E /* MacRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C527A0A54BD6EA742681E99E /* MacRootView.swift */; };
+		196728B0A7DB25F5FD5602B1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28B5586F0195632E7D6AB7BF /* LaunchScreen.storyboard */; };
+		256F09CC33A32D5A94465279 /* PaperCore in Frameworks */ = {isa = PBXBuildFile; productRef = D075BB6D5347B18832760776 /* PaperCore */; };
+		268BEBC3A343A98B11BBD088 /* PaperPulseMacModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2325BDFB88A6CB0FAA755B4 /* PaperPulseMacModel.swift */; };
+		3E223076E6AB4BA2F3E08307 /* PaperPulsePersistenceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2310C484CDB9056A3CE86A34 /* PaperPulsePersistenceStore.swift */; };
+		4AC774D9C0D16053A92178FB /* PaperPulseRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A47951FE857D880BA585E3 /* PaperPulseRootView.swift */; };
+		5D1D73FCAF32329ADFB23391 /* MacLLMProfileSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F2C8BE2D8470E34B83AAE8 /* MacLLMProfileSettingsStore.swift */; };
+		5D6802E679B329E42ECEEFF5 /* BackgroundRefreshCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7E57C1C557FA1ABFD05E44 /* BackgroundRefreshCoordinator.swift */; };
+		6040AC9BF12EF5D97E10B949 /* PaperPulseAppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45CE1371FDF63A655B0906C7 /* PaperPulseAppModel.swift */; };
+		64E8DD01AE8D52FCCDA02D6A /* PaperPulseiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5882B3A20D7EC3583362E08 /* PaperPulseiOSApp.swift */; };
+		691BCD46BD245A9BED23D223 /* PaperCore in Frameworks */ = {isa = PBXBuildFile; productRef = CF8E3475E83E5C081C700447 /* PaperCore */; };
+		715579D3001B8822F2A9276C /* PaperPulseScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24FD51F934CC3D2D1D0AC2FA /* PaperPulseScreen.swift */; };
+		7AF9FAF98795B147C4EC89E4 /* MacSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D8E29091C6523B554D633 /* MacSettingsView.swift */; };
+		88862CA6ECBA1F7B4A3BF3DB /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56A4FC2D35A5F95DB312B5ED /* TodayView.swift */; };
+		8D58F06B9BF1E6E060271A42 /* PaperPulseMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C60B8E4A856564B0AA684D2A /* PaperPulseMacApp.swift */; };
+		9413318C64B86B0C070FC82A /* PaperEntityResolution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF21959D2B7D1EBA8565AE4 /* PaperEntityResolution.swift */; };
+		9673D1713693CBCDB85ED8C2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 443F96166C2F40B5A32C988F /* SettingsView.swift */; };
+		B8265979086933E7267790C7 /* FeedEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50BECBD2FB39777E8B7EF55 /* FeedEditorView.swift */; };
+		C802F0636B00B6C66A0352A2 /* FeedListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6CE735D5932C7A5DAF8225 /* FeedListView.swift */; };
+		E7783E6CC62139C8E7109D9C /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A1FBF28E14B485F9E23AFE /* KeychainStore.swift */; };
+		E92607B4179A8FD560D6D436 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CC48A8FA6944D6EEDFFA413 /* LibraryView.swift */; };
+		F9A4848A298FEADF43DE6544 /* MacKeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF35B083421AC3F2C7D98AD3 /* MacKeychainStore.swift */; };
+		FBBCE3087BED2BB870568A83 /* LLMProfileSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FF272AAC7AC40A2F026659 /* LLMProfileSettingsStore.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		225F4C84B69C04D17B152EA4 /* PaperPulseiOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PaperPulseiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2310C484CDB9056A3CE86A34 /* PaperPulsePersistenceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulsePersistenceStore.swift; sourceTree = "<group>"; };
+		24FD51F934CC3D2D1D0AC2FA /* PaperPulseScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulseScreen.swift; sourceTree = "<group>"; };
+		2726A87A2B8E96DDA161185A /* SwiftDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataModels.swift; sourceTree = "<group>"; };
+		28B5586F0195632E7D6AB7BF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		3CC48A8FA6944D6EEDFFA413 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		3D0EABFADE6A1C5B25F8517B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		443F96166C2F40B5A32C988F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		45CE1371FDF63A655B0906C7 /* PaperPulseAppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulseAppModel.swift; sourceTree = "<group>"; };
+		52A47951FE857D880BA585E3 /* PaperPulseRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulseRootView.swift; sourceTree = "<group>"; };
+		56A4FC2D35A5F95DB312B5ED /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		841FC56C2EFB68203D39C309 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8CF21959D2B7D1EBA8565AE4 /* PaperEntityResolution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperEntityResolution.swift; sourceTree = "<group>"; };
+		93A1FBF28E14B485F9E23AFE /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		9C7E57C1C557FA1ABFD05E44 /* BackgroundRefreshCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshCoordinator.swift; sourceTree = "<group>"; };
+		9E6CE735D5932C7A5DAF8225 /* FeedListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedListView.swift; sourceTree = "<group>"; };
+		9F0D8E29091C6523B554D633 /* MacSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSettingsView.swift; sourceTree = "<group>"; };
+		A2325BDFB88A6CB0FAA755B4 /* PaperPulseMacModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulseMacModel.swift; sourceTree = "<group>"; };
+		AF35B083421AC3F2C7D98AD3 /* MacKeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacKeychainStore.swift; sourceTree = "<group>"; };
+		B57EEE7E663B0A0BF5C40060 /* PaperPulseMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PaperPulseMac.entitlements; sourceTree = "<group>"; };
+		B5F2C8BE2D8470E34B83AAE8 /* MacLLMProfileSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLLMProfileSettingsStore.swift; sourceTree = "<group>"; };
+		C527A0A54BD6EA742681E99E /* MacRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacRootView.swift; sourceTree = "<group>"; };
+		C60B8E4A856564B0AA684D2A /* PaperPulseMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulseMacApp.swift; sourceTree = "<group>"; };
+		CE5CBE0FA99A321B33C65598 /* PaperPulseMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PaperPulseMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5882B3A20D7EC3583362E08 /* PaperPulseiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulseiOSApp.swift; sourceTree = "<group>"; };
+		EB7DC757CC7BCD15B42077F2 /* papers */ = {isa = PBXFileReference; lastKnownFileType = folder; name = papers; path = .; sourceTree = SOURCE_ROOT; };
+		F3FF272AAC7AC40A2F026659 /* LLMProfileSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMProfileSettingsStore.swift; sourceTree = "<group>"; };
+		F50BECBD2FB39777E8B7EF55 /* FeedEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedEditorView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0E085F4A103FDF43DD6ECCE1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				256F09CC33A32D5A94465279 /* PaperCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		81D6D0534943EF1525971445 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				691BCD46BD245A9BED23D223 /* PaperCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		03CB318A26C846BE72CA0D29 /* PaperPulseMac */ = {
+			isa = PBXGroup;
+			children = (
+				AF35B083421AC3F2C7D98AD3 /* MacKeychainStore.swift */,
+				B5F2C8BE2D8470E34B83AAE8 /* MacLLMProfileSettingsStore.swift */,
+				C527A0A54BD6EA742681E99E /* MacRootView.swift */,
+				9F0D8E29091C6523B554D633 /* MacSettingsView.swift */,
+				C60B8E4A856564B0AA684D2A /* PaperPulseMacApp.swift */,
+				A2325BDFB88A6CB0FAA755B4 /* PaperPulseMacModel.swift */,
+			);
+			path = PaperPulseMac;
+			sourceTree = "<group>";
+		};
+		215D4E175F8CFCA7B3BC4572 = {
+			isa = PBXGroup;
+			children = (
+				E1DE0D8FEF317A358FE6EF4F /* Packages */,
+				5A512399D846F8EA496402BE /* Resources */,
+				A3DE3FA982FE239B8B83124F /* Resources */,
+				5CCD0252931DE0CECC1ED7A2 /* Sources */,
+				8966236C851E7F7E336033BC /* Sources */,
+				F54BC1B40E4AD0EEC989792A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3E4D7DB6E885D5A8EDE5D5B0 /* PaperPulseiOS */ = {
+			isa = PBXGroup;
+			children = (
+				9C7E57C1C557FA1ABFD05E44 /* BackgroundRefreshCoordinator.swift */,
+				F50BECBD2FB39777E8B7EF55 /* FeedEditorView.swift */,
+				9E6CE735D5932C7A5DAF8225 /* FeedListView.swift */,
+				93A1FBF28E14B485F9E23AFE /* KeychainStore.swift */,
+				3CC48A8FA6944D6EEDFFA413 /* LibraryView.swift */,
+				F3FF272AAC7AC40A2F026659 /* LLMProfileSettingsStore.swift */,
+				8CF21959D2B7D1EBA8565AE4 /* PaperEntityResolution.swift */,
+				45CE1371FDF63A655B0906C7 /* PaperPulseAppModel.swift */,
+				D5882B3A20D7EC3583362E08 /* PaperPulseiOSApp.swift */,
+				2310C484CDB9056A3CE86A34 /* PaperPulsePersistenceStore.swift */,
+				52A47951FE857D880BA585E3 /* PaperPulseRootView.swift */,
+				24FD51F934CC3D2D1D0AC2FA /* PaperPulseScreen.swift */,
+				443F96166C2F40B5A32C988F /* SettingsView.swift */,
+				2726A87A2B8E96DDA161185A /* SwiftDataModels.swift */,
+				56A4FC2D35A5F95DB312B5ED /* TodayView.swift */,
+			);
+			path = PaperPulseiOS;
+			sourceTree = "<group>";
+		};
+		5A512399D846F8EA496402BE /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				3D0EABFADE6A1C5B25F8517B /* Info.plist */,
+				28B5586F0195632E7D6AB7BF /* LaunchScreen.storyboard */,
+			);
+			name = Resources;
+			path = Apps/PaperPulseiOS/Resources;
+			sourceTree = "<group>";
+		};
+		5CCD0252931DE0CECC1ED7A2 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				3E4D7DB6E885D5A8EDE5D5B0 /* PaperPulseiOS */,
+			);
+			name = Sources;
+			path = Apps/PaperPulseiOS/Sources;
+			sourceTree = "<group>";
+		};
+		8966236C851E7F7E336033BC /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				03CB318A26C846BE72CA0D29 /* PaperPulseMac */,
+			);
+			name = Sources;
+			path = Apps/PaperPulseMac/Sources;
+			sourceTree = "<group>";
+		};
+		A3DE3FA982FE239B8B83124F /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				841FC56C2EFB68203D39C309 /* Info.plist */,
+				B57EEE7E663B0A0BF5C40060 /* PaperPulseMac.entitlements */,
+			);
+			name = Resources;
+			path = Apps/PaperPulseMac/Resources;
+			sourceTree = "<group>";
+		};
+		E1DE0D8FEF317A358FE6EF4F /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				EB7DC757CC7BCD15B42077F2 /* papers */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		F54BC1B40E4AD0EEC989792A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				225F4C84B69C04D17B152EA4 /* PaperPulseiOS.app */,
+				CE5CBE0FA99A321B33C65598 /* PaperPulseMac.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5880468443EA02CF49C60FEA /* PaperPulseiOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 80943F01B763450777DB9B7A /* Build configuration list for PBXNativeTarget "PaperPulseiOS" */;
+			buildPhases = (
+				395036412A1FC5560A6CBCEB /* Sources */,
+				5CE200A7D1615A985C77D9EE /* Resources */,
+				0E085F4A103FDF43DD6ECCE1 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PaperPulseiOS;
+			packageProductDependencies = (
+				D075BB6D5347B18832760776 /* PaperCore */,
+			);
+			productName = PaperPulseiOS;
+			productReference = 225F4C84B69C04D17B152EA4 /* PaperPulseiOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FF38CE018698A302DFF7F0ED /* PaperPulseMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A874CEEAF965D45EA65339CF /* Build configuration list for PBXNativeTarget "PaperPulseMac" */;
+			buildPhases = (
+				D3F312E8F6E153ED09E2F4CA /* Sources */,
+				81D6D0534943EF1525971445 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PaperPulseMac;
+			packageProductDependencies = (
+				CF8E3475E83E5C081C700447 /* PaperCore */,
+			);
+			productName = PaperPulseMac;
+			productReference = CE5CBE0FA99A321B33C65598 /* PaperPulseMac.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		355283A18486D8F352E39C83 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = CF19C3A709564720300C8671 /* Build configuration list for PBXProject "PaperPulse" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 215D4E175F8CFCA7B3BC4572;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				6CB4B49BAD3D1429ABBC58F2 /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F54BC1B40E4AD0EEC989792A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FF38CE018698A302DFF7F0ED /* PaperPulseMac */,
+				5880468443EA02CF49C60FEA /* PaperPulseiOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5CE200A7D1615A985C77D9EE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				196728B0A7DB25F5FD5602B1 /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		395036412A1FC5560A6CBCEB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5D6802E679B329E42ECEEFF5 /* BackgroundRefreshCoordinator.swift in Sources */,
+				B8265979086933E7267790C7 /* FeedEditorView.swift in Sources */,
+				C802F0636B00B6C66A0352A2 /* FeedListView.swift in Sources */,
+				E7783E6CC62139C8E7109D9C /* KeychainStore.swift in Sources */,
+				FBBCE3087BED2BB870568A83 /* LLMProfileSettingsStore.swift in Sources */,
+				E92607B4179A8FD560D6D436 /* LibraryView.swift in Sources */,
+				9413318C64B86B0C070FC82A /* PaperEntityResolution.swift in Sources */,
+				6040AC9BF12EF5D97E10B949 /* PaperPulseAppModel.swift in Sources */,
+				3E223076E6AB4BA2F3E08307 /* PaperPulsePersistenceStore.swift in Sources */,
+				4AC774D9C0D16053A92178FB /* PaperPulseRootView.swift in Sources */,
+				715579D3001B8822F2A9276C /* PaperPulseScreen.swift in Sources */,
+				64E8DD01AE8D52FCCDA02D6A /* PaperPulseiOSApp.swift in Sources */,
+				9673D1713693CBCDB85ED8C2 /* SettingsView.swift in Sources */,
+				002EB65A4E0ED3F840866648 /* SwiftDataModels.swift in Sources */,
+				88862CA6ECBA1F7B4A3BF3DB /* TodayView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3F312E8F6E153ED09E2F4CA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F9A4848A298FEADF43DE6544 /* MacKeychainStore.swift in Sources */,
+				5D1D73FCAF32329ADFB23391 /* MacLLMProfileSettingsStore.swift in Sources */,
+				0AEE52FCE28B702495A0A38E /* MacRootView.swift in Sources */,
+				7AF9FAF98795B147C4EC89E4 /* MacSettingsView.swift in Sources */,
+				8D58F06B9BF1E6E060271A42 /* PaperPulseMacApp.swift in Sources */,
+				268BEBC3A343A98B11BBD088 /* PaperPulseMacModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		6BA5FBEA97FEE3E4A0FA6D3F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		901DE2D3F7E390CCEFD45B2F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Apps/PaperPulseiOS/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PaperPulse;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.gabrielmu.PaperPulse.iOS;
+				PRODUCT_NAME = PaperPulse;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		CE8FA090CEF1A0D9E37EECE9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E2559B0A91D2CC0865939931 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Apps/PaperPulseiOS/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PaperPulse;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.gabrielmu.PaperPulse.iOS;
+				PRODUCT_NAME = PaperPulse;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F2E919532A2F013AA7D69EA7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Apps/PaperPulseMac/Resources/PaperPulseMac.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Apps/PaperPulseMac/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PaperPulse;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gabrielmu.PaperPulse.macOS;
+				PRODUCT_NAME = PaperPulse;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		F38C976F874FC380C6D39D07 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Apps/PaperPulseMac/Resources/PaperPulseMac.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Apps/PaperPulseMac/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PaperPulse;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gabrielmu.PaperPulse.macOS;
+				PRODUCT_NAME = PaperPulse;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		80943F01B763450777DB9B7A /* Build configuration list for PBXNativeTarget "PaperPulseiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E2559B0A91D2CC0865939931 /* Debug */,
+				901DE2D3F7E390CCEFD45B2F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A874CEEAF965D45EA65339CF /* Build configuration list for PBXNativeTarget "PaperPulseMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F38C976F874FC380C6D39D07 /* Debug */,
+				F2E919532A2F013AA7D69EA7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CF19C3A709564720300C8671 /* Build configuration list for PBXProject "PaperPulse" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CE8FA090CEF1A0D9E37EECE9 /* Debug */,
+				6BA5FBEA97FEE3E4A0FA6D3F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		6CB4B49BAD3D1429ABBC58F2 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CF8E3475E83E5C081C700447 /* PaperCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PaperCore;
+		};
+		D075BB6D5347B18832760776 /* PaperCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PaperCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 355283A18486D8F352E39C83 /* Project object */;
+}

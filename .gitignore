@@ -1,0 +1,11 @@
+.DS_Store
+.build/
+.tools/
+.superpowers/
+.worktrees/
+DerivedData/
+*.xcuserdata/
+*.xcuserstate
+logs/
+tmp/
+arxiv_morning_brief/
