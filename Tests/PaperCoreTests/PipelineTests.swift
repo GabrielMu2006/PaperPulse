@@ -111,6 +111,38 @@ final class PipelineTests: XCTestCase {
 
         XCTAssertEqual(result.papers.map(\.candidate.sourceID), ["semantic-first"])
     }
+
+    func testPipelineFallsBackToRuleRankingWhenRerankerReturnsInvalidPaperIDs() async throws {
+        let feed = FeedConfig(
+            name: "Agents",
+            keywords: ["agent"],
+            authorityPolicy: AuthorityPolicy(dailyLimit: 1)
+        )
+        let firstByRules = PaperCandidate.fixture(
+            sourceID: "rule-first",
+            title: "Agent Planning Benchmark",
+            summary: "agent benchmark"
+        )
+        let output = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let pipeline = PaperPipeline(
+            sources: [StubPaperSource(results: [firstByRules])],
+            augmentors: [],
+            ranker: PaperRanker(),
+            reranker: StubPaperReranker { _, _, _ in
+                throw PaperRerankerError.unknownPaperID("not-in-candidates")
+            },
+            downloader: AssertingSourceIDDownloader(expectedSourceID: "rule-first"),
+            extractor: StubExtractor(text: "Fallback paper text."),
+            llmProvider: StubLLMProvider()
+        )
+
+        let result = try await pipeline.run(feed: feed, now: Date(), outputDirectory: output)
+
+        XCTAssertEqual(result.papers.map(\.candidate.sourceID), ["rule-first"])
+        XCTAssertEqual(result.failures.count, 1)
+        XCTAssertTrue(result.failures[0].message.contains("paper reranking failed"))
+    }
 }
 
 private struct StubMetadataEnricher: PaperMetadataEnricher {

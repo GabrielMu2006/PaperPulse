@@ -323,7 +323,7 @@ private struct ProviderSummaryPayload: Decodable {
     var sourceRange: String
 }
 
-private extension String {
+extension String {
     func extractJSONCodeFence() -> String? {
         guard contains("```") else { return nil }
         let parts = components(separatedBy: "```")

@@ -51,4 +51,45 @@ final class RankingTests: XCTestCase {
         XCTAssertGreaterThan(ranked[0].score, ranked[1].score)
         XCTAssertTrue(ranked[0].reasons.contains("preferred institution"))
     }
+
+    func testBlockedInstitutionIsHardExcludedEvenWhenItWouldOtherwiseRankFirst() {
+        let feed = FeedConfig(
+            name: "Agents",
+            keywords: ["agent"],
+            authorityPolicy: AuthorityPolicy(
+                preferredInstitutions: ["Trusted University"],
+                blockedInstitutions: ["Blocked Institute"],
+                dailyLimit: 5
+            )
+        )
+        let blocked = PaperCandidate.fixture(
+            sourceID: "blocked",
+            title: "Agent Planning at Blocked Institute",
+            summary: "agent agent agent",
+            institutions: ["Blocked Institute"],
+            citationCount: 1_000
+        )
+        let accepted = PaperCandidate.fixture(
+            sourceID: "accepted",
+            title: "Agent Planning",
+            summary: "agent",
+            institutions: ["Trusted University"]
+        )
+
+        let ranked = PaperRanker().rank([blocked, accepted], feed: feed, now: .now)
+
+        XCTAssertEqual(ranked.map(\.candidate.sourceID), ["accepted"])
+    }
+
+    func testUnknownCitationCountIsNotExcludedByMinimumCitationPolicy() {
+        let feed = FeedConfig(
+            name: "Agents",
+            authorityPolicy: AuthorityPolicy(minimumCitationCount: 20, dailyLimit: 5)
+        )
+        let recentPaper = PaperCandidate.fixture(sourceID: "new", citationCount: nil)
+
+        let ranked = PaperRanker().rank([recentPaper], feed: feed, now: .now)
+
+        XCTAssertEqual(ranked.map(\.candidate.sourceID), ["new"])
+    }
 }

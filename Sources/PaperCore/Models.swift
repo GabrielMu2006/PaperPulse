@@ -12,6 +12,7 @@ public enum PaperSourceKind: String, Codable, Hashable, Sendable {
 public enum ProviderCapability: String, Codable, Hashable, Sendable {
     case shortSummary
     case fullSummary
+    case rerank
     case webSearch
     case webExtraction
     case fileExtraction
@@ -727,7 +728,7 @@ public extension LLMProfile {
                 baseURL: URL(string: "https://api.openai.com/v1")!,
                 model: "gpt-5.5",
                 apiKey: apiKey,
-                capabilities: [.shortSummary, .fullSummary, .webSearch]
+                capabilities: [.shortSummary, .fullSummary, .rerank, .webSearch]
             )
         case .claude:
             LLMProfile(
@@ -737,7 +738,7 @@ public extension LLMProfile {
                 baseURL: URL(string: "https://api.anthropic.com/v1")!,
                 model: "claude-sonnet-4.5",
                 apiKey: apiKey,
-                capabilities: [.shortSummary, .fullSummary, .webSearch, .webExtraction]
+                capabilities: [.shortSummary, .fullSummary, .rerank, .webSearch, .webExtraction]
             )
         case .gemini:
             LLMProfile(
@@ -747,7 +748,7 @@ public extension LLMProfile {
                 baseURL: URL(string: "https://generativelanguage.googleapis.com/v1beta")!,
                 model: "gemini-2.5-pro",
                 apiKey: apiKey,
-                capabilities: [.shortSummary, .fullSummary, .webSearch, .urlContext]
+                capabilities: [.shortSummary, .fullSummary, .rerank, .webSearch, .urlContext]
             )
         case .qwen:
             LLMProfile(
@@ -757,7 +758,7 @@ public extension LLMProfile {
                 baseURL: URL(string: "https://dashscope.aliyuncs.com/compatible-mode/v1")!,
                 model: "qwen-plus",
                 apiKey: apiKey,
-                capabilities: [.shortSummary, .fullSummary, .webSearch, .webExtraction]
+                capabilities: [.shortSummary, .fullSummary, .rerank, .webSearch, .webExtraction]
             )
         case .glm:
             LLMProfile(
@@ -767,7 +768,7 @@ public extension LLMProfile {
                 baseURL: URL(string: "https://open.bigmodel.cn/api/paas/v4")!,
                 model: "glm-4.7",
                 apiKey: apiKey,
-                capabilities: [.shortSummary, .fullSummary, .webSearch]
+                capabilities: [.shortSummary, .fullSummary, .rerank, .webSearch]
             )
         case .kimi:
             LLMProfile(
@@ -777,7 +778,7 @@ public extension LLMProfile {
                 baseURL: URL(string: "https://api.moonshot.cn/v1")!,
                 model: "kimi-k2.6",
                 apiKey: apiKey,
-                capabilities: [.shortSummary, .fullSummary, .webSearch, .fileExtraction]
+                capabilities: [.shortSummary, .fullSummary, .rerank, .webSearch, .fileExtraction]
             )
         case .deepSeek:
             LLMProfile(
@@ -787,7 +788,7 @@ public extension LLMProfile {
                 baseURL: URL(string: "https://api.deepseek.com")!,
                 model: "deepseek-v4-flash",
                 apiKey: apiKey,
-                capabilities: [.shortSummary, .fullSummary]
+                capabilities: [.shortSummary, .fullSummary, .rerank]
             )
         case .custom:
             LLMProfile(
@@ -797,7 +798,7 @@ public extension LLMProfile {
                 baseURL: URL(string: "https://api.example.com/v1")!,
                 model: "custom-model",
                 apiKey: apiKey,
-                capabilities: [.shortSummary, .fullSummary]
+                capabilities: [.shortSummary, .fullSummary, .rerank]
             )
         }
     }

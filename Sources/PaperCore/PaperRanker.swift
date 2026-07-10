@@ -7,7 +7,10 @@ public struct PaperRanker {
         var bestByKey: [String: RankedPaper] = [:]
 
         for candidate in candidates {
-            let ranked = score(candidate, feed: feed, now: now)
+            let authority = evaluateAuthority(for: candidate, policy: feed.authorityPolicy)
+            guard authority.decision != .rejected else { continue }
+
+            let ranked = score(candidate, feed: feed, now: now, authority: authority)
             let key = dedupeKey(candidate)
             if let existing = bestByKey[key] {
                 if ranked.score > existing.score {
@@ -23,15 +26,38 @@ public struct PaperRanker {
             if lhs.score != rhs.score {
                 return lhs.score > rhs.score
             }
-            return (lhs.candidate.publishedAt ?? .distantPast) > (rhs.candidate.publishedAt ?? .distantPast)
+            let lhsDate = lhs.candidate.publishedAt ?? .distantPast
+            let rhsDate = rhs.candidate.publishedAt ?? .distantPast
+            if lhsDate != rhsDate {
+                return lhsDate > rhsDate
+            }
+            return lhs.candidate.stableID < rhs.candidate.stableID
         }
         .prefix(selectionLimit)
         .map { $0 }
     }
 
-    private func score(_ candidate: PaperCandidate, feed: FeedConfig, now: Date) -> RankedPaper {
-        var score = 0
-        var reasons: [String] = []
+    public func evaluateAuthority(for candidate: PaperCandidate, policy: AuthorityPolicy) -> AuthorityEvaluation {
+        let normalizedInstitutions = candidate.institutions.map { $0.lowercased() }
+        for institution in policy.blockedInstitutions where normalizedInstitutions.contains(where: { $0.contains(institution.lowercased()) }) {
+            return AuthorityEvaluation(decision: .rejected, score: 0, reasons: ["blocked institution"])
+        }
+
+        for institution in policy.preferredInstitutions where normalizedInstitutions.contains(where: { $0.contains(institution.lowercased()) }) {
+            return AuthorityEvaluation(decision: .accepted, score: 30, reasons: ["preferred institution"])
+        }
+
+        return AuthorityEvaluation(decision: .accepted, score: 0)
+    }
+
+    private func score(
+        _ candidate: PaperCandidate,
+        feed: FeedConfig,
+        now: Date,
+        authority: AuthorityEvaluation
+    ) -> RankedPaper {
+        var score = authority.score
+        var reasons = authority.reasons
         let title = candidate.title.lowercased()
         let summary = candidate.summary.lowercased()
 
@@ -54,23 +80,6 @@ public struct PaperRanker {
         if !Set(feed.categories).isDisjoint(with: Set(candidate.categories)) {
             score += 8
             reasons.append("category match")
-        }
-
-        let normalizedInstitutions = candidate.institutions.map { $0.lowercased() }
-        for institution in feed.authorityPolicy.preferredInstitutions {
-            if normalizedInstitutions.contains(where: { $0.contains(institution.lowercased()) }) {
-                score += 30
-                reasons.append("preferred institution")
-                break
-            }
-        }
-
-        for institution in feed.authorityPolicy.blockedInstitutions {
-            if normalizedInstitutions.contains(where: { $0.contains(institution.lowercased()) }) {
-                score -= 50
-                reasons.append("blocked institution")
-                break
-            }
         }
 
         if let venue = candidate.venue?.lowercased() {
@@ -96,7 +105,7 @@ public struct PaperRanker {
             reasons.append("recent")
         }
 
-        if candidate.pdfURL != nil || candidate.openAccessPDFURL != nil {
+        if candidate.openAccessPDFURL != nil || candidate.openAccessEvidence?.status == .verified {
             score += 4
             reasons.append("open pdf")
         }
