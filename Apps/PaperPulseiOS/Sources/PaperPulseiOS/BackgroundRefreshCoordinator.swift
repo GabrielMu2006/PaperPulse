@@ -6,6 +6,7 @@ import UserNotifications
 final class BackgroundRefreshCoordinator {
     static let shared = BackgroundRefreshCoordinator()
     static let refreshIdentifier = "com.gabrielmu.PaperPulse.refresh"
+    static let processingIdentifier = "com.gabrielmu.PaperPulse.processing"
 
     private weak var appModel: PaperPulseAppModel?
     private var modelContainer: ModelContainer?
@@ -19,6 +20,9 @@ final class BackgroundRefreshCoordinator {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.refreshIdentifier, using: nil) { task in
             Task { await self.handle(task: task) }
         }
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.processingIdentifier, using: nil) { task in
+            Task { await self.handle(task: task) }
+        }
         schedule()
     }
 
@@ -26,6 +30,11 @@ final class BackgroundRefreshCoordinator {
         let request = BGAppRefreshTaskRequest(identifier: Self.refreshIdentifier)
         request.earliestBeginDate = Date(timeIntervalSinceNow: 60 * 60)
         try? BGTaskScheduler.shared.submit(request)
+
+        let processingRequest = BGProcessingTaskRequest(identifier: Self.processingIdentifier)
+        processingRequest.requiresNetworkConnectivity = true
+        processingRequest.earliestBeginDate = Date(timeIntervalSinceNow: 2 * 60 * 60)
+        try? BGTaskScheduler.shared.submit(processingRequest)
     }
 
     @MainActor

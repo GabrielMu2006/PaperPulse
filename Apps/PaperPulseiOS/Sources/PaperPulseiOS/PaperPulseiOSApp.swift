@@ -9,7 +9,13 @@ struct PaperPulseiOSApp: App {
 
     init() {
         do {
-            modelContainer = try ModelContainer(for: FeedEntity.self, PaperEntity.self, SummaryEntity.self, RunEntity.self)
+            modelContainer = try ModelContainer(
+                for: FeedEntity.self,
+                PaperEntity.self,
+                SummaryEntity.self,
+                RunEntity.self,
+                ProcessingJobEntity.self
+            )
         } catch {
             fatalError("Unable to create SwiftData container: \(error)")
         }

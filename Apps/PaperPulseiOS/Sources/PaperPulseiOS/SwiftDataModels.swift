@@ -125,3 +125,41 @@ final class RunEntity {
         self.selectedCount = selectedCount
     }
 }
+
+@Model
+final class ProcessingJobEntity {
+    @Attribute(.unique) var id: UUID
+    var feedID: UUID?
+    var paperID: String?
+    var stageRawValue: String
+    var completedUnitCount: Int
+    var totalUnitCount: Int
+    var failureReason: String?
+    var backgroundDownloadTaskIdentifier: Int?
+    var createdAt: Date
+    var updatedAt: Date
+
+    init(
+        id: UUID = UUID(),
+        feedID: UUID? = nil,
+        paperID: String? = nil,
+        stageRawValue: String,
+        completedUnitCount: Int = 0,
+        totalUnitCount: Int = 0,
+        failureReason: String? = nil,
+        backgroundDownloadTaskIdentifier: Int? = nil,
+        createdAt: Date = Date(),
+        updatedAt: Date = Date()
+    ) {
+        self.id = id
+        self.feedID = feedID
+        self.paperID = paperID
+        self.stageRawValue = stageRawValue
+        self.completedUnitCount = completedUnitCount
+        self.totalUnitCount = totalUnitCount
+        self.failureReason = failureReason
+        self.backgroundDownloadTaskIdentifier = backgroundDownloadTaskIdentifier
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+}

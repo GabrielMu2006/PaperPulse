@@ -82,6 +82,16 @@ final class PaperPulseAppModel {
         errorMessage = nil
         defer { isRunning = false }
 
+        let job = modelContext.map {
+            let job = ProcessingJobEntity(
+                feedID: feed.id,
+                stageRawValue: PipelineStage.discovering.rawValue
+            )
+            $0.insert(job)
+            try? $0.save()
+            return job
+        }
+
         do {
             let directory = try Self.paperDirectory()
             let pipeline = PaperPipeline(
@@ -102,8 +112,21 @@ final class PaperPulseAppModel {
             if let modelContext {
                 try PaperPulsePersistenceStore.save(result.persistencePayload(feed: feed), in: modelContext)
             }
+            if let job {
+                job.stageRawValue = PipelineStage.completed.rawValue
+                job.completedUnitCount = result.papers.count
+                job.totalUnitCount = result.rankedCandidates.count
+                job.updatedAt = Date()
+                try? modelContext?.save()
+            }
             NotificationCoordinator.shared.notifyRunComplete(selectedCount: result.papers.count)
         } catch {
+            if let job {
+                job.stageRawValue = PipelineStage.failed.rawValue
+                job.failureReason = error.localizedDescription
+                job.updatedAt = Date()
+                try? modelContext?.save()
+            }
             errorMessage = error.localizedDescription
         }
     }
