@@ -1,4 +1,3 @@
-import CryptoKit
 import Foundation
 
 public enum PaperDownloadError: Error, Equatable {
@@ -119,7 +118,7 @@ public struct URLSessionPaperDownloader: PaperDownloader {
     }
 
     public static func sha256(for data: Data) -> String {
-        SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        PaperContentHash.sha256Hex(data)
     }
 
     private func existingFile(withSHA256 sha256: String, in directory: URL) throws -> URL? {

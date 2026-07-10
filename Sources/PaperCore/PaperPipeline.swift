@@ -6,9 +6,8 @@ public final class PaperPipeline {
     private let enrichers: [any PaperMetadataEnricher]
     private let ranker: PaperRanker
     private let reranker: (any PaperReranker)?
-    private let downloader: any PaperDownloader
-    private let extractor: any PDFTextExtractor
-    private let llmProvider: any LLMProvider
+    private let processingService: PaperProcessingService
+    private let summaryService: PaperSummaryService
 
     public init(
         sources: [any PaperSource],
@@ -25,9 +24,14 @@ public final class PaperPipeline {
         self.enrichers = enrichers
         self.ranker = ranker
         self.reranker = reranker
-        self.downloader = downloader
-        self.extractor = extractor
-        self.llmProvider = llmProvider
+        self.processingService = PaperProcessingService(
+            downloader: downloader,
+            extractor: extractor
+        )
+        self.summaryService = PaperSummaryService(
+            shortProvider: llmProvider,
+            fullProvider: llmProvider
+        )
     }
 
     public func run(feed: FeedConfig, now: Date, outputDirectory: URL) async throws -> PipelineResult {
@@ -100,11 +104,12 @@ public final class PaperPipeline {
         for rankedPaper in ranked {
             let candidate = rankedPaper.candidate
             do {
-                let localFile = try await downloader.download(candidate, to: outputDirectory)
-                let record = PaperRecord(candidate: candidate, localFile: localFile)
-                let text = try await extractor.extract(from: localFile)
-                let summary = try await llmProvider.shortSummary(for: record, text: text)
-                papers.append(record)
+                let processed = try await processingService.process(candidate: candidate, outputDirectory: outputDirectory)
+                let summary = try await summaryService.generateShortSummary(
+                    for: processed.record,
+                    text: processed.text
+                )
+                papers.append(processed.record)
                 summaries.append(summary)
             } catch {
                 failures.append(PipelineFailure(paperID: candidate.stableID, message: error.localizedDescription))
@@ -121,6 +126,6 @@ public final class PaperPipeline {
     }
 
     public func generateFullSummary(paper: PaperRecord, text: ExtractedPaperText) async throws -> PaperSummary {
-        try await llmProvider.fullSummary(for: paper, text: text)
+        try await summaryService.generateFullSummary(for: paper, text: text)
     }
 }
