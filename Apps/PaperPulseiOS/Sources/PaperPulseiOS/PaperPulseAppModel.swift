@@ -12,6 +12,7 @@ final class PaperPulseAppModel {
     var summaries: [String: PaperSummary] = [:]
     var lastRun: PipelineResult?
     var llmProfile = LLMProfile.preset(.gpt)
+    var providerProfiles: [LLMProfile] = [LLMProfile.preset(.gpt)]
     var appLanguage: AppLanguage = .chinese
     var summaryLanguage: SummaryLanguage = .chinese
     var isRunning = false
@@ -51,7 +52,8 @@ final class PaperPulseAppModel {
 
     func bootstrapProviderProfile() {
         guard !didBootstrapProviderProfile else { return }
-        llmProfile = LLMProfileSettingsStore.standard.loadProfile(defaultProfile: llmProfile)
+        providerProfiles = LLMProfileSettingsStore.standard.loadProfiles(defaultProfiles: providerProfiles)
+        llmProfile = providerProfiles.first ?? llmProfile
         appLanguage = restoredAppLanguage()
         summaryLanguage = restoredSummaryLanguage()
         didBootstrapProviderProfile = true
@@ -133,13 +135,31 @@ final class PaperPulseAppModel {
 
     func applyProviderPreset(_ kind: LLMProviderKind) {
         let apiKey = llmProfile.apiKey
-        llmProfile = LLMProfile.preset(kind).withAPIKey(apiKey)
+        var updated = LLMProfile.preset(kind).withAPIKey(apiKey)
+        updated.id = llmProfile.id
+        llmProfile = updated
+    }
+
+    func selectLLMProfile(id: UUID) {
+        guard let profile = providerProfiles.first(where: { $0.id == id }) else { return }
+        llmProfile = profile
+    }
+
+    func addLLMProfile(kind: LLMProviderKind) {
+        let profile = LLMProfile.preset(kind)
+        providerProfiles.append(profile)
+        llmProfile = profile
     }
 
     func saveLLMProfile(apiKey: String? = nil) {
         let profile = apiKey.map { llmProfile.withAPIKey($0) } ?? llmProfile
         do {
-            try LLMProfileSettingsStore.standard.save(profile)
+            if let index = providerProfiles.firstIndex(where: { $0.id == profile.id }) {
+                providerProfiles[index] = profile
+            } else {
+                providerProfiles.append(profile)
+            }
+            try LLMProfileSettingsStore.standard.saveProfiles(providerProfiles)
             llmProfile = profile
             providerSettingsMessage = appLanguage.text(en: "Provider settings saved.", zh: "模型设置已保存。")
         } catch {

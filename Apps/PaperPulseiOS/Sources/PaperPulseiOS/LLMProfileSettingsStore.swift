@@ -8,6 +8,7 @@ struct LLMProfileSettingsStore {
     var keychain: KeychainStore = .standard
 
     private let configurationKey = "PaperPulse.llmProfileConfiguration"
+    private let configurationsKey = "PaperPulse.llmProfileConfigurations"
     private let keychainAccountPrefix = "llmProfile"
 
     func loadProfile(defaultProfile: LLMProfile) -> LLMProfile {
@@ -20,11 +21,35 @@ struct LLMProfileSettingsStore {
         return configuration.profile(apiKey: apiKey)
     }
 
+    func loadProfiles(defaultProfiles: [LLMProfile]) -> [LLMProfile] {
+        guard let data = userDefaults.data(forKey: configurationsKey),
+              let configurations = try? JSONDecoder().decode([LLMProfileConfiguration].self, from: data) else {
+            return [loadProfile(defaultProfile: defaultProfiles.first ?? LLMProfile.preset(.gpt))]
+        }
+        return configurations.map { configuration in
+            configuration.profile(apiKey: loadAPIKey(for: configuration) ?? "")
+        }
+    }
+
     func save(_ profile: LLMProfile) throws {
-        let configuration = profile.persistedConfiguration
-        let data = try JSONEncoder().encode(configuration)
-        userDefaults.set(data, forKey: configurationKey)
-        try keychain.save(profile.apiKey, account: apiKeyAccount(for: configuration))
+        try saveProfiles([profile])
+    }
+
+    func saveProfiles(_ profiles: [LLMProfile]) throws {
+        let configurations = profiles.map(\.persistedConfiguration)
+        userDefaults.set(try JSONEncoder().encode(configurations), forKey: configurationsKey)
+        for profile in profiles {
+            try keychain.save(profile.apiKey, account: apiKeyAccount(for: profile.persistedConfiguration))
+        }
+
+        if let first = profiles.first {
+            let configuration = first.persistedConfiguration
+            userDefaults.set(try JSONEncoder().encode(configuration), forKey: configurationKey)
+        }
+    }
+
+    func deleteAPIKey(for profile: LLMProfile) throws {
+        try keychain.delete(account: apiKeyAccount(for: profile.persistedConfiguration))
     }
 
     private func loadAPIKey(for configuration: LLMProfileConfiguration) -> String? {

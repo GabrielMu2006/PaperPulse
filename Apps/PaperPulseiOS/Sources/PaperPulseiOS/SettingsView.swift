@@ -16,6 +16,23 @@ struct SettingsView: View {
                     Text(language.text(en: "LLM Provider", zh: "大模型服务"))
                         .font(.headline)
 
+                    Picker(language.text(en: "Configuration", zh: "配置档案"), selection: Binding(
+                        get: { appModel.llmProfile.id },
+                        set: { appModel.selectLLMProfile(id: $0) }
+                    )) {
+                        ForEach(appModel.providerProfiles) { profile in
+                            Text(profile.name).tag(profile.id)
+                        }
+                    }
+
+                    Menu {
+                        ForEach(LLMProviderKind.allCases) { kind in
+                            Button(kind.displayName) { appModel.addLLMProfile(kind: kind) }
+                        }
+                    } label: {
+                        Label(language.text(en: "Add Provider Profile", zh: "新增模型配置"), systemImage: "plus")
+                    }
+
                     Text(language.text(
                         en: "App Language controls the app interface: tabs, buttons, titles, and hints.",
                         zh: "界面语言：切换 App 的标签、按钮、标题和提示文字。"
