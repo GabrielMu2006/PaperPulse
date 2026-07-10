@@ -143,6 +143,37 @@ final class PipelineTests: XCTestCase {
         XCTAssertEqual(result.failures.count, 1)
         XCTAssertTrue(result.failures[0].message.contains("paper reranking failed"))
     }
+
+    func testPipelineWritesConfiguredProviderMetadataToGeneratedSummary() async throws {
+        let profileID = UUID(uuidString: "ABABABAB-ABAB-ABAB-ABAB-ABABABABABAB")!
+        let profile = LLMProfile(
+            id: profileID,
+            name: "Short summary",
+            baseURL: URL(string: "https://api.example.com")!,
+            model: "configured-model",
+            apiKey: "test-key",
+            capabilities: [.shortSummary]
+        )
+        let paper = PaperCandidate.fixture(sourceID: "metadata-paper")
+        let pipeline = PaperPipeline(
+            sources: [StubPaperSource(results: [paper])],
+            augmentors: [],
+            ranker: PaperRanker(),
+            downloader: StubDownloader(),
+            extractor: StubExtractor(text: "Text"),
+            llmProvider: StubLLMProvider(),
+            shortSummaryProfile: profile
+        )
+
+        let result = try await pipeline.run(
+            feed: FeedConfig(name: "Agents", authorityPolicy: AuthorityPolicy(dailyLimit: 1)),
+            now: Date(),
+            outputDirectory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        )
+
+        XCTAssertEqual(result.summaries.first?.providerProfileID, profileID)
+        XCTAssertEqual(result.summaries.first?.model, "configured-model")
+    }
 }
 
 private struct StubMetadataEnricher: PaperMetadataEnricher {

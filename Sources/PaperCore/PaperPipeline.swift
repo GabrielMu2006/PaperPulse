@@ -17,7 +17,10 @@ public final class PaperPipeline {
         reranker: (any PaperReranker)? = nil,
         downloader: any PaperDownloader,
         extractor: any PDFTextExtractor,
-        llmProvider: any LLMProvider
+        llmProvider: any LLMProvider,
+        summaryLanguage: SummaryLanguage = .chinese,
+        shortSummaryProfile: LLMProfile? = nil,
+        fullSummaryProfile: LLMProfile? = nil
     ) {
         self.sources = sources
         self.augmentors = augmentors
@@ -30,7 +33,10 @@ public final class PaperPipeline {
         )
         self.summaryService = PaperSummaryService(
             shortProvider: llmProvider,
-            fullProvider: llmProvider
+            fullProvider: llmProvider,
+            shortProfile: shortSummaryProfile,
+            fullProfile: fullSummaryProfile,
+            language: summaryLanguage
         )
     }
 

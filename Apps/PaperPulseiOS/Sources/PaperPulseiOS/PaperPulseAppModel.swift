@@ -96,13 +96,20 @@ final class PaperPulseAppModel {
 
         do {
             let directory = try Self.paperDirectory()
+            let registry = ProviderRegistry(profiles: providerProfiles)
+            let shortProfile = registry.profile(for: .shortSummary, feed: feed) ?? llmProfile
+            let reranker = registry.profile(for: .rerank, feed: feed)
+                .flatMap { LLMProviderFactory.makeReranker(profile: $0) }
             let pipeline = PaperPipeline(
                 sources: [ArxivSource(), OpenAlexSource(), CrossrefSource()],
                 augmentors: [],
                 ranker: PaperRanker(),
+                reranker: reranker,
                 downloader: URLSessionPaperDownloader(),
                 extractor: PDFKitTextExtractor(),
-                llmProvider: configuredLLMProvider()
+                llmProvider: configuredLLMProvider(profile: shortProfile),
+                summaryLanguage: summaryLanguage,
+                shortSummaryProfile: shortProfile
             )
             let result = try await pipeline.run(feed: feed, now: Date(), outputDirectory: directory)
             todayPapers = result.papers
@@ -233,18 +240,26 @@ final class PaperPulseAppModel {
             }
 
             let text = try await PDFKitTextExtractor().extract(from: localFile)
-            let generated = try await configuredLLMProvider().fullSummary(for: record, text: text)
+            let registry = ProviderRegistry(profiles: providerProfiles)
+            let fullProfile = activeFeed.flatMap { registry.profile(for: .fullSummary, feed: $0) } ?? llmProfile
+            let provider = configuredLLMProvider(profile: fullProfile)
+            let generated = try await PaperSummaryService(
+                shortProvider: provider,
+                fullProvider: provider,
+                fullProfile: fullProfile,
+                language: summaryLanguage
+            ).generateFullSummary(for: record, text: text)
             try saveFullSummary(generated, fallbackPaperID: paper.id, in: modelContext)
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    private func configuredLLMProvider() -> any LLMProvider {
-        guard !llmProfile.apiKey.isEmpty else {
+    private func configuredLLMProvider(profile: LLMProfile) -> any LLMProvider {
+        guard !profile.apiKey.isEmpty else {
             return LocalRuleSummaryProvider(language: summaryLanguage)
         }
-        return LLMProviderFactory.makeProvider(profile: llmProfile, summaryLanguage: summaryLanguage)
+        return LLMProviderFactory.makeProvider(profile: profile, summaryLanguage: summaryLanguage)
     }
 
     private static func paperDirectory() throws -> URL {
