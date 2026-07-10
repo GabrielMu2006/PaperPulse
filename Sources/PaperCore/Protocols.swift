@@ -29,4 +29,27 @@ public protocol LLMProvider {
 
     func shortSummary(for paper: PaperRecord, text: ExtractedPaperText) async throws -> PaperSummary
     func fullSummary(for paper: PaperRecord, text: ExtractedPaperText) async throws -> PaperSummary
+    func healthCheck() async throws -> ProviderHealth
+}
+
+public extension LLMProvider {
+    func healthCheck() async throws -> ProviderHealth {
+        guard capabilities.contains(.shortSummary) else {
+            throw LLMProviderError.unsupportedCapability(.shortSummary)
+        }
+        let checkPaper = PaperRecord(
+            candidate: PaperCandidate(
+                source: .web,
+                sourceID: "paperpulse-health-check",
+                title: "PaperPulse connection check",
+                summary: "This is a minimal capability check."
+            ),
+            localFile: nil
+        )
+        let summary = try await shortSummary(
+            for: checkPaper,
+            text: ExtractedPaperText(plainText: "", pages: [])
+        )
+        return ProviderHealth(providerProfileID: nil, model: summary.model)
+    }
 }

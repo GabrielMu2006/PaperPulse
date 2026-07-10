@@ -118,6 +118,7 @@ public struct PaperSummaryService {
     private let fullProvider: any LLMProvider
     private let shortProfile: LLMProfile?
     private let fullProfile: LLMProfile?
+    private let language: SummaryLanguage
     private let now: @Sendable () -> Date
 
     public init(
@@ -125,12 +126,14 @@ public struct PaperSummaryService {
         fullProvider: any LLMProvider,
         shortProfile: LLMProfile? = nil,
         fullProfile: LLMProfile? = nil,
+        language: SummaryLanguage = .chinese,
         now: @escaping @Sendable () -> Date = Date.init
     ) {
         self.shortProvider = shortProvider
         self.fullProvider = fullProvider
         self.shortProfile = shortProfile
         self.fullProfile = fullProfile
+        self.language = language
         self.now = now
     }
 
@@ -154,6 +157,7 @@ public struct PaperSummaryService {
         var result = summary
         result.paperID = paper.id
         result.kind = kind
+        result.language = language.code
         result.providerProfileID = profile?.id
         if let profile {
             result.model = profile.model

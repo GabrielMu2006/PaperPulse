@@ -36,7 +36,7 @@ final class ProviderTests: XCTestCase {
         XCTAssertEqual(relay.apiStyle, .openAIChatCompletions)
     }
 
-    func testOpenAICompatibleProviderParsesStructuredSummaryJSON() async throws {
+    func testOpenAICompatibleProviderAcceptsOnlyGeneratedSummaryContent() async throws {
         let response = """
         {
           "choices": [
@@ -69,7 +69,10 @@ final class ProviderTests: XCTestCase {
         )
 
         XCTAssertEqual(summary.shortText, "简介：这是一篇论文。")
-        XCTAssertEqual(summary.sourceRange, "pages 1-2")
+        XCTAssertEqual(summary.paperID, "arxiv:fixture")
+        XCTAssertEqual(summary.model, "")
+        XCTAssertEqual(summary.generatedAt, .distantPast)
+        XCTAssertEqual(summary.sourceRange, "")
     }
 
     func testOpenAICompatibleProviderUsesCustomRelayBaseURLForClaudeOrGeminiModels() async throws {
@@ -94,6 +97,7 @@ final class ProviderTests: XCTestCase {
         let relayProfile = LLMProfile.preset(.claude)
             .withBaseURL(URL(string: "https://relay.example.com/v1")!, apiStyle: .openAIChatCompletions)
             .withModel("claude-sonnet-4.5")
+            .withAPIKey("test-key")
 
         let provider = OpenAICompatibleChatProvider(profile: relayProfile, httpClient: client)
 
@@ -124,7 +128,7 @@ final class ProviderTests: XCTestCase {
             let system = try XCTUnwrap(messages.first(where: { $0["role"] == "system" })?["content"])
             let user = try XCTUnwrap(messages.first(where: { $0["role"] == "user" })?["content"])
             XCTAssertTrue(system.contains("English"))
-            XCTAssertTrue(user.contains(#""language": "en""#))
+            XCTAssertTrue(user.contains("Write the summary in English"))
             XCTAssertTrue(user.contains("concise English summary"))
             return HTTPResponse(data: Data(response.utf8), statusCode: 200, mimeType: "application/json", finalURL: request.url!)
         }
@@ -145,7 +149,56 @@ final class ProviderTests: XCTestCase {
             text: ExtractedPaperText(plainText: "paper text", pages: [])
         )
 
-        XCTAssertEqual(summary.language, "en")
+        XCTAssertEqual(summary.language, "")
+    }
+
+    func testProviderRegistryResolvesConfiguredProfileOnlyWhenItSupportsAssignedRole() {
+        let shortProfile = LLMProfile(
+            name: "Short",
+            baseURL: URL(string: "https://short.example")!,
+            model: "short-model",
+            apiKey: "",
+            capabilities: [.shortSummary]
+        )
+        let fullProfile = LLMProfile(
+            name: "Full",
+            baseURL: URL(string: "https://full.example")!,
+            model: "full-model",
+            apiKey: "",
+            capabilities: [.fullSummary]
+        )
+        let feed = FeedConfig(
+            name: "Agents",
+            shortSummaryProviderProfileID: shortProfile.id,
+            fullSummaryProviderProfileID: fullProfile.id
+        )
+        let registry = ProviderRegistry(profiles: [shortProfile, fullProfile])
+
+        XCTAssertEqual(registry.profile(for: .shortSummary, feed: feed)?.id, shortProfile.id)
+        XCTAssertEqual(registry.profile(for: .fullSummary, feed: feed)?.id, fullProfile.id)
+        XCTAssertNil(registry.profile(for: .rerank, feed: feed))
+    }
+
+    func testHealthCheckUsesShortSummaryCapabilityWithoutRealNetwork() async throws {
+        let response = """
+        {"choices":[{"message":{"content":"{\\"shortText\\":\\"Connected\\",\\"fullText\\":null}"}}]}
+        """
+        let client = StubHTTPClient { request in
+            XCTAssertEqual(request.url?.absoluteString, "https://api.example.com/v1/chat/completions")
+            return HTTPResponse(data: Data(response.utf8), statusCode: 200, mimeType: "application/json", finalURL: try XCTUnwrap(request.url))
+        }
+        let profile = LLMProfile(
+            name: "Health",
+            baseURL: URL(string: "https://api.example.com/v1")!,
+            model: "health-model",
+            apiKey: "test-key",
+            capabilities: [.shortSummary]
+        )
+
+        let health = try await OpenAICompatibleChatProvider(profile: profile, httpClient: client).healthCheck()
+
+        XCTAssertEqual(health.model, "health-model")
+        XCTAssertEqual(health.providerProfileID, profile.id)
     }
 
     func testProviderFactoryCreatesOfficialAndRelayProvidersFromProfileStyle() {

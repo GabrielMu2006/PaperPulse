@@ -2,6 +2,7 @@ import Foundation
 
 public enum LLMProviderError: Error, Equatable {
     case unsupportedCapability(ProviderCapability)
+    case missingAPIKey
     case invalidResponse
     case malformedSummaryJSON(String)
 }
@@ -39,7 +40,15 @@ public struct OpenAICompatibleChatProvider: LLMProvider {
         return try await summarize(paper: paper, text: text, mode: "full")
     }
 
+    public func healthCheck() async throws -> ProviderHealth {
+        _ = try await shortSummary(for: providerHealthCheckPaper(), text: providerHealthCheckText)
+        return ProviderHealth(providerProfileID: profile.id, model: profile.model)
+    }
+
     private func summarize(paper: PaperRecord, text: ExtractedPaperText, mode: String) async throws -> PaperSummary {
+        guard !profile.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw LLMProviderError.missingAPIKey
+        }
         let endpoint = profile.baseURL.appendingPathComponent("chat/completions")
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
@@ -75,15 +84,10 @@ public struct OpenAICompatibleChatProvider: LLMProvider {
         Known institutions: \(paper.candidate.institutions.joined(separator: "; "))
         Mode: \(mode)
 
-        Return JSON:
+        Write the summary in \(language.promptName). Return JSON:
         {
-          "paperID": "\(paper.id)",
           "shortText": "\(language.shortTextInstruction)",
-          "fullText": "\(language.fullTextInstruction)",
-          "language": "\(language.code)",
-          "model": "\(paper.candidate.source.rawValue)/\(paper.candidate.sourceID)",
-          "generatedAt": "\(ISO8601DateFormatter().string(from: Date()))",
-          "sourceRange": "pages or text range used"
+          "fullText": "\(language.fullTextInstruction)"
         }
 
         Do not invent institutions, experiments, citations, or limitations. Say evidence is unavailable when it is unavailable.
@@ -127,7 +131,15 @@ public struct AnthropicMessagesProvider: LLMProvider {
         return try await summarize(paper: paper, text: text, mode: "full")
     }
 
+    public func healthCheck() async throws -> ProviderHealth {
+        _ = try await shortSummary(for: providerHealthCheckPaper(), text: providerHealthCheckText)
+        return ProviderHealth(providerProfileID: profile.id, model: profile.model)
+    }
+
     private func summarize(paper: PaperRecord, text: ExtractedPaperText, mode: String) async throws -> PaperSummary {
+        guard !profile.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw LLMProviderError.missingAPIKey
+        }
         var request = URLRequest(url: profile.baseURL.appendingPathComponent("messages"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -187,7 +199,15 @@ public struct GeminiGenerateContentProvider: LLMProvider {
         return try await summarize(paper: paper, text: text, mode: "full")
     }
 
+    public func healthCheck() async throws -> ProviderHealth {
+        _ = try await shortSummary(for: providerHealthCheckPaper(), text: providerHealthCheckText)
+        return ProviderHealth(providerProfileID: profile.id, model: profile.model)
+    }
+
     private func summarize(paper: PaperRecord, text: ExtractedPaperText, mode: String) async throws -> PaperSummary {
+        guard !profile.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw LLMProviderError.missingAPIKey
+        }
         var components = URLComponents(
             url: profile.baseURL
                 .appendingPathComponent("models")
@@ -227,6 +247,20 @@ private struct ChatRequest: Encodable {
     var messages: [ChatMessage]
     var temperature: Double
 }
+
+private func providerHealthCheckPaper() -> PaperRecord {
+    PaperRecord(
+        candidate: PaperCandidate(
+            source: .web,
+            sourceID: "paperpulse-health-check",
+            title: "PaperPulse connection check",
+            summary: "This is a minimal capability check."
+        ),
+        localFile: nil
+    )
+}
+
+private let providerHealthCheckText = ExtractedPaperText(plainText: "", pages: [])
 
 private struct ChatMessage: Codable {
     var role: String
@@ -302,25 +336,20 @@ private enum SummaryContentDecoder {
             throw LLMProviderError.malformedSummaryJSON(content)
         }
         return PaperSummary(
-            paperID: payload.paperID ?? paperID,
+            paperID: paperID,
             shortText: payload.shortText,
             fullText: payload.fullText,
-            language: payload.language,
-            model: payload.model,
-            generatedAt: payload.generatedAt,
-            sourceRange: payload.sourceRange
+            language: "",
+            model: "",
+            generatedAt: .distantPast,
+            sourceRange: ""
         )
     }
 }
 
 private struct ProviderSummaryPayload: Decodable {
-    var paperID: String?
     var shortText: String
     var fullText: String?
-    var language: String
-    var model: String
-    var generatedAt: Date
-    var sourceRange: String
 }
 
 extension String {
@@ -354,6 +383,25 @@ public struct ProviderRegistry {
     public func profile(named name: String) -> LLMProfile? {
         profiles.first { $0.name == name }
     }
+
+    public func profile(id: UUID) -> LLMProfile? {
+        profiles.first { $0.id == id }
+    }
+
+    public func profile(for role: ProviderRole, feed: FeedConfig) -> LLMProfile? {
+        let profileID: UUID?
+        switch role {
+        case .search: profileID = feed.searchProviderProfileID
+        case .rerank: profileID = feed.rerankProviderProfileID
+        case .shortSummary: profileID = feed.shortSummaryProviderProfileID
+        case .fullSummary: profileID = feed.fullSummaryProviderProfileID
+        case .extraction: profileID = feed.extractionProviderProfileID
+        }
+        guard let profileID, let profile = profile(id: profileID), profile.supports(role) else {
+            return nil
+        }
+        return profile
+    }
 }
 
 public enum LLMProviderFactory {
@@ -370,6 +418,16 @@ public enum LLMProviderFactory {
         case .geminiGenerateContent:
             GeminiGenerateContentProvider(profile: profile, summaryLanguage: summaryLanguage, httpClient: httpClient)
         }
+    }
+
+    public static func makeReranker(
+        profile: LLMProfile,
+        httpClient: HTTPClient = URLSessionHTTPClient()
+    ) -> (any PaperReranker)? {
+        guard profile.apiStyle == .openAIChatCompletions, profile.supports(.rerank) else {
+            return nil
+        }
+        return OpenAICompatiblePaperReranker(profile: profile, httpClient: httpClient)
     }
 }
 

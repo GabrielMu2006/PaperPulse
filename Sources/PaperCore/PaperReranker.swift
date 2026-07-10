@@ -2,6 +2,7 @@ import Foundation
 
 public enum PaperRerankerError: Error, Equatable, Sendable {
     case unsupportedCapability
+    case missingAPIKey
     case invalidResponse
     case malformedJSON(String)
     case unknownPaperID(String)
@@ -20,6 +21,9 @@ public struct OpenAICompatiblePaperReranker: PaperReranker {
     public func rerank(_ ranked: [RankedPaper], feed: FeedConfig, limit: Int) async throws -> [RankedPaper] {
         guard profile.capabilities.contains(.rerank) else {
             throw PaperRerankerError.unsupportedCapability
+        }
+        guard !profile.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw PaperRerankerError.missingAPIKey
         }
         guard !ranked.isEmpty else { return [] }
 

@@ -19,6 +19,18 @@ public enum ProviderCapability: String, Codable, Hashable, Sendable {
     case urlContext
 }
 
+public struct ProviderHealth: Codable, Hashable, Sendable {
+    public var providerProfileID: UUID?
+    public var model: String
+    public var checkedAt: Date
+
+    public init(providerProfileID: UUID?, model: String, checkedAt: Date = Date()) {
+        self.providerProfileID = providerProfileID
+        self.model = model
+        self.checkedAt = checkedAt
+    }
+}
+
 public enum SummaryLanguage: String, Codable, CaseIterable, Hashable, Identifiable, Sendable {
     case chinese
     case english
@@ -847,6 +859,21 @@ public extension LLMProfile {
         var copy = self
         copy.apiKey = apiKey
         return copy
+    }
+
+    func supports(_ role: ProviderRole) -> Bool {
+        switch role {
+        case .search:
+            capabilities.contains(.webSearch)
+        case .rerank:
+            capabilities.contains(.rerank)
+        case .shortSummary:
+            capabilities.contains(.shortSummary)
+        case .fullSummary:
+            capabilities.contains(.fullSummary)
+        case .extraction:
+            !capabilities.intersection([.fileExtraction, .urlContext, .webExtraction]).isEmpty
+        }
     }
 }
 

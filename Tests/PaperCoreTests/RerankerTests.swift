@@ -60,4 +60,30 @@ final class RerankerTests: XCTestCase {
             XCTFail("Unexpected error: \(error)")
         }
     }
+
+    func testOpenAICompatibleRerankerRejectsMissingAPIKeyBeforeNetworkRequest() async {
+        let reranker = OpenAICompatiblePaperReranker(
+            profile: LLMProfile(
+                name: "Reranker",
+                baseURL: URL(string: "https://api.example.com/v1")!,
+                model: "test-model",
+                apiKey: "",
+                capabilities: [.rerank]
+            ),
+            httpClient: StubHTTPClient { _ in
+                XCTFail("A missing API key must not trigger a network request")
+                return HTTPResponse(data: Data(), statusCode: 200, mimeType: nil, finalURL: URL(string: "https://api.example.com")!)
+            }
+        )
+
+        await XCTAssertThrowsErrorAsync(
+            try await reranker.rerank(
+                [RankedPaper(candidate: .fixture(sourceID: "first"), score: 1, reasons: [])],
+                feed: FeedConfig(name: "Agents"),
+                limit: 1
+            )
+        ) { error in
+            XCTAssertEqual(error as? PaperRerankerError, .missingAPIKey)
+        }
+    }
 }
