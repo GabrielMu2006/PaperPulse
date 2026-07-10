@@ -129,7 +129,10 @@ extension PaperCandidate {
             pdfURL: pdfURL,
             venue: nil,
             citationCount: citationCount,
-            openAccessPDFURL: pdfURL
+            openAccessPDFURL: pdfURL,
+            openAccessEvidence: pdfURL.map {
+                OpenAccessEvidence(status: .verified, source: .arxiv, url: $0)
+            }
         )
     }
 }

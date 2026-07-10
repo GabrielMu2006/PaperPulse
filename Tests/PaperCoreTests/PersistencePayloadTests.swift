@@ -28,7 +28,8 @@ final class PersistencePayloadTests: XCTestCase {
                 fileURL: fileURL,
                 byteCount: 42_000,
                 mimeType: "application/pdf",
-                downloadedAt: Date(timeIntervalSince1970: 1_783_000_000)
+                downloadedAt: Date(timeIntervalSince1970: 1_783_000_000),
+                sha256: "a1b2c3"
             ),
             createdAt: Date(timeIntervalSince1970: 1_783_000_100)
         )
@@ -69,6 +70,7 @@ final class PersistencePayloadTests: XCTestCase {
         XCTAssertEqual(payload.papers[0].id, paper.id)
         XCTAssertEqual(payload.papers[0].title, "GigaWorld-1")
         XCTAssertEqual(payload.papers[0].pdfPath, fileURL.path)
+        XCTAssertEqual(payload.papers[0].pdfSHA256, "a1b2c3")
         XCTAssertEqual(payload.papers[0].absURL, URL(string: "https://arxiv.org/abs/2607.02642v1"))
         XCTAssertEqual(payload.summaries.count, 1)
         XCTAssertEqual(payload.summaries[0].id, summaryID)
@@ -90,6 +92,7 @@ final class PersistencePayloadTests: XCTestCase {
             authors: ["A. Author"],
             abstract: "An agentic simulation-ready 3D world engine.",
             pdfPath: pdfURL.path,
+            pdfSHA256: "d4e5f6",
             absURL: URL(string: "https://arxiv.org/abs/2607.07459"),
             createdAt: Date(timeIntervalSince1970: 1_783_000_300)
         )
@@ -103,6 +106,7 @@ final class PersistencePayloadTests: XCTestCase {
         XCTAssertEqual(record.localFile?.fileURL, pdfURL)
         XCTAssertEqual(record.localFile?.mimeType, "application/pdf")
         XCTAssertEqual(record.localFile?.byteCount, 16)
+        XCTAssertEqual(record.localFile?.sha256, "d4e5f6")
     }
 
     func testFeedConfigRoundTripsThroughPersistedFeed() {

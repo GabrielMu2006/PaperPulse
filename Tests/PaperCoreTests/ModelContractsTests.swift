@@ -164,11 +164,21 @@ final class ModelContractsTests: XCTestCase {
           "sourceRange": "metadata"
         }
         """
+        let localFileJSON = """
+        {
+          "paperID": "arxiv:2607.00003",
+          "fileURL": "file:///tmp/legacy.pdf",
+          "byteCount": 1,
+          "mimeType": "application/pdf",
+          "downloadedAt": 0
+        }
+        """
         let decoder = JSONDecoder()
 
         let feed = try decoder.decode(FeedConfig.self, from: Data(feedJSON.utf8))
         let candidate = try decoder.decode(PaperCandidate.self, from: Data(candidateJSON.utf8))
         let summary = try decoder.decode(PaperSummary.self, from: Data(summaryJSON.utf8))
+        let localFile = try decoder.decode(LocalPaperFile.self, from: Data(localFileJSON.utf8))
 
         XCTAssertEqual(feed.enabledSources, FeedConfig.defaultEnabledSources)
         XCTAssertEqual(feed.lookbackDays, 7)
@@ -178,6 +188,7 @@ final class ModelContractsTests: XCTestCase {
         XCTAssertEqual(summary.kind, .short)
         XCTAssertNil(summary.providerProfileID)
         XCTAssertNil(summary.sourceTextHash)
+        XCTAssertEqual(localFile.sha256, "")
         XCTAssertEqual(summary.anchors, [])
     }
 }

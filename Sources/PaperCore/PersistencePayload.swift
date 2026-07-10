@@ -81,6 +81,7 @@ public struct PersistedPaper: Codable, Hashable, Identifiable, Sendable {
     public var authors: [String]
     public var abstract: String
     public var pdfPath: String?
+    public var pdfSHA256: String?
     public var absURL: URL?
     public var createdAt: Date
 
@@ -90,6 +91,7 @@ public struct PersistedPaper: Codable, Hashable, Identifiable, Sendable {
         authors: [String],
         abstract: String,
         pdfPath: String?,
+        pdfSHA256: String? = nil,
         absURL: URL?,
         createdAt: Date
     ) {
@@ -98,6 +100,7 @@ public struct PersistedPaper: Codable, Hashable, Identifiable, Sendable {
         self.authors = authors
         self.abstract = abstract
         self.pdfPath = pdfPath
+        self.pdfSHA256 = pdfSHA256
         self.absURL = absURL
         self.createdAt = createdAt
     }
@@ -144,7 +147,8 @@ public extension PersistedPaper {
                 fileURL: url,
                 byteCount: url.fileByteCount,
                 mimeType: "application/pdf",
-                downloadedAt: createdAt
+                downloadedAt: createdAt,
+                sha256: pdfSHA256 ?? ""
             )
         }
 
@@ -211,6 +215,7 @@ public extension PipelineResult {
                     authors: paper.candidate.authors,
                     abstract: paper.candidate.summary,
                     pdfPath: paper.localFile?.fileURL.path,
+                    pdfSHA256: paper.localFile?.sha256.nilIfEmpty,
                     absURL: paper.candidate.absURL,
                     createdAt: paper.createdAt
                 )
@@ -236,6 +241,12 @@ public extension PipelineResult {
 private extension String {
     var sourceSpecificIdentifier: String {
         split(separator: ":", maxSplits: 1).last.map(String.init) ?? self
+    }
+}
+
+private extension String {
+    var nilIfEmpty: String? {
+        isEmpty ? nil : self
     }
 }
 

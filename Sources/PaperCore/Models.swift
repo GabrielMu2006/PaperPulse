@@ -519,13 +519,38 @@ public struct LocalPaperFile: Codable, Hashable, Sendable {
     public var byteCount: Int
     public var mimeType: String
     public var downloadedAt: Date
+    public var sha256: String
 
-    public init(paperID: String, fileURL: URL, byteCount: Int, mimeType: String, downloadedAt: Date) {
+    public init(
+        paperID: String,
+        fileURL: URL,
+        byteCount: Int,
+        mimeType: String,
+        downloadedAt: Date,
+        sha256: String = ""
+    ) {
         self.paperID = paperID
         self.fileURL = fileURL
         self.byteCount = byteCount
         self.mimeType = mimeType
         self.downloadedAt = downloadedAt
+        self.sha256 = sha256
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case paperID, fileURL, byteCount, mimeType, downloadedAt, sha256
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            paperID: try container.decode(String.self, forKey: .paperID),
+            fileURL: try container.decode(URL.self, forKey: .fileURL),
+            byteCount: try container.decode(Int.self, forKey: .byteCount),
+            mimeType: try container.decode(String.self, forKey: .mimeType),
+            downloadedAt: try container.decode(Date.self, forKey: .downloadedAt),
+            sha256: try container.decodeIfPresent(String.self, forKey: .sha256) ?? ""
+        )
     }
 }
 
