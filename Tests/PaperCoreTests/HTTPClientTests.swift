@@ -106,6 +106,36 @@ final class HTTPClientTests: XCTestCase {
         }
     }
 
+    func testCancelledTaskFailsBeforeStartingURLSessionTransport() async {
+        let receivedRequest = LockedValue(false)
+        HTTPClientURLProtocol.handler = { _ in
+            receivedRequest.set(true)
+            return .failure(URLError(.badServerResponse))
+        }
+        let client = URLSessionHTTPClient(session: makeSession())
+        let task = Task {
+            await Task.yield()
+            return try await client.perform(URLRequest(url: URL(string: "https://example.com/cancelled-before-start")!))
+        }
+
+        task.cancel()
+
+        await XCTAssertThrowsErrorAsync(try await task.value) { error in
+            XCTAssertEqual(error as? HTTPError, .cancelled)
+        }
+        XCTAssertFalse(receivedRequest.value)
+    }
+
+    func testRetryDelayRemainsFiniteForLargeRetryAttempts() {
+        let policy = HTTPRetryPolicy(maximumRetryCount: .max, baseDelay: 1)
+
+        let delay = policy.delay(forRetryAttempt: .max)
+
+        XCTAssertTrue(delay.isFinite)
+        XCTAssertGreaterThanOrEqual(delay, 0)
+        XCTAssertLessThanOrEqual(delay, policy.maximumDelay)
+    }
+
     private func makeSession() -> URLSession {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [HTTPClientURLProtocol.self]

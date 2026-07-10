@@ -33,15 +33,29 @@ public typealias HTTPClientSleep = @Sendable (TimeInterval) async throws -> Void
 public struct HTTPRetryPolicy: Hashable, Sendable {
     public var maximumRetryCount: Int
     public var baseDelay: TimeInterval
+    public var maximumDelay: TimeInterval
 
-    public init(maximumRetryCount: Int = 2, baseDelay: TimeInterval = 1) {
+    public init(
+        maximumRetryCount: Int = 2,
+        baseDelay: TimeInterval = 1,
+        maximumDelay: TimeInterval = 60
+    ) {
         self.maximumRetryCount = max(0, maximumRetryCount)
         self.baseDelay = max(0, baseDelay)
+        self.maximumDelay = max(0, maximumDelay)
     }
 
     public func delay(forRetryAttempt retryAttempt: Int) -> TimeInterval {
-        let multiplier = Double(1 << max(0, retryAttempt - 1))
-        return baseDelay * multiplier
+        guard baseDelay > 0, maximumDelay > 0 else { return 0 }
+        var delay = min(baseDelay, maximumDelay)
+        var remainingDoublings = max(0, retryAttempt - 1)
+
+        while remainingDoublings > 0, delay < maximumDelay {
+            guard delay < maximumDelay / 2 else { return maximumDelay }
+            delay *= 2
+            remainingDoublings -= 1
+        }
+        return delay
     }
 }
 

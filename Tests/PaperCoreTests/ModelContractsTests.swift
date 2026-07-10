@@ -126,4 +126,58 @@ final class ModelContractsTests: XCTestCase {
         XCTAssertNil(summary.sourceTextHash)
         XCTAssertEqual(summary.anchors, [])
     }
+
+    func testLegacyJSONDecodesNewNonoptionalFieldsToDefaults() throws {
+        let feedJSON = """
+        {
+          "id": "77777777-7777-7777-7777-777777777777",
+          "name": "Legacy feed",
+          "categories": ["cs.AI"],
+          "keywords": ["agent"],
+          "excludedKeywords": [],
+          "authorityPolicy": {
+            "preferredInstitutions": [],
+            "blockedInstitutions": [],
+            "preferredVenues": [],
+            "dailyLimit": 8
+          },
+          "enableWebAugmentation": false
+        }
+        """
+        let candidateJSON = """
+        {
+          "source": "arxiv",
+          "sourceID": "2607.00003v1",
+          "title": "Legacy candidate",
+          "summary": "Legacy summary"
+        }
+        """
+        let summaryJSON = """
+        {
+          "id": "88888888-8888-8888-8888-888888888888",
+          "paperID": "arxiv:2607.00003",
+          "shortText": "Legacy short summary",
+          "fullText": null,
+          "language": "en",
+          "model": "legacy-model",
+          "generatedAt": 0,
+          "sourceRange": "metadata"
+        }
+        """
+        let decoder = JSONDecoder()
+
+        let feed = try decoder.decode(FeedConfig.self, from: Data(feedJSON.utf8))
+        let candidate = try decoder.decode(PaperCandidate.self, from: Data(candidateJSON.utf8))
+        let summary = try decoder.decode(PaperSummary.self, from: Data(summaryJSON.utf8))
+
+        XCTAssertEqual(feed.enabledSources, FeedConfig.defaultEnabledSources)
+        XCTAssertEqual(feed.lookbackDays, 7)
+        XCTAssertNil(feed.schedule)
+        XCTAssertEqual(candidate.provenance, [])
+        XCTAssertNil(candidate.openAccessEvidence)
+        XCTAssertEqual(summary.kind, .short)
+        XCTAssertNil(summary.providerProfileID)
+        XCTAssertNil(summary.sourceTextHash)
+        XCTAssertEqual(summary.anchors, [])
+    }
 }
