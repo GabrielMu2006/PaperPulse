@@ -2,6 +2,41 @@ import XCTest
 @testable import PaperCore
 
 final class DownloaderTests: XCTestCase {
+    override func tearDown() {
+        DownloadURLProtocol.handler = nil
+        super.tearDown()
+    }
+
+    func testDownloaderUsesURLSessionDownloadTaskForProductionPath() async throws {
+        let bytes = Data("%PDF-1.7\\nstreamed body".utf8)
+        let didReceiveRequest = LockedFlag()
+        DownloadURLProtocol.handler = { request in
+            didReceiveRequest.set()
+            return .success((
+                bytes,
+                HTTPURLResponse(
+                    url: try! XCTUnwrap(request.url),
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: ["Content-Type": "application/pdf"]
+                )!
+            ))
+        }
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [DownloadURLProtocol.self]
+        let downloader = URLSessionPaperDownloader(
+            session: URLSession(configuration: configuration),
+            minimumBytes: 4
+        )
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+
+        let file = try await downloader.download(.fixture(), to: directory)
+
+        XCTAssertTrue(didReceiveRequest.value)
+        XCTAssertEqual(try Data(contentsOf: file.fileURL), bytes)
+    }
+
     func testDownloaderRejectsUnverifiedOrMissingOpenAccessEvidence() async throws {
         let downloader = URLSessionPaperDownloader(httpClient: StubHTTPClient { _ in
             XCTFail("A paper without verified OA evidence must not be requested")
@@ -123,4 +158,48 @@ final class DownloaderTests: XCTestCase {
         XCTAssertEqual(first.fileURL, second.fileURL)
         XCTAssertEqual(first.sha256, second.sha256)
     }
+}
+
+private final class LockedFlag: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage = false
+
+    var value: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return storage
+    }
+
+    func set() {
+        lock.lock()
+        storage = true
+        lock.unlock()
+    }
+}
+
+private final class DownloadURLProtocol: URLProtocol, @unchecked Sendable {
+    typealias Handler = @Sendable (URLRequest) -> Result<(Data, HTTPURLResponse), Error>
+
+    nonisolated(unsafe) static var handler: Handler?
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        guard let handler = Self.handler else {
+            client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
+            return
+        }
+        switch handler(request) {
+        case let .success((data, response)):
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
+        case let .failure(error):
+            client?.urlProtocol(self, didFailWithError: error)
+        }
+    }
+
+    override func stopLoading() {}
 }
