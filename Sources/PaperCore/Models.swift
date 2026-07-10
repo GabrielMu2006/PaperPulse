@@ -145,7 +145,21 @@ public struct AuthorityPolicy: Codable, Hashable, Sendable {
     }
 }
 
+public struct FeedSchedule: Codable, Hashable, Sendable {
+    public var hour: Int
+    public var minute: Int
+    public var weekdays: Set<Int>
+
+    public init(hour: Int, minute: Int = 0, weekdays: Set<Int> = []) {
+        self.hour = hour
+        self.minute = minute
+        self.weekdays = weekdays
+    }
+}
+
 public struct FeedConfig: Codable, Hashable, Identifiable, Sendable {
+    public static let defaultEnabledSources: [PaperSourceKind] = [.arxiv, .semanticScholar, .openAlex, .crossref]
+
     public var id: UUID
     public var name: String
     public var categories: [String]
@@ -153,6 +167,14 @@ public struct FeedConfig: Codable, Hashable, Identifiable, Sendable {
     public var excludedKeywords: [String]
     public var authorityPolicy: AuthorityPolicy
     public var enableWebAugmentation: Bool
+    public var enabledSources: [PaperSourceKind]
+    public var lookbackDays: Int
+    public var schedule: FeedSchedule?
+    public var searchProviderProfileID: UUID?
+    public var rerankProviderProfileID: UUID?
+    public var shortSummaryProviderProfileID: UUID?
+    public var fullSummaryProviderProfileID: UUID?
+    public var extractionProviderProfileID: UUID?
 
     public init(
         id: UUID = UUID(),
@@ -161,7 +183,15 @@ public struct FeedConfig: Codable, Hashable, Identifiable, Sendable {
         keywords: [String] = [],
         excludedKeywords: [String] = [],
         authorityPolicy: AuthorityPolicy = AuthorityPolicy(),
-        enableWebAugmentation: Bool = false
+        enableWebAugmentation: Bool = false,
+        enabledSources: [PaperSourceKind] = FeedConfig.defaultEnabledSources,
+        lookbackDays: Int = 7,
+        schedule: FeedSchedule? = nil,
+        searchProviderProfileID: UUID? = nil,
+        rerankProviderProfileID: UUID? = nil,
+        shortSummaryProviderProfileID: UUID? = nil,
+        fullSummaryProviderProfileID: UUID? = nil,
+        extractionProviderProfileID: UUID? = nil
     ) {
         self.id = id
         self.name = name
@@ -170,6 +200,42 @@ public struct FeedConfig: Codable, Hashable, Identifiable, Sendable {
         self.excludedKeywords = excludedKeywords
         self.authorityPolicy = authorityPolicy
         self.enableWebAugmentation = enableWebAugmentation
+        self.enabledSources = enabledSources
+        self.lookbackDays = lookbackDays
+        self.schedule = schedule
+        self.searchProviderProfileID = searchProviderProfileID
+        self.rerankProviderProfileID = rerankProviderProfileID
+        self.shortSummaryProviderProfileID = shortSummaryProviderProfileID
+        self.fullSummaryProviderProfileID = fullSummaryProviderProfileID
+        self.extractionProviderProfileID = extractionProviderProfileID
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, categories, keywords, excludedKeywords, authorityPolicy, enableWebAugmentation
+        case enabledSources, lookbackDays, schedule
+        case searchProviderProfileID, rerankProviderProfileID, shortSummaryProviderProfileID
+        case fullSummaryProviderProfileID, extractionProviderProfileID
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            id: try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID(),
+            name: try container.decode(String.self, forKey: .name),
+            categories: try container.decodeIfPresent([String].self, forKey: .categories) ?? [],
+            keywords: try container.decodeIfPresent([String].self, forKey: .keywords) ?? [],
+            excludedKeywords: try container.decodeIfPresent([String].self, forKey: .excludedKeywords) ?? [],
+            authorityPolicy: try container.decodeIfPresent(AuthorityPolicy.self, forKey: .authorityPolicy) ?? AuthorityPolicy(),
+            enableWebAugmentation: try container.decodeIfPresent(Bool.self, forKey: .enableWebAugmentation) ?? false,
+            enabledSources: try container.decodeIfPresent([PaperSourceKind].self, forKey: .enabledSources) ?? Self.defaultEnabledSources,
+            lookbackDays: try container.decodeIfPresent(Int.self, forKey: .lookbackDays) ?? 7,
+            schedule: try container.decodeIfPresent(FeedSchedule.self, forKey: .schedule),
+            searchProviderProfileID: try container.decodeIfPresent(UUID.self, forKey: .searchProviderProfileID),
+            rerankProviderProfileID: try container.decodeIfPresent(UUID.self, forKey: .rerankProviderProfileID),
+            shortSummaryProviderProfileID: try container.decodeIfPresent(UUID.self, forKey: .shortSummaryProviderProfileID),
+            fullSummaryProviderProfileID: try container.decodeIfPresent(UUID.self, forKey: .fullSummaryProviderProfileID),
+            extractionProviderProfileID: try container.decodeIfPresent(UUID.self, forKey: .extractionProviderProfileID)
+        )
     }
 }
 
@@ -201,6 +267,136 @@ public struct WebSearchResult: Codable, Hashable, Sendable {
     }
 }
 
+public struct PaperProvenance: Codable, Hashable, Sendable {
+    public var source: PaperSourceKind
+    public var sourceID: String
+    public var sourceURL: URL?
+    public var retrievedAt: Date?
+
+    public init(source: PaperSourceKind, sourceID: String, sourceURL: URL? = nil, retrievedAt: Date? = nil) {
+        self.source = source
+        self.sourceID = sourceID
+        self.sourceURL = sourceURL
+        self.retrievedAt = retrievedAt
+    }
+}
+
+public enum OpenAccessStatus: String, Codable, Hashable, Sendable {
+    case verified
+    case unverified
+    case unavailable
+}
+
+public struct OpenAccessEvidence: Codable, Hashable, Sendable {
+    public var status: OpenAccessStatus
+    public var source: PaperSourceKind
+    public var url: URL?
+    public var license: String?
+    public var verifiedAt: Date?
+
+    public init(
+        status: OpenAccessStatus,
+        source: PaperSourceKind,
+        url: URL? = nil,
+        license: String? = nil,
+        verifiedAt: Date? = nil
+    ) {
+        self.status = status
+        self.source = source
+        self.url = url
+        self.license = license
+        self.verifiedAt = verifiedAt
+    }
+}
+
+public struct PaperIdentity: Codable, Hashable, Sendable {
+    public var doi: String?
+    public var arxivID: String?
+    public var normalizedTitleHash: String?
+
+    public init(doi: String? = nil, arxivID: String? = nil, normalizedTitleHash: String? = nil) {
+        self.doi = doi
+        self.arxivID = arxivID
+        self.normalizedTitleHash = normalizedTitleHash
+    }
+}
+
+public enum AuthorityDecision: String, Codable, Hashable, Sendable {
+    case accepted
+    case rejected
+    case needsReview
+}
+
+public struct AuthorityEvaluation: Codable, Hashable, Sendable {
+    public var decision: AuthorityDecision
+    public var score: Int
+    public var reasons: [String]
+
+    public init(decision: AuthorityDecision, score: Int, reasons: [String] = []) {
+        self.decision = decision
+        self.score = score
+        self.reasons = reasons
+    }
+}
+
+public enum PipelineStage: String, Codable, Hashable, Sendable {
+    case discovering
+    case merging
+    case ranking
+    case downloading
+    case extracting
+    case summarizing
+    case completed
+    case failed
+}
+
+public struct PipelineProgress: Codable, Hashable, Sendable {
+    public var stage: PipelineStage
+    public var completedUnitCount: Int
+    public var totalUnitCount: Int
+    public var currentPaperID: String?
+    public var message: String?
+
+    public init(
+        stage: PipelineStage,
+        completedUnitCount: Int = 0,
+        totalUnitCount: Int = 0,
+        currentPaperID: String? = nil,
+        message: String? = nil
+    ) {
+        self.stage = stage
+        self.completedUnitCount = completedUnitCount
+        self.totalUnitCount = totalUnitCount
+        self.currentPaperID = currentPaperID
+        self.message = message
+    }
+}
+
+public enum ProviderRole: String, Codable, Hashable, Sendable {
+    case search
+    case rerank
+    case shortSummary
+    case fullSummary
+    case extraction
+}
+
+public enum SummaryKind: String, Codable, Hashable, Sendable {
+    case short
+    case full
+}
+
+public struct PageAnchor: Codable, Hashable, Sendable {
+    public var pageNumber: Int
+    public var startOffset: Int
+    public var endOffset: Int
+
+    public init(pageNumber: Int, startOffset: Int, endOffset: Int) {
+        self.pageNumber = pageNumber
+        self.startOffset = startOffset
+        self.endOffset = endOffset
+    }
+}
+
 public struct PaperCandidate: Codable, Hashable, Identifiable, Sendable {
     public var source: PaperSourceKind
     public var sourceID: String
@@ -218,6 +414,8 @@ public struct PaperCandidate: Codable, Hashable, Identifiable, Sendable {
     public var venue: String?
     public var citationCount: Int?
     public var openAccessPDFURL: URL?
+    public var provenance: [PaperProvenance]
+    public var openAccessEvidence: OpenAccessEvidence?
 
     public var id: String { stableID }
 
@@ -247,7 +445,9 @@ public struct PaperCandidate: Codable, Hashable, Identifiable, Sendable {
         pdfURL: URL? = nil,
         venue: String? = nil,
         citationCount: Int? = nil,
-        openAccessPDFURL: URL? = nil
+        openAccessPDFURL: URL? = nil,
+        provenance: [PaperProvenance] = [],
+        openAccessEvidence: OpenAccessEvidence? = nil
     ) {
         self.source = source
         self.sourceID = sourceID
@@ -265,6 +465,38 @@ public struct PaperCandidate: Codable, Hashable, Identifiable, Sendable {
         self.venue = venue?.cleanedWhitespace
         self.citationCount = citationCount
         self.openAccessPDFURL = openAccessPDFURL
+        self.provenance = provenance
+        self.openAccessEvidence = openAccessEvidence
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case source, sourceID, baseID, doi, title, summary, authors, institutions, categories
+        case publishedAt, updatedAt, absURL, pdfURL, venue, citationCount, openAccessPDFURL
+        case provenance, openAccessEvidence
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            source: try container.decode(PaperSourceKind.self, forKey: .source),
+            sourceID: try container.decode(String.self, forKey: .sourceID),
+            baseID: try container.decodeIfPresent(String.self, forKey: .baseID),
+            doi: try container.decodeIfPresent(String.self, forKey: .doi),
+            title: try container.decode(String.self, forKey: .title),
+            summary: try container.decode(String.self, forKey: .summary),
+            authors: try container.decodeIfPresent([String].self, forKey: .authors) ?? [],
+            institutions: try container.decodeIfPresent([String].self, forKey: .institutions) ?? [],
+            categories: try container.decodeIfPresent([String].self, forKey: .categories) ?? [],
+            publishedAt: try container.decodeIfPresent(Date.self, forKey: .publishedAt),
+            updatedAt: try container.decodeIfPresent(Date.self, forKey: .updatedAt),
+            absURL: try container.decodeIfPresent(URL.self, forKey: .absURL),
+            pdfURL: try container.decodeIfPresent(URL.self, forKey: .pdfURL),
+            venue: try container.decodeIfPresent(String.self, forKey: .venue),
+            citationCount: try container.decodeIfPresent(Int.self, forKey: .citationCount),
+            openAccessPDFURL: try container.decodeIfPresent(URL.self, forKey: .openAccessPDFURL),
+            provenance: try container.decodeIfPresent([PaperProvenance].self, forKey: .provenance) ?? [],
+            openAccessEvidence: try container.decodeIfPresent(OpenAccessEvidence.self, forKey: .openAccessEvidence)
+        )
     }
 }
 
@@ -339,6 +571,10 @@ public struct PaperSummary: Codable, Hashable, Identifiable, Sendable {
     public var model: String
     public var generatedAt: Date
     public var sourceRange: String
+    public var kind: SummaryKind
+    public var providerProfileID: UUID?
+    public var sourceTextHash: String?
+    public var anchors: [PageAnchor]
 
     public init(
         id: UUID = UUID(),
@@ -348,7 +584,11 @@ public struct PaperSummary: Codable, Hashable, Identifiable, Sendable {
         language: String,
         model: String,
         generatedAt: Date,
-        sourceRange: String
+        sourceRange: String,
+        kind: SummaryKind = .short,
+        providerProfileID: UUID? = nil,
+        sourceTextHash: String? = nil,
+        anchors: [PageAnchor] = []
     ) {
         self.id = id
         self.paperID = paperID
@@ -358,6 +598,33 @@ public struct PaperSummary: Codable, Hashable, Identifiable, Sendable {
         self.model = model
         self.generatedAt = generatedAt
         self.sourceRange = sourceRange
+        self.kind = kind
+        self.providerProfileID = providerProfileID
+        self.sourceTextHash = sourceTextHash
+        self.anchors = anchors
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, paperID, shortText, fullText, language, model, generatedAt, sourceRange
+        case kind, providerProfileID, sourceTextHash, anchors
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            id: try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID(),
+            paperID: try container.decodeIfPresent(String.self, forKey: .paperID),
+            shortText: try container.decode(String.self, forKey: .shortText),
+            fullText: try container.decodeIfPresent(String.self, forKey: .fullText),
+            language: try container.decode(String.self, forKey: .language),
+            model: try container.decode(String.self, forKey: .model),
+            generatedAt: try container.decode(Date.self, forKey: .generatedAt),
+            sourceRange: try container.decode(String.self, forKey: .sourceRange),
+            kind: try container.decodeIfPresent(SummaryKind.self, forKey: .kind) ?? .short,
+            providerProfileID: try container.decodeIfPresent(UUID.self, forKey: .providerProfileID),
+            sourceTextHash: try container.decodeIfPresent(String.self, forKey: .sourceTextHash),
+            anchors: try container.decodeIfPresent([PageAnchor].self, forKey: .anchors) ?? []
+        )
     }
 }
 
