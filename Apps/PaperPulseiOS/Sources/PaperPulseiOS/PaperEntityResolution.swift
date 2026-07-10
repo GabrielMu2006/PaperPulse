@@ -28,8 +28,10 @@ extension PaperEntity {
             authors: authors,
             abstract: abstract,
             pdfPath: resolvedPDFURL?.path,
+            pdfSHA256: pdfSHA256,
             absURL: arxivURL,
-            createdAt: createdAt
+            createdAt: createdAt,
+            candidate: candidateData.flatMap { try? JSONDecoder().decode(PaperCandidate.self, from: $0) }
         )
     }
 

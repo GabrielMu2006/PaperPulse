@@ -82,12 +82,15 @@ enum PaperPulsePersistenceStore {
 
     private static func upsertPaper(_ paper: PersistedPaper, in context: ModelContext) throws {
         let pdfPath = normalizedPDFPath(paper.pdfPath)
+        let candidateData = try paper.candidate.map { try JSONEncoder().encode($0) }
         if let existing = try fetchPaper(id: paper.id, in: context) {
             existing.title = paper.title
             existing.authors = paper.authors
             existing.abstract = paper.abstract
             existing.pdfPath = pdfPath
+            existing.pdfSHA256 = paper.pdfSHA256
             existing.arxivURL = paper.absURL
+            existing.candidateData = candidateData
             existing.createdAt = paper.createdAt
             return
         }
@@ -99,13 +102,16 @@ enum PaperPulsePersistenceStore {
                 authors: paper.authors,
                 abstract: paper.abstract,
                 pdfPath: pdfPath,
+                pdfSHA256: paper.pdfSHA256,
                 arxivURL: paper.absURL,
+                candidateData: candidateData,
                 createdAt: paper.createdAt
             )
         )
     }
 
     private static func upsertSummary(_ summary: PersistedSummary, in context: ModelContext) throws {
+        let anchorsData = try JSONEncoder().encode(summary.anchors)
         if let existing = try fetchSummary(id: summary.id, in: context) {
             existing.paperID = summary.paperID
             existing.shortText = summary.shortText
@@ -114,6 +120,10 @@ enum PaperPulsePersistenceStore {
             existing.model = summary.model
             existing.generatedAt = summary.generatedAt
             existing.sourceRange = summary.sourceRange
+            existing.kindRawValue = summary.kind.rawValue
+            existing.providerProfileID = summary.providerProfileID
+            existing.sourceTextHash = summary.sourceTextHash
+            existing.anchorsData = anchorsData
             return
         }
 
@@ -126,7 +136,11 @@ enum PaperPulsePersistenceStore {
                 language: summary.language,
                 model: summary.model,
                 generatedAt: summary.generatedAt,
-                sourceRange: summary.sourceRange
+                sourceRange: summary.sourceRange,
+                kindRawValue: summary.kind.rawValue,
+                providerProfileID: summary.providerProfileID,
+                sourceTextHash: summary.sourceTextHash,
+                anchorsData: anchorsData
             )
         )
     }

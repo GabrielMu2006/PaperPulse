@@ -87,6 +87,7 @@ public struct PersistedPaper: Codable, Hashable, Identifiable, Sendable {
     public var pdfSHA256: String?
     public var absURL: URL?
     public var createdAt: Date
+    public var candidate: PaperCandidate?
 
     public init(
         id: String,
@@ -96,7 +97,8 @@ public struct PersistedPaper: Codable, Hashable, Identifiable, Sendable {
         pdfPath: String?,
         pdfSHA256: String? = nil,
         absURL: URL?,
-        createdAt: Date
+        createdAt: Date,
+        candidate: PaperCandidate? = nil
     ) {
         self.id = id
         self.title = title
@@ -106,6 +108,7 @@ public struct PersistedPaper: Codable, Hashable, Identifiable, Sendable {
         self.pdfSHA256 = pdfSHA256
         self.absURL = absURL
         self.createdAt = createdAt
+        self.candidate = candidate
     }
 }
 
@@ -118,6 +121,10 @@ public struct PersistedSummary: Codable, Hashable, Identifiable, Sendable {
     public var model: String
     public var generatedAt: Date
     public var sourceRange: String
+    public var kind: SummaryKind
+    public var providerProfileID: UUID?
+    public var sourceTextHash: String?
+    public var anchors: [PageAnchor]
 
     public init(
         id: UUID,
@@ -127,7 +134,11 @@ public struct PersistedSummary: Codable, Hashable, Identifiable, Sendable {
         language: String,
         model: String,
         generatedAt: Date,
-        sourceRange: String
+        sourceRange: String,
+        kind: SummaryKind = .short,
+        providerProfileID: UUID? = nil,
+        sourceTextHash: String? = nil,
+        anchors: [PageAnchor] = []
     ) {
         self.id = id
         self.paperID = paperID
@@ -137,11 +148,29 @@ public struct PersistedSummary: Codable, Hashable, Identifiable, Sendable {
         self.model = model
         self.generatedAt = generatedAt
         self.sourceRange = sourceRange
+        self.kind = kind
+        self.providerProfileID = providerProfileID
+        self.sourceTextHash = sourceTextHash
+        self.anchors = anchors
     }
 }
 
 public extension PersistedPaper {
     func paperRecord(source: PaperSourceKind) -> PaperRecord {
+        if let candidate {
+            let localFile = pdfPath.map { path in
+                let url = URL(fileURLWithPath: path)
+                return LocalPaperFile(
+                    paperID: id,
+                    fileURL: url,
+                    byteCount: url.fileByteCount,
+                    mimeType: "application/pdf",
+                    downloadedAt: createdAt,
+                    sha256: pdfSHA256 ?? ""
+                )
+            }
+            return PaperRecord(candidate: candidate, localFile: localFile, createdAt: createdAt)
+        }
         let sourceID = id.sourceSpecificIdentifier
         let localFile = pdfPath.map { path in
             let url = URL(fileURLWithPath: path)
@@ -224,7 +253,8 @@ public extension PipelineResult {
                     pdfPath: paper.localFile?.fileURL.path,
                     pdfSHA256: paper.localFile?.sha256.nilIfEmpty,
                     absURL: paper.candidate.absURL,
-                    createdAt: paper.createdAt
+                    createdAt: paper.createdAt,
+                    candidate: paper.candidate
                 )
             },
             summaries: summaries.compactMap { summary in
@@ -237,7 +267,11 @@ public extension PipelineResult {
                     language: summary.language,
                     model: summary.model,
                     generatedAt: summary.generatedAt,
-                    sourceRange: summary.sourceRange
+                    sourceRange: summary.sourceRange,
+                    kind: summary.kind,
+                    providerProfileID: summary.providerProfileID,
+                    sourceTextHash: summary.sourceTextHash,
+                    anchors: summary.anchors
                 )
             },
             failures: failures

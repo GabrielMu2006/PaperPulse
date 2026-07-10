@@ -72,11 +72,14 @@ final class PersistencePayloadTests: XCTestCase {
         XCTAssertEqual(payload.papers[0].pdfPath, fileURL.path)
         XCTAssertEqual(payload.papers[0].pdfSHA256, "a1b2c3")
         XCTAssertEqual(payload.papers[0].absURL, URL(string: "https://arxiv.org/abs/2607.02642v1"))
+        XCTAssertEqual(payload.papers[0].candidate, paper.candidate)
         XCTAssertEqual(payload.summaries.count, 1)
         XCTAssertEqual(payload.summaries[0].id, summaryID)
         XCTAssertEqual(payload.summaries[0].paperID, paper.id)
         XCTAssertEqual(payload.summaries[0].language, "zh-Hans")
         XCTAssertEqual(payload.summaries[0].sourceRange, "pages 1-2")
+        XCTAssertEqual(payload.summaries[0].kind, .short)
+        XCTAssertEqual(payload.summaries[0].anchors, [])
     }
 
     func testPersistedPaperRebuildsPaperRecordForFullSummaryGeneration() throws {

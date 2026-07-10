@@ -1,4 +1,5 @@
 import Foundation
+import PaperCore
 import SwiftData
 
 @Model
@@ -43,7 +44,13 @@ final class PaperEntity {
     var authors: [String]
     var abstract: String
     var pdfPath: String?
+    var pdfSHA256: String?
     var arxivURL: URL?
+    var candidateData: Data?
+    var extractedTextRelativePath: String?
+    var extractedTextHash: String?
+    var processingStageRawValue: String?
+    var processingFailureReason: String?
     var createdAt: Date
     var isFavorite: Bool
     var isRead: Bool
@@ -54,7 +61,13 @@ final class PaperEntity {
         authors: [String],
         abstract: String,
         pdfPath: String?,
+        pdfSHA256: String? = nil,
         arxivURL: URL?,
+        candidateData: Data? = nil,
+        extractedTextRelativePath: String? = nil,
+        extractedTextHash: String? = nil,
+        processingStageRawValue: String? = nil,
+        processingFailureReason: String? = nil,
         createdAt: Date = Date(),
         isFavorite: Bool = false,
         isRead: Bool = false
@@ -64,7 +77,13 @@ final class PaperEntity {
         self.authors = authors
         self.abstract = abstract
         self.pdfPath = pdfPath
+        self.pdfSHA256 = pdfSHA256
         self.arxivURL = arxivURL
+        self.candidateData = candidateData
+        self.extractedTextRelativePath = extractedTextRelativePath
+        self.extractedTextHash = extractedTextHash
+        self.processingStageRawValue = processingStageRawValue
+        self.processingFailureReason = processingFailureReason
         self.createdAt = createdAt
         self.isFavorite = isFavorite
         self.isRead = isRead
@@ -81,6 +100,10 @@ final class SummaryEntity {
     var model: String
     var generatedAt: Date
     var sourceRange: String
+    var kindRawValue: String
+    var providerProfileID: UUID?
+    var sourceTextHash: String?
+    var anchorsData: Data?
 
     init(
         id: UUID = UUID(),
@@ -90,7 +113,11 @@ final class SummaryEntity {
         language: String = "zh-Hans",
         model: String,
         generatedAt: Date,
-        sourceRange: String = ""
+        sourceRange: String = "",
+        kindRawValue: String = SummaryKind.short.rawValue,
+        providerProfileID: UUID? = nil,
+        sourceTextHash: String? = nil,
+        anchorsData: Data? = nil
     ) {
         self.id = id
         self.paperID = paperID
@@ -100,6 +127,10 @@ final class SummaryEntity {
         self.model = model
         self.generatedAt = generatedAt
         self.sourceRange = sourceRange
+        self.kindRawValue = kindRawValue
+        self.providerProfileID = providerProfileID
+        self.sourceTextHash = sourceTextHash
+        self.anchorsData = anchorsData
     }
 }
 

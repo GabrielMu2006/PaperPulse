@@ -287,6 +287,10 @@ final class PaperPulseAppModel {
             existing.model = summary.model
             existing.generatedAt = summary.generatedAt
             existing.sourceRange = summary.sourceRange
+            existing.kindRawValue = summary.kind.rawValue
+            existing.providerProfileID = summary.providerProfileID
+            existing.sourceTextHash = summary.sourceTextHash
+            existing.anchorsData = try JSONEncoder().encode(summary.anchors)
         } else {
             modelContext.insert(
                 SummaryEntity(
@@ -295,9 +299,13 @@ final class PaperPulseAppModel {
                     shortText: summary.shortText,
                     fullText: summary.fullText,
                     language: summary.language,
-                    model: summary.model,
-                    generatedAt: summary.generatedAt,
-                    sourceRange: summary.sourceRange
+                model: summary.model,
+                generatedAt: summary.generatedAt,
+                sourceRange: summary.sourceRange,
+                kindRawValue: summary.kind.rawValue,
+                providerProfileID: summary.providerProfileID,
+                sourceTextHash: summary.sourceTextHash,
+                anchorsData: try JSONEncoder().encode(summary.anchors)
                 )
             )
         }
