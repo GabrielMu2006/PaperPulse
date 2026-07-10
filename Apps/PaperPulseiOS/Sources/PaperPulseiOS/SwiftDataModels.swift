@@ -10,6 +10,7 @@ final class FeedEntity {
     var excludedKeywords: [String]?
     var dailyLimit: Int
     var enableWebAugmentation: Bool?
+    var configurationData: Data?
     var createdAt: Date
 
     init(
@@ -20,6 +21,7 @@ final class FeedEntity {
         excludedKeywords: [String] = [],
         dailyLimit: Int,
         enableWebAugmentation: Bool = false,
+        configurationData: Data? = nil,
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -29,6 +31,7 @@ final class FeedEntity {
         self.excludedKeywords = excludedKeywords
         self.dailyLimit = dailyLimit
         self.enableWebAugmentation = enableWebAugmentation
+        self.configurationData = configurationData
         self.createdAt = createdAt
     }
 }

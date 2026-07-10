@@ -131,6 +131,7 @@ final class PersistencePayloadTests: XCTestCase {
         XCTAssertEqual(persisted.excludedKeywords, ["protein", "finance"])
         XCTAssertEqual(persisted.dailyLimit, 7)
         XCTAssertTrue(persisted.enableWebAugmentation)
+        XCTAssertEqual(persisted.configuration, feed)
         XCTAssertEqual(rebuilt, feed)
     }
 }

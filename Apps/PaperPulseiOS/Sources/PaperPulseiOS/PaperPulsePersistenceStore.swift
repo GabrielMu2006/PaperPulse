@@ -32,6 +32,7 @@ enum PaperPulsePersistenceStore {
     }
 
     private static func upsertFeed(_ feed: PersistedFeed, in context: ModelContext) throws {
+        let configurationData = try feed.configuration.map { try JSONEncoder().encode($0) }
         if let existing = try fetchFeed(id: feed.id, in: context) {
             existing.name = feed.name
             existing.categories = feed.categories
@@ -39,6 +40,7 @@ enum PaperPulsePersistenceStore {
             existing.excludedKeywords = feed.excludedKeywords
             existing.dailyLimit = feed.dailyLimit
             existing.enableWebAugmentation = feed.enableWebAugmentation
+            existing.configurationData = configurationData
             return
         }
 
@@ -50,7 +52,8 @@ enum PaperPulsePersistenceStore {
                 keywords: feed.keywords,
                 excludedKeywords: feed.excludedKeywords,
                 dailyLimit: feed.dailyLimit,
-                enableWebAugmentation: feed.enableWebAugmentation
+                enableWebAugmentation: feed.enableWebAugmentation,
+                configurationData: configurationData
             )
         )
     }
@@ -175,7 +178,11 @@ enum PaperPulsePersistenceStore {
 
 private extension FeedEntity {
     var persistedFeed: PersistedFeed {
-        PersistedFeed(
+        if let configurationData,
+           let configuration = try? JSONDecoder().decode(FeedConfig.self, from: configurationData) {
+            return configuration.persistedFeed
+        }
+        return PersistedFeed(
             id: id,
             name: name,
             categories: categories,

@@ -30,6 +30,7 @@ public struct PersistedFeed: Codable, Hashable, Sendable {
     public var excludedKeywords: [String]
     public var dailyLimit: Int
     public var enableWebAugmentation: Bool
+    public var configuration: FeedConfig?
 
     public init(
         id: UUID,
@@ -38,7 +39,8 @@ public struct PersistedFeed: Codable, Hashable, Sendable {
         keywords: [String],
         excludedKeywords: [String] = [],
         dailyLimit: Int,
-        enableWebAugmentation: Bool = false
+        enableWebAugmentation: Bool = false,
+        configuration: FeedConfig? = nil
     ) {
         self.id = id
         self.name = name
@@ -47,6 +49,7 @@ public struct PersistedFeed: Codable, Hashable, Sendable {
         self.excludedKeywords = excludedKeywords
         self.dailyLimit = dailyLimit
         self.enableWebAugmentation = enableWebAugmentation
+        self.configuration = configuration
     }
 }
 
@@ -177,14 +180,18 @@ public extension FeedConfig {
             keywords: keywords,
             excludedKeywords: excludedKeywords,
             dailyLimit: authorityPolicy.dailyLimit,
-            enableWebAugmentation: enableWebAugmentation
+            enableWebAugmentation: enableWebAugmentation,
+            configuration: self
         )
     }
 }
 
 public extension PersistedFeed {
     func feedConfig() -> FeedConfig {
-        FeedConfig(
+        if let configuration {
+            return configuration
+        }
+        return FeedConfig(
             id: id,
             name: name,
             categories: categories,
