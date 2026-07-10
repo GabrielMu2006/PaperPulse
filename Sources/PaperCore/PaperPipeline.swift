@@ -42,7 +42,10 @@ public final class PaperPipeline {
 
     public func run(feed: FeedConfig, now: Date, outputDirectory: URL) async throws -> PipelineResult {
         let started = Date()
-        let window = DateInterval(start: now.addingTimeInterval(-7 * 86_400), end: now)
+        let window = DateInterval(
+            start: now.addingTimeInterval(-Double(feed.lookbackDays) * 86_400),
+            end: now
+        )
         var candidates: [PaperCandidate] = []
         var failures: [PipelineFailure] = []
 

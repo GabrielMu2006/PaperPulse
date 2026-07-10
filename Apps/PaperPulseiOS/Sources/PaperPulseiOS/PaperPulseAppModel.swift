@@ -101,7 +101,7 @@ final class PaperPulseAppModel {
             let reranker = registry.profile(for: .rerank, feed: feed)
                 .flatMap { LLMProviderFactory.makeReranker(profile: $0) }
             let pipeline = PaperPipeline(
-                sources: [ArxivSource(), OpenAlexSource(), CrossrefSource()],
+                sources: academicSources(for: feed),
                 augmentors: [],
                 ranker: PaperRanker(),
                 reranker: reranker,
@@ -260,6 +260,23 @@ final class PaperPulseAppModel {
             return LocalRuleSummaryProvider(language: summaryLanguage)
         }
         return LLMProviderFactory.makeProvider(profile: profile, summaryLanguage: summaryLanguage)
+    }
+
+    private func academicSources(for feed: FeedConfig) -> [any PaperSource] {
+        feed.enabledSources.compactMap { source in
+            switch source {
+            case .arxiv:
+                ArxivSource()
+            case .semanticScholar:
+                SemanticScholarSource()
+            case .openAlex:
+                OpenAlexSource()
+            case .crossref:
+                CrossrefSource()
+            case .unpaywall, .web:
+                nil
+            }
+        }
     }
 
     private static func paperDirectory() throws -> URL {

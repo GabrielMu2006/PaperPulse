@@ -2,6 +2,35 @@ import XCTest
 @testable import PaperCore
 
 final class PipelineTests: XCTestCase {
+    func testPipelineUsesConfiguredLookbackWindow() async throws {
+        let source = RecordingPaperSource()
+        let now = Date(timeIntervalSince1970: 1_783_000_000)
+        let feed = FeedConfig(
+            name: "Agents",
+            authorityPolicy: AuthorityPolicy(dailyLimit: 1),
+            lookbackDays: 3
+        )
+        let pipeline = PaperPipeline(
+            sources: [source],
+            augmentors: [],
+            ranker: PaperRanker(),
+            downloader: StubDownloader(),
+            extractor: StubExtractor(text: ""),
+            llmProvider: StubLLMProvider()
+        )
+
+        _ = try await pipeline.run(
+            feed: feed,
+            now: now,
+            outputDirectory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        )
+
+        let windows = await source.windows()
+        let window = try XCTUnwrap(windows.first)
+        XCTAssertEqual(window.start, now.addingTimeInterval(-3 * 86_400))
+        XCTAssertEqual(window.end, now)
+    }
+
     func testPipelineRunsDeterministicSearchDownloadExtractionAndShortSummary() async throws {
         let feed = FeedConfig(
             name: "Agents",
