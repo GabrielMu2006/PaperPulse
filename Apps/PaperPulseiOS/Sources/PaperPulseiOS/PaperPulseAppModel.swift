@@ -53,7 +53,9 @@ final class PaperPulseAppModel {
     func bootstrapProviderProfile() {
         guard !didBootstrapProviderProfile else { return }
         providerProfiles = LLMProfileSettingsStore.standard.loadProfiles(defaultProfiles: providerProfiles)
-        llmProfile = providerProfiles.first ?? llmProfile
+        let restoredID = UserDefaults.standard.string(forKey: Self.selectedProviderProfileDefaultsKey)
+            .flatMap(UUID.init(uuidString:))
+        llmProfile = providerProfiles.first(where: { $0.id == restoredID }) ?? providerProfiles.first ?? llmProfile
         appLanguage = restoredAppLanguage()
         summaryLanguage = restoredSummaryLanguage()
         didBootstrapProviderProfile = true
@@ -150,16 +152,26 @@ final class PaperPulseAppModel {
     func selectLLMProfile(id: UUID) {
         guard let profile = providerProfiles.first(where: { $0.id == id }) else { return }
         llmProfile = profile
+        UserDefaults.standard.set(id.uuidString, forKey: Self.selectedProviderProfileDefaultsKey)
     }
 
     func addLLMProfile(kind: LLMProviderKind) {
         let profile = LLMProfile.preset(kind)
         providerProfiles.append(profile)
         llmProfile = profile
+        do {
+            try LLMProfileSettingsStore.standard.saveProfiles(providerProfiles)
+            UserDefaults.standard.set(profile.id.uuidString, forKey: Self.selectedProviderProfileDefaultsKey)
+        } catch {
+            providerSettingsMessage = error.localizedDescription
+        }
     }
 
     func saveLLMProfile(apiKey: String? = nil) {
-        let profile = apiKey.map { llmProfile.withAPIKey($0) } ?? llmProfile
+        var profile = apiKey.map { llmProfile.withAPIKey($0) } ?? llmProfile
+        profile.name = profile.model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? profile.providerKind.displayName
+            : profile.model.trimmingCharacters(in: .whitespacesAndNewlines)
         do {
             if let index = providerProfiles.firstIndex(where: { $0.id == profile.id }) {
                 providerProfiles[index] = profile
@@ -168,7 +180,24 @@ final class PaperPulseAppModel {
             }
             try LLMProfileSettingsStore.standard.saveProfiles(providerProfiles)
             llmProfile = profile
+            UserDefaults.standard.set(profile.id.uuidString, forKey: Self.selectedProviderProfileDefaultsKey)
             providerSettingsMessage = appLanguage.text(en: "Provider settings saved.", zh: "模型设置已保存。")
+        } catch {
+            providerSettingsMessage = error.localizedDescription
+        }
+    }
+
+    func deleteLLMProfile() {
+        guard providerProfiles.count > 1 else { return }
+        let deleted = llmProfile
+        do {
+            try LLMProfileSettingsStore.standard.deleteProfile(deleted)
+            providerProfiles.removeAll { $0.id == deleted.id }
+            let replacement = providerProfiles[0]
+            llmProfile = replacement
+            try LLMProfileSettingsStore.standard.saveProfiles(providerProfiles)
+            UserDefaults.standard.set(replacement.id.uuidString, forKey: Self.selectedProviderProfileDefaultsKey)
+            providerSettingsMessage = appLanguage.text(en: "Profile deleted.", zh: "模型配置已删除。")
         } catch {
             providerSettingsMessage = error.localizedDescription
         }
@@ -407,6 +436,7 @@ final class PaperPulseAppModel {
     }
 
     private static let selectedFeedDefaultsKey = "PaperPulse.selectedFeedID"
+    private static let selectedProviderProfileDefaultsKey = "PaperPulse.selectedProviderProfileID"
     private static let appLanguageDefaultsKey = "PaperPulse.appLanguage"
     private static let summaryLanguageDefaultsKey = "PaperPulse.summaryLanguage"
 }
