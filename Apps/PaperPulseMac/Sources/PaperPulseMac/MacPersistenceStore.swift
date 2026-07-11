@@ -27,7 +27,7 @@ final class MacPaperEntity {
     var candidateData: Data
     var createdAt: Date
     var isFavorite: Bool
-    var isRead: Bool
+    var isRead: Bool = false
 
     init(
         id: String,
@@ -53,6 +53,21 @@ final class MacPaperEntity {
         self.createdAt = createdAt
         self.isFavorite = isFavorite
         self.isRead = isRead
+    }
+}
+
+@Model
+final class MacFeedPaperEntity {
+    @Attribute(.unique) var id: String
+    var feedID: UUID
+    var paperID: String
+    var pushedAt: Date
+
+    init(feedID: UUID, paperID: String, pushedAt: Date = Date()) {
+        self.id = "\(feedID.uuidString)|\(paperID)"
+        self.feedID = feedID
+        self.paperID = paperID
+        self.pushedAt = pushedAt
     }
 }
 
@@ -109,7 +124,7 @@ final class MacSummaryEntity {
 @MainActor
 enum MacPersistenceStore {
     static func makeContainer(inMemory: Bool = false) throws -> ModelContainer {
-        let schema = Schema([MacFeedEntity.self, MacPaperEntity.self, MacSummaryEntity.self])
+        let schema = Schema([MacFeedEntity.self, MacPaperEntity.self, MacFeedPaperEntity.self, MacSummaryEntity.self])
         let configuration: ModelConfiguration
         if inMemory {
             configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
@@ -138,7 +153,7 @@ enum MacPersistenceStore {
             .compactMap { try? JSONDecoder().decode(FeedConfig.self, from: $0.configurationData) }
     }
 
-    static func savePaper(_ record: PaperRecord, in context: ModelContext) throws {
+    static func savePaper(_ record: PaperRecord, in context: ModelContext, feedID: UUID? = nil) throws {
         let candidate = record.candidate
         let data = try JSONEncoder().encode(candidate)
         let descriptor = FetchDescriptor<MacPaperEntity>(predicate: #Predicate { $0.id == record.id })
@@ -164,7 +179,28 @@ enum MacPersistenceStore {
                 createdAt: record.createdAt
             ))
         }
+        if let feedID {
+            try linkPaper(id: record.id, to: feedID, in: context)
+        }
         try context.save()
+    }
+
+    static func linkPaper(id paperID: String, to feedID: UUID, in context: ModelContext) throws {
+        let linkID = "\(feedID.uuidString)|\(paperID)"
+        let descriptor = FetchDescriptor<MacFeedPaperEntity>(predicate: #Predicate { $0.id == linkID })
+        if try context.fetch(descriptor).first == nil {
+            context.insert(MacFeedPaperEntity(feedID: feedID, paperID: paperID))
+        }
+    }
+
+    static func paperIDs(for feedID: UUID, in context: ModelContext) throws -> Set<String> {
+        try context.fetch(FetchDescriptor<MacFeedPaperEntity>(predicate: #Predicate { $0.feedID == feedID }))
+            .reduce(into: []) { $0.insert($1.paperID) }
+    }
+
+    static func unclassifiedPaperIDs(in context: ModelContext) throws -> Set<String> {
+        let linked = Set(try context.fetch(FetchDescriptor<MacFeedPaperEntity>()).map(\.paperID))
+        return Set(try context.fetch(FetchDescriptor<MacPaperEntity>()).map(\.id)).subtracting(linked)
     }
 
     static func saveSummary(_ summary: PaperSummary, in context: ModelContext) throws {
@@ -299,7 +335,28 @@ enum MacPersistenceStore {
     static func deleteFeed(id: UUID, in context: ModelContext) throws {
         let descriptor = FetchDescriptor<MacFeedEntity>(predicate: #Predicate { $0.id == id })
         for entity in try context.fetch(descriptor) { context.delete(entity) }
+        let linkDescriptor = FetchDescriptor<MacFeedPaperEntity>(predicate: #Predicate { $0.feedID == id })
+        for link in try context.fetch(linkDescriptor) { context.delete(link) }
         try context.save()
+    }
+
+    @discardableResult
+    static func clearUnclassifiedPapers(in context: ModelContext) throws -> Int {
+        let unclassified = try unclassifiedPaperIDs(in: context)
+        guard !unclassified.isEmpty else { return 0 }
+
+        let papers = try context.fetch(FetchDescriptor<MacPaperEntity>())
+        let summaries = try context.fetch(FetchDescriptor<MacSummaryEntity>())
+        for paper in papers where unclassified.contains(paper.id) {
+            if let path = paper.pdfPath { try? FileManager.default.removeItem(at: URL(fileURLWithPath: path)) }
+            for summary in summaries where summary.paperID == paper.id {
+                if let path = summary.markdownPath { try? FileManager.default.removeItem(at: URL(fileURLWithPath: path)) }
+                context.delete(summary)
+            }
+            context.delete(paper)
+        }
+        try context.save()
+        return unclassified.count
     }
 
     private static func interpretationDirectory() throws -> URL {

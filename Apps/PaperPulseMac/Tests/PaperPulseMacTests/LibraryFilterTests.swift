@@ -3,7 +3,7 @@ import XCTest
 @testable import PaperPulse
 
 final class LibraryFilterTests: XCTestCase {
-    func testFiltersByReadingStateAndSearchableMetadata() throws {
+    func testFiltersByFavoriteAndSearchableMetadata() throws {
         let memory = MacPaperEntity(
             id: "memory",
             title: "Proactive Memory for Agents",
@@ -14,8 +14,7 @@ final class LibraryFilterTests: XCTestCase {
             absURL: nil,
             candidateData: Data(),
             createdAt: Date(),
-            isFavorite: true,
-            isRead: false
+            isFavorite: true
         )
         let vision = MacPaperEntity(
             id: "vision",
@@ -27,12 +26,11 @@ final class LibraryFilterTests: XCTestCase {
             absURL: nil,
             candidateData: Data(),
             createdAt: Date(),
-            isFavorite: false,
-            isRead: true
+            isFavorite: false
         )
 
         XCTAssertEqual(
-            MacLibraryFilter.visible([memory, vision], query: "lovelace", scope: .unread).map(\.id),
+            MacLibraryFilter.visible([memory, vision], query: "lovelace", scope: .all).map(\.id),
             ["memory"]
         )
         XCTAssertEqual(

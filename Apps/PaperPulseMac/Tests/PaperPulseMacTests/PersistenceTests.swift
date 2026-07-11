@@ -5,7 +5,7 @@ import XCTest
 
 @MainActor
 final class PersistenceTests: XCTestCase {
-    func testIndependentMacStoreRoundTripsPaperSummaryAndReadingState() throws {
+    func testIndependentMacStoreLinksPapersToFeedsWithoutDuplicatingPaperStorage() throws {
         let container = try MacPersistenceStore.makeContainer(inMemory: true)
         let context = ModelContext(container)
         let feed = FeedConfig(name: "Desktop Agents", keywords: ["agent"])
@@ -27,18 +27,32 @@ final class PersistenceTests: XCTestCase {
         )
 
         try MacPersistenceStore.saveFeed(feed, in: context)
-        try MacPersistenceStore.savePaper(paper, in: context)
+        try MacPersistenceStore.savePaper(paper, in: context, feedID: feed.id)
         try MacPersistenceStore.saveSummary(summary, in: context)
         let entity = try XCTUnwrap(MacPersistenceStore.paper(id: paper.id, in: context))
         entity.isFavorite = true
-        entity.isRead = true
         try context.save()
 
         XCTAssertEqual(try MacPersistenceStore.fetchFeeds(in: context).first?.id, feed.id)
         XCTAssertEqual(entity.title, "Desktop Paper")
         XCTAssertTrue(entity.isFavorite)
-        XCTAssertTrue(entity.isRead)
+        XCTAssertEqual(try MacPersistenceStore.paperIDs(for: feed.id, in: context), [paper.id])
         XCTAssertEqual(try MacPersistenceStore.shortSummary(for: paper.id, in: context)?.shortText, "短简介")
+    }
+
+    func testDeletingFeedLeavesPaperUnclassifiedAndClearRemovesIt() throws {
+        let container = try MacPersistenceStore.makeContainer(inMemory: true)
+        let context = ModelContext(container)
+        let feed = FeedConfig(name: "Robotics", keywords: ["robot"])
+        let paper = PaperRecord(candidate: PaperCandidate(source: .arxiv, sourceID: "orphan", title: "Orphan", summary: ""), localFile: nil)
+
+        try MacPersistenceStore.saveFeed(feed, in: context)
+        try MacPersistenceStore.savePaper(paper, in: context, feedID: feed.id)
+        try MacPersistenceStore.deleteFeed(id: feed.id, in: context)
+
+        XCTAssertEqual(try MacPersistenceStore.unclassifiedPaperIDs(in: context), [paper.id])
+        XCTAssertEqual(try MacPersistenceStore.clearUnclassifiedPapers(in: context), 1)
+        XCTAssertNil(try MacPersistenceStore.paper(id: paper.id, in: context))
     }
 
     func testFullInterpretationRoundTripsWithSectionAnchors() throws {

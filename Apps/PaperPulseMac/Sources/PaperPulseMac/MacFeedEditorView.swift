@@ -6,18 +6,25 @@ struct MacFeedEditorDraft: Identifiable {
     var feedID: UUID?
     var name: String
     var categoriesText: String
-    var keywordsText: String
+    var selectedLibraryKeywords: Set<String>
+    var customKeywordsText: String
     var excludedKeywordsText: String
+    var institutionsText: String
+    var venuesText: String
     var dailyLimit: Int
     var lookbackDays: Int
     var enabledSources: Set<PaperSourceKind>
 
-    init(feed: FeedConfig? = nil) {
+    init(feed: FeedConfig? = nil, keywordLibrary: [String] = []) {
         feedID = feed?.id
         name = feed?.name ?? ""
         categoriesText = feed?.categories.joined(separator: ", ") ?? "cs.AI, cs.CL"
-        keywordsText = feed?.keywords.joined(separator: ", ") ?? ""
+        let keywords = feed?.keywords ?? []
+        selectedLibraryKeywords = Set(keywords.filter { keywordLibrary.contains($0) })
+        customKeywordsText = keywords.filter { !keywordLibrary.contains($0) }.joined(separator: ", ")
         excludedKeywordsText = feed?.excludedKeywords.joined(separator: ", ") ?? ""
+        institutionsText = feed?.requiredInstitutions.joined(separator: ", ") ?? ""
+        venuesText = feed?.requiredVenues.joined(separator: ", ") ?? ""
         dailyLimit = feed?.authorityPolicy.dailyLimit ?? 5
         lookbackDays = feed?.lookbackDays ?? 7
         enabledSources = Set(feed?.enabledSources ?? FeedConfig.defaultEnabledSources)
@@ -28,8 +35,10 @@ struct MacFeedEditorDraft: Identifiable {
             id: feedID ?? UUID(),
             name: name.trimmed,
             categories: categoriesText.commaSeparated,
-            keywords: keywordsText.commaSeparated,
+            keywords: Array(selectedLibraryKeywords).sorted() + customKeywordsText.commaSeparated,
             excludedKeywords: excludedKeywordsText.commaSeparated,
+            requiredInstitutions: institutionsText.commaSeparated,
+            requiredVenues: venuesText.commaSeparated,
             authorityPolicy: AuthorityPolicy(dailyLimit: dailyLimit),
             enabledSources: Array(enabledSources),
             lookbackDays: lookbackDays
@@ -54,9 +63,17 @@ struct MacFeedEditorView: View {
             Form {
                 Section(language.text(en: "Feed", zh: "订阅")) {
                     TextField(language.text(en: "Name", zh: "名称"), text: $draft.name)
-                    TextField(language.text(en: "arXiv categories", zh: "arXiv 分类"), text: $draft.categoriesText)
-                    TextField(language.text(en: "Keywords", zh: "关键词"), text: $draft.keywordsText)
+                    TextField(language.text(en: "Categories", zh: "分类"), text: $draft.categoriesText)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(language.text(en: "Keywords (any match)", zh: "关键词（任一匹配）"))
+                        ForEach(appModel.keywordLibrary, id: \.self) { keyword in
+                            Toggle(keyword, isOn: keywordBinding(keyword))
+                        }
+                        TextField(language.text(en: "Custom keywords, comma separated", zh: "自定义关键词，逗号分隔"), text: $draft.customKeywordsText)
+                    }
                     TextField(language.text(en: "Excluded keywords", zh: "排除关键词"), text: $draft.excludedKeywordsText)
+                    TextField(language.text(en: "Institutions", zh: "机构"), text: $draft.institutionsText)
+                    TextField(language.text(en: "Venues", zh: "期刊或会议"), text: $draft.venuesText)
                 }
                 Section(language.text(en: "Sources", zh: "学术来源")) {
                     ForEach([PaperSourceKind.arxiv, .openAlex, .crossref], id: \.self) { source in
@@ -81,12 +98,12 @@ struct MacFeedEditorView: View {
             }
             .padding()
         }
-        .frame(width: 520, height: 500)
+        .frame(width: 560, height: 620)
         .navigationTitle(draft.feedID == nil ? language.text(en: "New Feed", zh: "新建订阅") : language.text(en: "Edit Feed", zh: "编辑订阅"))
     }
 
     private var canSave: Bool {
-        !draft.name.trimmed.isEmpty && (!draft.categoriesText.commaSeparated.isEmpty || !draft.keywordsText.commaSeparated.isEmpty) && !draft.enabledSources.isEmpty
+        !draft.name.trimmed.isEmpty && (!draft.categoriesText.commaSeparated.isEmpty || !draft.selectedLibraryKeywords.isEmpty || !draft.customKeywordsText.commaSeparated.isEmpty) && !draft.enabledSources.isEmpty
     }
 
     private func sourceBinding(_ source: PaperSourceKind) -> Binding<Bool> {
@@ -94,6 +111,16 @@ struct MacFeedEditorView: View {
             get: { draft.enabledSources.contains(source) },
             set: { enabled in
                 if enabled { draft.enabledSources.insert(source) } else { draft.enabledSources.remove(source) }
+            }
+        )
+    }
+
+    private func keywordBinding(_ keyword: String) -> Binding<Bool> {
+        Binding(
+            get: { draft.selectedLibraryKeywords.contains(keyword) },
+            set: { selected in
+                if selected { draft.selectedLibraryKeywords.insert(keyword) }
+                else { draft.selectedLibraryKeywords.remove(keyword) }
             }
         )
     }

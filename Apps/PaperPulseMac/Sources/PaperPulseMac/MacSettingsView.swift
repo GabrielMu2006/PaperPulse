@@ -3,7 +3,10 @@ import SwiftUI
 
 struct MacSettingsView: View {
     @Environment(PaperPulseMacModel.self) private var appModel
+    @Environment(\.modelContext) private var modelContext
     @State private var apiKey = ""
+    @State private var keywordLibraryText = ""
+    @State private var isClearUnclassifiedConfirmationPresented = false
 
     var body: some View {
         @Bindable var appModel = appModel
@@ -20,6 +23,17 @@ struct MacSettingsView: View {
                     ForEach(SummaryLanguage.allCases) { Text($0.displayName).tag($0) }
                 }
                 .onChange(of: appModel.summaryLanguage) { _, value in appModel.saveSummaryLanguage(value) }
+            }
+
+            Section(language.text(en: "Keyword Library", zh: "关键词库")) {
+                TextField(
+                    language.text(en: "Keywords, comma separated", zh: "关键词，逗号分隔"),
+                    text: $keywordLibraryText
+                )
+                Button(language.text(en: "Save Keyword Library", zh: "保存关键词库")) {
+                    appModel.saveKeywordLibrary(keywordLibraryText.commaSeparated)
+                    keywordLibraryText = appModel.keywordLibrary.joined(separator: ", ")
+                }
             }
 
             Section(language.text(en: "Model Configurations", zh: "模型配置")) {
@@ -81,10 +95,41 @@ struct MacSettingsView: View {
             if !appModel.status.isEmpty {
                 Section { Text(appModel.status).foregroundStyle(.secondary) }
             }
+
+            Section(language.text(en: "Storage", zh: "存储")) {
+                Button(language.text(en: "Clear Unclassified Papers", zh: "清除未归类文章"), role: .destructive) {
+                    isClearUnclassifiedConfirmationPresented = true
+                }
+            }
         }
         .formStyle(.grouped)
         .padding()
         .frame(width: 560)
-        .onAppear { apiKey = appModel.llmProfile.apiKey }
+        .onAppear {
+            apiKey = appModel.llmProfile.apiKey
+            keywordLibraryText = appModel.keywordLibrary.joined(separator: ", ")
+        }
+        .confirmationDialog(
+            language.text(en: "Clear unclassified papers?", zh: "清除未归类文章？"),
+            isPresented: $isClearUnclassifiedConfirmationPresented,
+            titleVisibility: .visible
+        ) {
+            Button(language.text(en: "Clear Papers", zh: "清除文章"), role: .destructive) {
+                do {
+                    let count = try MacPersistenceStore.clearUnclassifiedPapers(in: modelContext)
+                    appModel.status = language.text(en: "Cleared \(count) unclassified papers.", zh: "已清除 \(count) 篇未归类文章。")
+                } catch {
+                    appModel.errorMessage = error.localizedDescription
+                }
+            }
+        } message: {
+            Text(language.text(en: "This removes unclassified papers, summaries, and local files.", zh: "这会删除未归类文章、简介和本地文件。"))
+        }
+    }
+}
+
+private extension String {
+    var commaSeparated: [String] {
+        split(separator: ",").map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
     }
 }

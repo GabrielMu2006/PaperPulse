@@ -8,6 +8,7 @@ struct MacRootView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openSettings) private var openSettings
     @Query(sort: \MacPaperEntity.createdAt, order: .reverse) private var storedPapers: [MacPaperEntity]
+    @Query(sort: \MacFeedPaperEntity.pushedAt, order: .reverse) private var feedPaperLinks: [MacFeedPaperEntity]
     @Query(sort: \MacSummaryEntity.generatedAt, order: .reverse) private var storedSummaries: [MacSummaryEntity]
     @State private var libraryQuery = ""
     @State private var libraryScope: MacLibraryScope = .all
@@ -20,6 +21,16 @@ struct MacRootView: View {
 
     private var visiblePapers: [MacPaperEntity] {
         MacLibraryFilter.visible(storedPapers, query: libraryQuery, scope: libraryScope)
+    }
+
+    private func visiblePapers(for feedID: UUID) -> [MacPaperEntity] {
+        let paperIDs = Set(feedPaperLinks.filter { $0.feedID == feedID }.map(\.paperID))
+        return visiblePapers.filter { paperIDs.contains($0.id) }
+    }
+
+    private var unclassifiedPapers: [MacPaperEntity] {
+        let linkedPaperIDs = Set(feedPaperLinks.map(\.paperID))
+        return visiblePapers.filter { !linkedPaperIDs.contains($0.id) }
     }
 
     private func shortSummary(for paperID: String) -> PaperSummary? {
@@ -47,43 +58,25 @@ struct MacRootView: View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             List(selection: $appModel.selectedPaperID) {
                 Section {
-                    HStack(spacing: 8) {
-                        Button {
-                            if let feed = appModel.activeFeed {
-                                Task { await appModel.run(feed: feed, modelContext: modelContext) }
-                            }
-                        } label: {
-                            Label(appModel.appLanguage.text(en: "Refresh", zh: "刷新"), systemImage: "arrow.clockwise")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .disabled(appModel.isRunning)
-                        .accessibilityIdentifier("mac-refresh-button")
-
-                        Button {
-                            openSettings()
-                        } label: {
-                            Label(appModel.appLanguage.text(en: "Settings", zh: "设置"), systemImage: "gearshape")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .accessibilityIdentifier("mac-settings-button")
+                    Button { openSettings() } label: {
+                        Label(appModel.appLanguage.text(en: "Settings", zh: "设置"), systemImage: "gearshape")
                     }
-                    .controlSize(.small)
-                    .buttonStyle(.bordered)
-                    .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                    .accessibilityIdentifier("mac-settings-button")
                 }
 
                 Section(appModel.appLanguage.text(en: "Feeds", zh: "订阅")) {
                     ForEach(appModel.feeds) { feed in
                         let isActive = appModel.activeFeed?.id == feed.id
-                        Button {
-                            appModel.selectFeed(feed)
-                        } label: {
-                            MacFeedRow(feed: feed, isActive: isActive)
-                        }
-                        .buttonStyle(.plain)
+                        MacFeedRow(
+                            feed: feed,
+                            isActive: isActive,
+                            isPushing: appModel.isRunning && isActive,
+                            onSelect: { appModel.selectFeed(feed) },
+                            onPush: { Task { await appModel.run(feed: feed, modelContext: modelContext) } }
+                        )
                         .contextMenu {
                             Button(appModel.appLanguage.text(en: "Edit Feed", zh: "编辑订阅")) {
-                                editorDraft = MacFeedEditorDraft(feed: feed)
+                                editorDraft = MacFeedEditorDraft(feed: feed, keywordLibrary: appModel.keywordLibrary)
                             }
                             if appModel.feeds.count > 1 {
                                 Button(appModel.appLanguage.text(en: "Delete Feed", zh: "删除订阅"), role: .destructive) {
@@ -93,20 +86,32 @@ struct MacRootView: View {
                         }
                     }
                     Button {
-                        editorDraft = MacFeedEditorDraft()
+                        editorDraft = MacFeedEditorDraft(keywordLibrary: appModel.keywordLibrary)
                     } label: {
                         Label(appModel.appLanguage.text(en: "New Feed", zh: "新建订阅"), systemImage: "plus")
                     }
                 }
 
-                Section(appModel.appLanguage.text(en: "Library", zh: "论文库")) {
-                    if visiblePapers.isEmpty {
-                        Text(appModel.appLanguage.text(en: "No saved papers", zh: "还没有保存的论文"))
-                            .foregroundStyle(.secondary)
+                ForEach(appModel.feeds) { feed in
+                    let papers = visiblePapers(for: feed.id)
+                    Section(feed.name) {
+                        if papers.isEmpty {
+                            Text(appModel.appLanguage.text(en: "No pushed papers", zh: "尚未推送论文"))
+                                .foregroundStyle(.secondary)
+                        }
+                        ForEach(papers) { paper in
+                            MacLibraryRow(paper: paper, summary: shortSummary(for: paper.id), language: appModel.appLanguage)
+                                .tag(paper.id)
+                        }
                     }
-                    ForEach(visiblePapers) { paper in
+                }
+
+                if !unclassifiedPapers.isEmpty {
+                    Section(appModel.appLanguage.text(en: "Unclassified", zh: "未归类")) {
+                        ForEach(unclassifiedPapers) { paper in
                         MacLibraryRow(paper: paper, summary: shortSummary(for: paper.id), language: appModel.appLanguage)
                             .tag(paper.id)
+                        }
                     }
                 }
             }
@@ -190,12 +195,6 @@ struct PaperDetailView: View {
                                     try? modelContext.save()
                                 }
                             } label: { Label(appModel.appLanguage.text(en: "Favorite", zh: "收藏"), systemImage: "star") }
-                            Button {
-                                if let entity = try? MacPersistenceStore.paper(id: paper.id, in: modelContext) {
-                                    entity.isRead.toggle()
-                                    try? modelContext.save()
-                                }
-                            } label: { Label(appModel.appLanguage.text(en: "Mark Read", zh: "标记已读"), systemImage: "checkmark.circle") }
                             fullReadingControl
                         }
                         if let error = appModel.fullSummaryErrors[paper.id] {

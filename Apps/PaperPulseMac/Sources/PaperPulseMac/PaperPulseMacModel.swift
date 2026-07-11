@@ -15,6 +15,7 @@ final class PaperPulseMacModel {
     var providerProfiles: [LLMProfile] = [LLMProfile.preset(.gpt)]
     var appLanguage: AppLanguage = .chinese
     var summaryLanguage: SummaryLanguage = .chinese
+    var keywordLibrary: [String] = ["agent", "tool use", "world model", "planning", "embodied", "reasoning", "robotics", "multimodal"]
     var isRunning = false
     var status = ""
     var errorMessage: String?
@@ -37,6 +38,9 @@ final class PaperPulseMacModel {
         llmProfile = providerProfiles.first { $0.id == restoredProfileID } ?? providerProfiles[0]
         appLanguage = UserDefaults.standard.string(forKey: Self.appLanguageKey).flatMap(AppLanguage.init(rawValue:)) ?? .chinese
         summaryLanguage = UserDefaults.standard.string(forKey: Self.summaryLanguageKey).flatMap(SummaryLanguage.init(rawValue:)) ?? .chinese
+        keywordLibrary = Self.normalizedKeywordLibrary(
+            UserDefaults.standard.stringArray(forKey: Self.keywordLibraryKey) ?? Self.defaultKeywordLibrary
+        )
 
         feeds = (try? MacPersistenceStore.fetchFeeds(in: modelContext)) ?? []
         if feeds.isEmpty {
@@ -101,18 +105,36 @@ final class PaperPulseMacModel {
                 summaryLanguage: summaryLanguage,
                 shortSummaryProfile: shortProfile
             )
-            let result = try await pipeline.run(feed: feed, now: Date(), outputDirectory: try Self.paperDirectory())
-            papers = result.papers
-            summaries = Dictionary(uniqueKeysWithValues: result.summaries.compactMap { summary in
-                summary.paperID.map { ($0, summary) }
-            })
-            selectedPaperID = papers.first?.id
+            let linkedPaperIDs = try modelContext.map { try MacPersistenceStore.paperIDs(for: feed.id, in: $0) } ?? []
+            let knownPaperIDs = try modelContext.map { Set(try MacPersistenceStore.fetchPapers(in: $0).map(\.id)) } ?? []
+            let result = try await pipeline.run(
+                feed: feed,
+                now: Date(),
+                outputDirectory: try Self.paperDirectory(),
+                existingPaperIDs: knownPaperIDs,
+                alreadyLinkedPaperIDs: linkedPaperIDs
+            )
             if let modelContext {
                 try MacPersistenceStore.saveFeed(feed, in: modelContext)
-                for paper in result.papers { try MacPersistenceStore.savePaper(paper, in: modelContext) }
+                for paper in result.papers { try MacPersistenceStore.savePaper(paper, in: modelContext, feedID: feed.id) }
                 for summary in result.summaries { try MacPersistenceStore.saveSummary(summary, in: modelContext) }
+                for ranked in result.rankedCandidates where knownPaperIDs.contains(ranked.candidate.stableID) {
+                    try MacPersistenceStore.linkPaper(id: ranked.candidate.stableID, to: feed.id, in: modelContext)
+                }
+                try modelContext.save()
+                papers = try MacPersistenceStore.fetchPapers(in: modelContext)
+                summaries = try MacPersistenceStore.fetchShortSummaries(in: modelContext)
+            } else {
+                papers = result.papers
+                summaries = Dictionary(uniqueKeysWithValues: result.summaries.compactMap { summary in
+                    summary.paperID.map { ($0, summary) }
+                })
             }
-            status = appLanguage.text(en: "Selected \(papers.count) papers", zh: "已选取 \(papers.count) 篇论文")
+            selectedPaperID = result.rankedCandidates.first?.candidate.stableID ?? papers.first?.id
+            status = appLanguage.text(
+                en: "Pushed \(result.rankedCandidates.count) papers to \(feed.name)",
+                zh: "已向“\(feed.name)”推送 \(result.rankedCandidates.count) 篇论文"
+            )
         } catch {
             errorMessage = error.localizedDescription
             status = appLanguage.text(en: "Run failed", zh: "运行失败")
@@ -201,6 +223,11 @@ final class PaperPulseMacModel {
         UserDefaults.standard.set(language.rawValue, forKey: Self.summaryLanguageKey)
     }
 
+    func saveKeywordLibrary(_ keywords: [String]) {
+        keywordLibrary = Self.normalizedKeywordLibrary(keywords)
+        UserDefaults.standard.set(keywordLibrary, forKey: Self.keywordLibraryKey)
+    }
+
     func generateFullSummary(for paper: PaperRecord, modelContext: ModelContext) async {
         guard !fullSummaryPaperIDs.contains(paper.id) else { return }
         guard let localFile = paper.localFile else {
@@ -279,8 +306,16 @@ final class PaperPulseMacModel {
         authorityPolicy: AuthorityPolicy(dailyLimit: 5)
     )
 
+    static let defaultKeywordLibrary = ["agent", "tool use", "world model", "planning", "embodied", "reasoning", "robotics", "multimodal"]
+
+    private static func normalizedKeywordLibrary(_ keywords: [String]) -> [String] {
+        Array(Set(keywords.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }))
+            .sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+    }
+
     private static let appLanguageKey = "PaperPulse.macOS.appLanguage"
     private static let summaryLanguageKey = "PaperPulse.macOS.summaryLanguage"
+    private static let keywordLibraryKey = "PaperPulse.macOS.keywordLibrary"
     private static let selectedFeedKey = "PaperPulse.macOS.selectedFeed"
     private static let selectedProfileKey = "PaperPulse.macOS.selectedProfile"
 }

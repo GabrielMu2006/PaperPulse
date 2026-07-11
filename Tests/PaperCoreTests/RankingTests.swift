@@ -2,6 +2,28 @@ import XCTest
 @testable import PaperCore
 
 final class RankingTests: XCTestCase {
+    func testRequiredModulesUseANDWhileKeywordsUseOR() {
+        let feed = FeedConfig(
+            name: "Agents",
+            categories: ["cs.AI"],
+            keywords: ["agent", "robot"],
+            requiredInstitutions: ["MIT"],
+            requiredVenues: ["NeurIPS"]
+        )
+        let accepted = PaperCandidate.fixture(
+            sourceID: "accepted",
+            title: "Robot learning",
+            institutions: ["MIT CSAIL"],
+            categories: ["cs.AI"]
+        )
+        var withVenue = accepted
+        withVenue.venue = "NeurIPS"
+        let missingInstitution = PaperCandidate.fixture(sourceID: "missing", title: "Agent planning", categories: ["cs.AI"])
+
+        let ranked = PaperRanker().rank([withVenue, missingInstitution], feed: feed, now: Date())
+
+        XCTAssertEqual(ranked.map { $0.candidate.sourceID }, ["accepted"])
+    }
     func testRanksDeduplicatedCandidatesWithAuthorityAndKeywords() {
         let policy = AuthorityPolicy(
             preferredInstitutions: ["Fudan University", "Tsinghua University"],
@@ -47,8 +69,7 @@ final class RankingTests: XCTestCase {
             now: Date(timeIntervalSince1970: 1_782_950_400)
         )
 
-        XCTAssertEqual(ranked.map(\.candidate.sourceID), ["2607.00001v1", "2607.00002v1"])
-        XCTAssertGreaterThan(ranked[0].score, ranked[1].score)
+        XCTAssertEqual(ranked.map(\.candidate.sourceID), ["2607.00001v1"])
         XCTAssertTrue(ranked[0].reasons.contains("preferred institution"))
     }
 

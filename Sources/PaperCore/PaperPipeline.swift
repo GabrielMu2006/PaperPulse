@@ -40,7 +40,13 @@ public final class PaperPipeline {
         )
     }
 
-    public func run(feed: FeedConfig, now: Date, outputDirectory: URL) async throws -> PipelineResult {
+    public func run(
+        feed: FeedConfig,
+        now: Date,
+        outputDirectory: URL,
+        existingPaperIDs: Set<String> = [],
+        alreadyLinkedPaperIDs: Set<String> = []
+    ) async throws -> PipelineResult {
         let started = Date()
         let window = DateInterval(
             start: now.addingTimeInterval(-Double(feed.lookbackDays) * 86_400),
@@ -94,10 +100,9 @@ public final class PaperPipeline {
             candidates = enrichedCandidates
         }
 
-        let ruleRankingLimit = reranker == nil
-            ? feed.authorityPolicy.dailyLimit
-            : max(feed.authorityPolicy.dailyLimit * 4, feed.authorityPolicy.dailyLimit)
+        let ruleRankingLimit = max(feed.authorityPolicy.dailyLimit * 4, feed.authorityPolicy.dailyLimit)
         var ranked = ranker.rank(candidates, feed: feed, now: now, limit: ruleRankingLimit)
+        ranked.removeAll { alreadyLinkedPaperIDs.contains($0.candidate.stableID) }
         if let reranker {
             do {
                 ranked = try await reranker.rerank(ranked, feed: feed, limit: feed.authorityPolicy.dailyLimit)
@@ -112,6 +117,7 @@ public final class PaperPipeline {
 
         for rankedPaper in ranked {
             let candidate = rankedPaper.candidate
+            guard !existingPaperIDs.contains(candidate.stableID) else { continue }
             do {
                 let processed = try await processingService.process(candidate: candidate, outputDirectory: outputDirectory)
                 let summary = try await summaryService.generateShortSummary(

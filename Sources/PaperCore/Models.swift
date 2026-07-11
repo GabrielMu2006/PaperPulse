@@ -178,6 +178,8 @@ public struct FeedConfig: Codable, Hashable, Identifiable, Sendable {
     public var categories: [String]
     public var keywords: [String]
     public var excludedKeywords: [String]
+    public var requiredInstitutions: [String]
+    public var requiredVenues: [String]
     public var authorityPolicy: AuthorityPolicy
     public var enableWebAugmentation: Bool
     public var enabledSources: [PaperSourceKind]
@@ -195,6 +197,8 @@ public struct FeedConfig: Codable, Hashable, Identifiable, Sendable {
         categories: [String] = [],
         keywords: [String] = [],
         excludedKeywords: [String] = [],
+        requiredInstitutions: [String] = [],
+        requiredVenues: [String] = [],
         authorityPolicy: AuthorityPolicy = AuthorityPolicy(),
         enableWebAugmentation: Bool = false,
         enabledSources: [PaperSourceKind] = FeedConfig.defaultEnabledSources,
@@ -211,6 +215,8 @@ public struct FeedConfig: Codable, Hashable, Identifiable, Sendable {
         self.categories = categories
         self.keywords = keywords
         self.excludedKeywords = excludedKeywords
+        self.requiredInstitutions = requiredInstitutions
+        self.requiredVenues = requiredVenues
         self.authorityPolicy = authorityPolicy
         self.enableWebAugmentation = enableWebAugmentation
         self.enabledSources = enabledSources
@@ -224,7 +230,7 @@ public struct FeedConfig: Codable, Hashable, Identifiable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, categories, keywords, excludedKeywords, authorityPolicy, enableWebAugmentation
+        case id, name, categories, keywords, excludedKeywords, requiredInstitutions, requiredVenues, authorityPolicy, enableWebAugmentation
         case enabledSources, lookbackDays, schedule
         case searchProviderProfileID, rerankProviderProfileID, shortSummaryProviderProfileID
         case fullSummaryProviderProfileID, extractionProviderProfileID
@@ -238,6 +244,8 @@ public struct FeedConfig: Codable, Hashable, Identifiable, Sendable {
             categories: try container.decodeIfPresent([String].self, forKey: .categories) ?? [],
             keywords: try container.decodeIfPresent([String].self, forKey: .keywords) ?? [],
             excludedKeywords: try container.decodeIfPresent([String].self, forKey: .excludedKeywords) ?? [],
+            requiredInstitutions: try container.decodeIfPresent([String].self, forKey: .requiredInstitutions) ?? [],
+            requiredVenues: try container.decodeIfPresent([String].self, forKey: .requiredVenues) ?? [],
             authorityPolicy: try container.decodeIfPresent(AuthorityPolicy.self, forKey: .authorityPolicy) ?? AuthorityPolicy(),
             enableWebAugmentation: try container.decodeIfPresent(Bool.self, forKey: .enableWebAugmentation) ?? false,
             enabledSources: Self.migratedEnabledSources(

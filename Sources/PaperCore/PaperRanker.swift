@@ -7,6 +7,7 @@ public struct PaperRanker {
         var bestByKey: [String: RankedPaper] = [:]
 
         for candidate in candidates {
+            guard matchesRequiredModules(candidate, feed: feed) else { continue }
             let authority = evaluateAuthority(for: candidate, policy: feed.authorityPolicy)
             guard authority.decision != .rejected else { continue }
 
@@ -35,6 +36,21 @@ public struct PaperRanker {
         }
         .prefix(selectionLimit)
         .map { $0 }
+    }
+
+    private func matchesRequiredModules(_ candidate: PaperCandidate, feed: FeedConfig) -> Bool {
+        let haystack = "\(candidate.title) \(candidate.summary)".lowercased()
+        let keywordMatches = feed.keywords.isEmpty || feed.keywords.contains { keyword in
+            haystack.contains(keyword.lowercased())
+        }
+        let categoryMatches = feed.categories.isEmpty || !Set(feed.categories).isDisjoint(with: Set(candidate.categories))
+        let institutionMatches = feed.requiredInstitutions.isEmpty || feed.requiredInstitutions.contains { required in
+            candidate.institutions.contains { $0.localizedCaseInsensitiveContains(required) }
+        }
+        let venueMatches = feed.requiredVenues.isEmpty || feed.requiredVenues.contains { required in
+            candidate.venue?.localizedCaseInsensitiveContains(required) == true
+        }
+        return keywordMatches && categoryMatches && institutionMatches && venueMatches
     }
 
     public func evaluateAuthority(for candidate: PaperCandidate, policy: AuthorityPolicy) -> AuthorityEvaluation {

@@ -203,6 +203,29 @@ final class PipelineTests: XCTestCase {
         XCTAssertEqual(result.summaries.first?.providerProfileID, profileID)
         XCTAssertEqual(result.summaries.first?.model, "configured-model")
     }
+
+    func testPipelineKeepsKnownCandidatesForLinkingButSkipsTheirProcessing() async throws {
+        let known = PaperCandidate.fixture(sourceID: "already-downloaded", title: "Agent Memory")
+        let fresh = PaperCandidate.fixture(sourceID: "new-paper", title: "Agent Planning")
+        let pipeline = PaperPipeline(
+            sources: [StubPaperSource(results: [known, fresh])],
+            augmentors: [],
+            ranker: PaperRanker(),
+            downloader: AssertingSourceIDDownloader(expectedSourceID: "new-paper"),
+            extractor: StubExtractor(text: "Fresh paper text"),
+            llmProvider: StubLLMProvider()
+        )
+
+        let result = try await pipeline.run(
+            feed: FeedConfig(name: "Agents", keywords: ["agent"], authorityPolicy: AuthorityPolicy(dailyLimit: 2)),
+            now: Date(),
+            outputDirectory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString),
+            existingPaperIDs: [known.stableID]
+        )
+
+        XCTAssertEqual(Set(result.rankedCandidates.map { $0.candidate.stableID }), [known.stableID, fresh.stableID])
+        XCTAssertEqual(result.papers.map(\.id), [fresh.stableID])
+    }
 }
 
 private struct StubMetadataEnricher: PaperMetadataEnricher {
