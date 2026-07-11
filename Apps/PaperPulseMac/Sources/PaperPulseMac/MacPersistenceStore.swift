@@ -230,6 +230,30 @@ enum MacPersistenceStore {
             }
     }
 
+    static func fullSummary(for paperID: String, in context: ModelContext) throws -> PaperSummary? {
+        let fullKind = SummaryKind.full.rawValue
+        guard let entity = try context.fetch(FetchDescriptor<MacSummaryEntity>(predicate: #Predicate {
+            $0.paperID == paperID && $0.kindRawValue == fullKind
+        })).sorted(by: { $0.generatedAt > $1.generatedAt }).first else { return nil }
+        let anchors = (try? JSONDecoder().decode([PageAnchor].self, from: entity.anchorsData)) ?? []
+        let interpretation = entity.interpretationData.flatMap { try? JSONDecoder().decode(PaperInterpretation.self, from: $0) }
+        return PaperSummary(
+            id: entity.id,
+            paperID: entity.paperID,
+            shortText: entity.shortText,
+            fullText: entity.fullText,
+            language: entity.language,
+            model: entity.model,
+            generatedAt: entity.generatedAt,
+            sourceRange: entity.sourceRange,
+            kind: .full,
+            providerProfileID: entity.providerProfileID,
+            sourceTextHash: entity.sourceTextHash,
+            anchors: anchors,
+            interpretation: interpretation
+        )
+    }
+
     static func deleteFeed(id: UUID, in context: ModelContext) throws {
         let descriptor = FetchDescriptor<MacFeedEntity>(predicate: #Predicate { $0.id == id })
         for entity in try context.fetch(descriptor) { context.delete(entity) }

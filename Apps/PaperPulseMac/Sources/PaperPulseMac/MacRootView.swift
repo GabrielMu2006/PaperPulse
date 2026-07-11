@@ -61,8 +61,11 @@ struct MacRootView: View {
 }
 
 struct PaperDetailView: View {
+    @Environment(PaperPulseMacModel.self) private var appModel
+    @Environment(\.modelContext) private var modelContext
     var paper: PaperRecord
     var summary: PaperSummary?
+    @State private var isShowingFullReading = false
 
     var body: some View {
         HSplitView {
@@ -73,6 +76,24 @@ struct PaperDetailView: View {
                         .fontWeight(.semibold)
                     Text(paper.candidate.authors.joined(separator: ", "))
                         .foregroundStyle(.secondary)
+                    HStack {
+                        Button {
+                            if let entity = try? MacPersistenceStore.paper(id: paper.id, in: modelContext) {
+                                entity.isFavorite.toggle()
+                                try? modelContext.save()
+                            }
+                        } label: { Label(appModel.appLanguage.text(en: "Favorite", zh: "收藏"), systemImage: "star") }
+                        Button {
+                            if let entity = try? MacPersistenceStore.paper(id: paper.id, in: modelContext) {
+                                entity.isRead.toggle()
+                                try? modelContext.save()
+                            }
+                        } label: { Label(appModel.appLanguage.text(en: "Mark Read", zh: "标记已读"), systemImage: "checkmark.circle") }
+                        Button {
+                            isShowingFullReading = true
+                        } label: { Label(appModel.appLanguage.text(en: "Full Reading", zh: "完整解读"), systemImage: "text.book.closed") }
+                        .disabled(paper.localFile == nil)
+                    }
                     Text(summary?.shortText ?? paper.candidate.summary)
                     if let url = paper.candidate.absURL {
                         Link("Open source page", destination: url)
@@ -87,6 +108,10 @@ struct PaperDetailView: View {
             } else {
                 ContentUnavailableView("PDF not downloaded", systemImage: "doc")
             }
+        }
+        .sheet(isPresented: $isShowingFullReading) {
+            MacFullInterpretationView(paper: paper)
+                .environment(appModel)
         }
     }
 }

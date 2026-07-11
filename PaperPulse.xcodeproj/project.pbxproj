@@ -28,6 +28,7 @@
 		8D58F06B9BF1E6E060271A42 /* PaperPulseMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C60B8E4A856564B0AA684D2A /* PaperPulseMacApp.swift */; };
 		9413318C64B86B0C070FC82A /* PaperEntityResolution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF21959D2B7D1EBA8565AE4 /* PaperEntityResolution.swift */; };
 		9673D1713693CBCDB85ED8C2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 443F96166C2F40B5A32C988F /* SettingsView.swift */; };
+		B5B735335CE47F154B9BC534 /* MacFullInterpretationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B12276139F1A796463C5FD6 /* MacFullInterpretationView.swift */; };
 		B8265979086933E7267790C7 /* FeedEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F50BECBD2FB39777E8B7EF55 /* FeedEditorView.swift */; };
 		C802F0636B00B6C66A0352A2 /* FeedListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6CE735D5932C7A5DAF8225 /* FeedListView.swift */; };
 		E7783E6CC62139C8E7109D9C /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A1FBF28E14B485F9E23AFE /* KeychainStore.swift */; };
@@ -62,6 +63,7 @@
 		56A4FC2D35A5F95DB312B5ED /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		7159E61831FADF21A7CAEFE1 /* ProfileStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStoreTests.swift; sourceTree = "<group>"; };
 		841FC56C2EFB68203D39C309 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8B12276139F1A796463C5FD6 /* MacFullInterpretationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacFullInterpretationView.swift; sourceTree = "<group>"; };
 		8CF21959D2B7D1EBA8565AE4 /* PaperEntityResolution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperEntityResolution.swift; sourceTree = "<group>"; };
 		93A1FBF28E14B485F9E23AFE /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
 		9C7E57C1C557FA1ABFD05E44 /* BackgroundRefreshCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshCoordinator.swift; sourceTree = "<group>"; };
@@ -104,6 +106,7 @@
 		03CB318A26C846BE72CA0D29 /* PaperPulseMac */ = {
 			isa = PBXGroup;
 			children = (
+				8B12276139F1A796463C5FD6 /* MacFullInterpretationView.swift */,
 				AF35B083421AC3F2C7D98AD3 /* MacKeychainStore.swift */,
 				B5F2C8BE2D8470E34B83AAE8 /* MacLLMProfileSettingsStore.swift */,
 				ABE79369C488A0F7FF295A8C /* MacPersistenceStore.swift */,
@@ -366,6 +369,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5B735335CE47F154B9BC534 /* MacFullInterpretationView.swift in Sources */,
 				F9A4848A298FEADF43DE6544 /* MacKeychainStore.swift in Sources */,
 				5D1D73FCAF32329ADFB23391 /* MacLLMProfileSettingsStore.swift in Sources */,
 				503750A185A91FD4BAA029B3 /* MacPersistenceStore.swift in Sources */,

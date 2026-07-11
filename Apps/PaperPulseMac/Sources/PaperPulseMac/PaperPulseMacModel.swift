@@ -18,6 +18,8 @@ final class PaperPulseMacModel {
     var isRunning = false
     var status = ""
     var errorMessage: String?
+    var fullSummaryPaperIDs: Set<String> = []
+    var fullSummaryErrors: [String: String] = [:]
 
     private var didBootstrap = false
 
@@ -163,6 +165,33 @@ final class PaperPulseMacModel {
     func saveSummaryLanguage(_ language: SummaryLanguage) {
         summaryLanguage = language
         UserDefaults.standard.set(language.rawValue, forKey: Self.summaryLanguageKey)
+    }
+
+    func generateFullSummary(for paper: PaperRecord, modelContext: ModelContext) async {
+        guard !fullSummaryPaperIDs.contains(paper.id) else { return }
+        guard let localFile = paper.localFile else {
+            fullSummaryErrors[paper.id] = appLanguage.text(en: "A downloaded PDF is required.", zh: "需要先下载 PDF。")
+            return
+        }
+        fullSummaryPaperIDs.insert(paper.id)
+        fullSummaryErrors[paper.id] = nil
+        defer { fullSummaryPaperIDs.remove(paper.id) }
+
+        do {
+            let text = try await PDFKitTextExtractor().extract(from: localFile)
+            let provider = configuredProvider(profile: llmProfile)
+            let summary = try await PaperSummaryService(
+                shortProvider: provider,
+                fullProvider: provider,
+                fullProfile: llmProfile,
+                language: summaryLanguage
+            ).generateFullSummary(for: paper, text: text)
+            try MacPersistenceStore.saveSummary(summary, in: modelContext)
+        } catch let error as HTTPError {
+            fullSummaryErrors[paper.id] = error.userMessage(language: appLanguage)
+        } catch {
+            fullSummaryErrors[paper.id] = appLanguage.text(en: "The full reading could not be generated. Please retry later.", zh: "完整解读暂时无法生成，请稍后重试。")
+        }
     }
 
     private func configuredProvider(profile: LLMProfile) -> any LLMProvider {
