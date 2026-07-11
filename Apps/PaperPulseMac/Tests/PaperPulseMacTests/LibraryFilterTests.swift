@@ -39,4 +39,24 @@ final class LibraryFilterTests: XCTestCase {
         )
         XCTAssertTrue(MacLibraryFilter.visible([memory, vision], query: "robot", scope: .all).isEmpty)
     }
+
+    func testSearchIgnoresSurroundingWhitespace() throws {
+        let paper = MacPaperEntity(
+            id: "pulse",
+            title: "Pulse-Aware Paper Discovery",
+            authors: ["Ada Lovelace"],
+            abstract: "A paper about research feeds.",
+            pdfPath: nil,
+            pdfSHA256: nil,
+            absURL: nil,
+            candidateData: Data(),
+            createdAt: Date(),
+            isFavorite: false
+        )
+
+        XCTAssertEqual(
+            MacLibraryFilter.visible([paper], query: "  pulse-aware  ", scope: .all).map(\.id),
+            ["pulse"]
+        )
+    }
 }

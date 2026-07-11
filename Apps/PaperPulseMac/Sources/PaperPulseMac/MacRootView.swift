@@ -77,6 +77,14 @@ struct MacRootView: View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             List(selection: $appModel.selectedPaperID) {
                 Section {
+                    MacSidebarBrandHeader(
+                        language: appModel.appLanguage,
+                        isRunning: appModel.isRunning,
+                        status: appModel.status
+                    )
+                }
+
+                Section {
                     Button { openSettings() } label: {
                         Label(appModel.appLanguage.text(en: "Settings", zh: "设置"), systemImage: "gearshape")
                     }
@@ -88,6 +96,7 @@ struct MacRootView: View {
                         let isActive = appModel.activeFeed?.id == feed.id
                         MacFeedRow(
                             feed: feed,
+                            language: appModel.appLanguage,
                             isActive: isActive,
                             isPushing: appModel.isRunning && isActive,
                             onSelect: { expandOnly(feed) },
@@ -117,20 +126,18 @@ struct MacRootView: View {
                         let papers = visiblePapers(for: feed.id)
                         DisclosureGroup(isExpanded: expansionBinding(for: feed.id)) {
                             if papers.isEmpty {
-                                Text(appModel.appLanguage.text(en: "No pushed papers", zh: "尚未推送论文"))
-                                    .foregroundStyle(.secondary)
+                                MacEmptyInlineRow(text: appModel.appLanguage.text(en: "No pushed papers", zh: "尚未推送论文"))
                             }
                             ForEach(papers) { paper in
                                 MacLibraryRow(paper: paper, summary: shortSummary(for: paper.id), language: appModel.appLanguage)
                                     .tag(paper.id)
                             }
                         } label: {
-                            HStack {
-                                Text(feed.name)
-                                Spacer()
-                                Text("\(papers.count)")
-                                    .foregroundStyle(.secondary)
-                            }
+                            MacLibraryGroupLabel(
+                                title: feed.name,
+                                count: papers.count,
+                                isActive: appModel.activeFeed?.id == feed.id
+                            )
                         }
                     }
 
@@ -141,17 +148,16 @@ struct MacRootView: View {
                                     .tag(paper.id)
                             }
                         } label: {
-                            HStack {
-                                Text(appModel.appLanguage.text(en: "Unclassified", zh: "未归类"))
-                                Spacer()
-                                Text("\(unclassifiedPapers.count)")
-                                    .foregroundStyle(.secondary)
-                            }
+                            MacLibraryGroupLabel(
+                                title: appModel.appLanguage.text(en: "Unclassified", zh: "未归类"),
+                                count: unclassifiedPapers.count
+                            )
                         }
                     }
                 }
             }
             .searchable(text: $libraryQuery, prompt: appModel.appLanguage.text(en: "Search papers", zh: "搜索论文"))
+            .listStyle(.sidebar)
             .navigationTitle(appModel.appLanguage.text(en: "PaperPulse", zh: "论文速递"))
             .toolbar {
                 ToolbarItem(placement: .automatic) {
@@ -176,7 +182,11 @@ struct MacRootView: View {
                 )
                 .id(selectedPaper.id)
             } else {
-                ContentUnavailableView("No Paper Selected", systemImage: "doc.text.magnifyingglass")
+                ContentUnavailableView(
+                    appModel.appLanguage.text(en: "No Paper Selected", zh: "未选择论文"),
+                    systemImage: "doc.text.magnifyingglass",
+                    description: Text(appModel.appLanguage.text(en: "Choose a paper from the library to start reading.", zh: "从论文库中选择一篇论文开始阅读。"))
+                )
             }
         }
         .frame(minWidth: 900, minHeight: 600)
@@ -203,6 +213,7 @@ struct PaperDetailView: View {
     var onCloseFullReading: () -> Void
     @State private var fullSummary: PaperSummary?
     @State private var isReadingFull = false
+    @State private var isFavorite = false
     @AppStorage("PaperPulse.macOS.detailSplitRatio") private var detailSplitRatio = 0.5
 
     var body: some View {
@@ -220,44 +231,97 @@ struct PaperDetailView: View {
                 )
             } else {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text(paper.candidate.title)
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        Text(paper.candidate.authors.joined(separator: ", "))
-                            .foregroundStyle(.secondary)
-                        HStack {
-                            Button {
-                                if let entity = try? MacPersistenceStore.paper(id: paper.id, in: modelContext) {
-                                    entity.isFavorite.toggle()
-                                    try? modelContext.save()
+                    VStack(alignment: .leading, spacing: 14) {
+                        MacSurfaceCard(padding: 18) {
+                            HStack(alignment: .top, spacing: 16) {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text(paper.candidate.title)
+                                        .font(.title2.weight(.semibold))
+                                        .lineLimit(4)
+                                        .textSelection(.enabled)
+                                    if !paper.candidate.authors.isEmpty {
+                                        Text(paper.candidate.authors.joined(separator: ", "))
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(2)
+                                            .textSelection(.enabled)
+                                    }
+                                    HStack(spacing: 8) {
+                                        MacInfoPill(
+                                            icon: "dot.radiowaves.left.and.right",
+                                            text: paper.candidate.source.macDisplayName
+                                        )
+                                        if let venue = paper.candidate.venue, !venue.isEmpty {
+                                            MacInfoPill(icon: "building.columns", text: venue)
+                                        }
+                                        if let date = paper.candidate.publishedAt {
+                                            MacInfoPill(icon: "calendar", text: date.formatted(date: .abbreviated, time: .omitted))
+                                        }
+                                        if let citations = paper.candidate.citationCount {
+                                            MacInfoPill(icon: "quote.bubble", text: "\(citations)")
+                                        }
+                                    }
                                 }
-                            } label: { Label(appModel.appLanguage.text(en: "Favorite", zh: "收藏"), systemImage: "star") }
-                            fullReadingControl
+                                Spacer(minLength: 0)
+                                Button {
+                                    toggleFavorite()
+                                } label: {
+                                    Label(
+                                        isFavorite ? appModel.appLanguage.text(en: "Favorited", zh: "已收藏") : appModel.appLanguage.text(en: "Favorite", zh: "收藏"),
+                                        systemImage: isFavorite ? "star.fill" : "star"
+                                    )
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(isFavorite ? MacBrand.warmGold : MacBrand.pulseRed)
+                            }
                         }
+
+                        MacSurfaceCard {
+                            HStack(alignment: .firstTextBaseline) {
+                                Label(appModel.appLanguage.text(en: "Brief", zh: "简介"), systemImage: "text.quote")
+                                    .font(.headline)
+                                Spacer()
+                                fullReadingControl
+                            }
+                            Text(summary?.shortText ?? paper.candidate.summary)
+                                .font(.body)
+                                .lineSpacing(4)
+                                .textSelection(.enabled)
+                        }
+
                         if let error = appModel.fullSummaryErrors[paper.id] {
                             Text(error)
                                 .font(.caption)
                                 .foregroundStyle(.red)
                         }
-                        Text(summary?.shortText ?? paper.candidate.summary)
+
                         if let url = paper.candidate.absURL {
-                            Link("Open source page", destination: url)
+                            MacSurfaceCard(padding: 14) {
+                                Link(destination: url) {
+                                    Label(appModel.appLanguage.text(en: "Open source page", zh: "打开来源页面"), systemImage: "arrow.up.right.square")
+                                }
+                            }
                         }
                     }
-                    .padding()
+                    .padding(20)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .background(MacWorkbenchBackground())
             }
         } trailing: {
             if let file = paper.localFile {
                 MacPDFView(url: file.fileURL)
             } else {
-                ContentUnavailableView("PDF not downloaded", systemImage: "doc")
+                ContentUnavailableView(
+                    appModel.appLanguage.text(en: "PDF not downloaded", zh: "尚未下载 PDF"),
+                    systemImage: "doc",
+                    description: Text(appModel.appLanguage.text(en: "Only open-access PDFs are saved locally.", zh: "仅公开可访问的 PDF 会保存到本地。"))
+                )
             }
         }
         .task(id: paper.id) {
             fullSummary = try? MacPersistenceStore.fullSummary(for: paper.id, in: modelContext)
+            isFavorite = (try? MacPersistenceStore.paper(id: paper.id, in: modelContext)?.isFavorite) ?? false
             isReadingFull = false
         }
     }
@@ -275,6 +339,8 @@ struct PaperDetailView: View {
             } label: {
                 Label(language.text(en: "Open Full Reading", zh: "打开完整解读"), systemImage: "text.book.closed")
             }
+            .buttonStyle(.borderedProminent)
+            .tint(MacBrand.pulseRed)
         } else {
             Button {
                 Task {
@@ -290,6 +356,16 @@ struct PaperDetailView: View {
                 )
             }
             .disabled(paper.localFile == nil)
+            .buttonStyle(.borderedProminent)
+            .tint(MacBrand.pulseRed)
+        }
+    }
+
+    private func toggleFavorite() {
+        if let entity = try? MacPersistenceStore.paper(id: paper.id, in: modelContext) {
+            entity.isFavorite.toggle()
+            try? modelContext.save()
+            isFavorite = entity.isFavorite
         }
     }
 
@@ -301,6 +377,49 @@ struct PaperDetailView: View {
             onCloseFullReading()
         } catch {
             appModel.fullSummaryErrors[paper.id] = appModel.appLanguage.text(en: "The full reading could not be deleted.", zh: "完整解读无法删除。")
+        }
+    }
+}
+
+struct MacInfoPill: View {
+    var icon: String
+    var text: String
+
+    var body: some View {
+        Label(text, systemImage: icon)
+            .font(.caption.weight(.medium))
+            .lineLimit(1)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(MacBrand.quietFill, in: Capsule())
+            .foregroundStyle(.secondary)
+    }
+}
+
+struct MacWorkbenchBackground: View {
+    var body: some View {
+        LinearGradient(
+            colors: [
+                Color(nsColor: .windowBackgroundColor),
+                MacBrand.deepBlue.opacity(0.04),
+                MacBrand.pulseMagenta.opacity(0.035)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
+}
+
+private extension PaperSourceKind {
+    var macDisplayName: String {
+        switch self {
+        case .arxiv: "arXiv"
+        case .semanticScholar: "Semantic Scholar"
+        case .openAlex: "OpenAlex"
+        case .crossref: "Crossref"
+        case .unpaywall: "Unpaywall"
+        case .web: "Web"
         }
     }
 }

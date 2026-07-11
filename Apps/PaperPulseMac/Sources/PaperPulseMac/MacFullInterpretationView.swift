@@ -14,58 +14,74 @@ struct MacInterpretationPane: View {
         let language = appModel.appLanguage
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(language.text(en: "Full Reading", zh: "完整解读"))
-                            .font(.title2.weight(.semibold))
-                        Text(paper.candidate.title)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
-                    }
-                    Spacer()
-                    HStack(spacing: 8) {
-                        Button(role: .destructive) {
-                            isDeleteConfirmationPresented = true
-                        } label: {
-                            Label(language.text(en: "Delete", zh: "删除"), systemImage: "trash")
+                MacSurfaceCard(padding: 18) {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Label(language.text(en: "Full Reading", zh: "完整解读"), systemImage: "text.book.closed")
+                                .font(.title2.weight(.semibold))
+                                .foregroundStyle(MacBrand.pulseRed)
+                            Text(paper.candidate.title)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(2)
+                                .textSelection(.enabled)
                         }
-                        Button(action: onClose) {
-                            Label(language.text(en: "Close", zh: "关闭"), systemImage: "xmark")
+                        Spacer()
+                        HStack(spacing: 8) {
+                            Button(role: .destructive) {
+                                isDeleteConfirmationPresented = true
+                            } label: {
+                                Label(language.text(en: "Delete", zh: "删除"), systemImage: "trash")
+                            }
+                            Button(action: onClose) {
+                                Label(language.text(en: "Close", zh: "关闭"), systemImage: "xmark")
+                            }
                         }
                     }
-                }
 
-                Text("\(summary.model) · \(summary.generatedAt.formatted(date: .abbreviated, time: .shortened)) · \(summary.sourceRange)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                if let markdownURL {
-                    Text(language.text(en: "Saved locally: \(markdownURL.lastPathComponent)", zh: "已保存到本地：\(markdownURL.lastPathComponent)"))
+                    Text("\(summary.model) · \(summary.generatedAt.formatted(date: .abbreviated, time: .shortened)) · \(summary.sourceRange)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    if let markdownURL {
+                        Label(language.text(en: "Saved locally: \(markdownURL.lastPathComponent)", zh: "已保存到本地：\(markdownURL.lastPathComponent)"), systemImage: "externaldrive")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 if let interpretation = summary.interpretation {
                     ForEach(interpretation.sections) { section in
-                        GroupBox(section.kind.macTitle(language: language)) {
+                        MacSurfaceCard {
                             VStack(alignment: .leading, spacing: 8) {
+                                HStack(alignment: .firstTextBaseline) {
+                                    Text(section.kind.macTitle(language: language))
+                                        .font(.headline)
+                                    Spacer()
+                                    Text(section.anchors.macPageRange(language: language))
+                                        .font(.caption)
+                                        .foregroundStyle(MacBrand.pulseRed)
+                                }
                                 Text(section.content)
                                     .font(.system(size: 17))
                                     .lineSpacing(4)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                Text(section.anchors.macPageRange(language: language))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
                             }
                         }
                     }
                 } else {
-                    Text(summary.fullText ?? summary.shortText)
+                    MacSurfaceCard {
+                        Text(summary.fullText ?? summary.shortText)
+                            .font(.system(size: 17))
+                            .lineSpacing(4)
+                            .textSelection(.enabled)
+                    }
                 }
             }
             .padding(20)
             .frame(minWidth: 420, maxWidth: .infinity, alignment: .leading)
         }
+        .background(MacWorkbenchBackground())
         .confirmationDialog(
             language.text(en: "Delete Full Reading?", zh: "删除完整解读？"),
             isPresented: $isDeleteConfirmationPresented,
