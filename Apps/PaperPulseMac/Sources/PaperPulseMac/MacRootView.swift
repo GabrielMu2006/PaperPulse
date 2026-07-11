@@ -4,6 +4,7 @@ import SwiftUI
 
 struct MacRootView: View {
     @Environment(PaperPulseMacModel.self) private var appModel
+    @Environment(\.openSettings) private var openSettings
 
     var selectedPaper: PaperRecord? {
         appModel.papers.first { $0.id == appModel.selectedPaperID }
@@ -28,6 +29,12 @@ struct MacRootView: View {
             }
             .navigationTitle("Papers")
             .toolbar {
+                Button {
+                    openSettings()
+                } label: {
+                    Label("Settings", systemImage: "gearshape")
+                }
+
                 Button {
                     Task { await appModel.runDefaultFeed() }
                 } label: {
