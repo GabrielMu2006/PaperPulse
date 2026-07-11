@@ -7,6 +7,7 @@ struct MacInterpretationPane: View {
     var summary: PaperSummary
     var markdownURL: URL?
     var onClose: () -> Void
+    var onDelete: () -> Void
 
     var body: some View {
         let language = appModel.appLanguage
@@ -22,8 +23,13 @@ struct MacInterpretationPane: View {
                             .lineLimit(2)
                     }
                     Spacer()
-                    Button(action: onClose) {
-                        Label(language.text(en: "Close", zh: "关闭"), systemImage: "xmark")
+                    HStack(spacing: 8) {
+                        Button(role: .destructive, action: onDelete) {
+                            Label(language.text(en: "Delete", zh: "删除"), systemImage: "trash")
+                        }
+                        Button(action: onClose) {
+                            Label(language.text(en: "Close", zh: "关闭"), systemImage: "xmark")
+                        }
                     }
                 }
 

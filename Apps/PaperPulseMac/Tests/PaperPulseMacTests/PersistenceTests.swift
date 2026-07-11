@@ -100,4 +100,25 @@ final class PersistenceTests: XCTestCase {
         XCTAssertTrue(try String(contentsOf: fileURL).contains("## 主要结果"))
         XCTAssertEqual(try MacPersistenceStore.fullSummaryFileURL(for: paper.id, in: context), fileURL)
     }
+
+    func testFullInterpretationsUseDistinctFilesAndDeleteOnlyTheirOwnPaper() throws {
+        let container = try MacPersistenceStore.makeContainer(inMemory: true)
+        let context = ModelContext(container)
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let first = PaperRecord(candidate: PaperCandidate(source: .arxiv, sourceID: "first", title: "First", summary: ""), localFile: nil)
+        let second = PaperRecord(candidate: PaperCandidate(source: .arxiv, sourceID: "second", title: "Second", summary: ""), localFile: nil)
+
+        let firstSummary = PaperSummary(paperID: first.id, shortText: "", fullText: "First reading", language: "zh-Hans", model: "test", generatedAt: Date(), sourceRange: "page 1", kind: .full)
+        let secondSummary = PaperSummary(paperID: second.id, shortText: "", fullText: "Second reading", language: "zh-Hans", model: "test", generatedAt: Date(), sourceRange: "page 1", kind: .full)
+        let firstURL = try MacPersistenceStore.saveFullSummary(firstSummary, for: first, in: context, directory: directory)
+        let secondURL = try MacPersistenceStore.saveFullSummary(secondSummary, for: second, in: context, directory: directory)
+
+        XCTAssertNotEqual(firstURL, secondURL)
+        try MacPersistenceStore.deleteFullSummary(for: first.id, in: context)
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: firstURL.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: secondURL.path))
+        XCTAssertNil(try MacPersistenceStore.fullSummary(for: first.id, in: context))
+        XCTAssertNotNil(try MacPersistenceStore.fullSummary(for: second.id, in: context))
+    }
 }

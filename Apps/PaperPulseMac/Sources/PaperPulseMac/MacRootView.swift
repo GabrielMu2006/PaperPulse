@@ -12,6 +12,7 @@ struct MacRootView: View {
     @State private var libraryQuery = ""
     @State private var libraryScope: MacLibraryScope = .all
     @State private var editorDraft: MacFeedEditorDraft?
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     var selectedPaper: PaperRecord? {
         storedPapers.first(where: { $0.id == appModel.selectedPaperID }).flatMap(MacPersistenceStore.record(from:))
@@ -43,7 +44,7 @@ struct MacRootView: View {
     var body: some View {
         @Bindable var appModel = appModel
 
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             List(selection: $appModel.selectedPaperID) {
                 Section {
                     HStack(spacing: 8) {
@@ -126,7 +127,12 @@ struct MacRootView: View {
             }
         } detail: {
             if let selectedPaper {
-                PaperDetailView(paper: selectedPaper, summary: appModel.summaries[selectedPaper.id])
+                PaperDetailView(
+                    paper: selectedPaper,
+                    summary: appModel.summaries[selectedPaper.id],
+                    onOpenFullReading: { columnVisibility = .detailOnly }
+                )
+                .id(selectedPaper.id)
             } else {
                 ContentUnavailableView("No Paper Selected", systemImage: "doc.text.magnifyingglass")
             }
@@ -149,17 +155,20 @@ struct PaperDetailView: View {
     @Environment(\.modelContext) private var modelContext
     var paper: PaperRecord
     var summary: PaperSummary?
+    var onOpenFullReading: () -> Void
     @State private var fullSummary: PaperSummary?
     @State private var isReadingFull = false
+    @AppStorage("PaperPulse.macOS.detailSplitRatio") private var detailSplitRatio = 0.5
 
     var body: some View {
-        HSplitView {
+        MacBalancedSplitView(ratio: $detailSplitRatio) {
             if isReadingFull, let fullSummary {
                 MacInterpretationPane(
                     paper: paper,
                     summary: fullSummary,
                     markdownURL: try? MacPersistenceStore.fullSummaryFileURL(for: paper.id, in: modelContext),
-                    onClose: { isReadingFull = false }
+                    onClose: { isReadingFull = false },
+                    onDelete: deleteFullReading
                 )
             } else {
                 ScrollView {
@@ -193,15 +202,16 @@ struct PaperDetailView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-
+        } trailing: {
             if let file = paper.localFile {
                 MacPDFView(url: file.fileURL)
             } else {
                 ContentUnavailableView("PDF not downloaded", systemImage: "doc")
             }
         }
-        .task {
+        .task(id: paper.id) {
             fullSummary = try? MacPersistenceStore.fullSummary(for: paper.id, in: modelContext)
+            isReadingFull = false
         }
     }
 
@@ -214,6 +224,7 @@ struct PaperDetailView: View {
         } else if fullSummary != nil {
             Button {
                 isReadingFull = true
+                onOpenFullReading()
             } label: {
                 Label(language.text(en: "Open Full Reading", zh: "打开完整解读"), systemImage: "text.book.closed")
             }
@@ -227,6 +238,48 @@ struct PaperDetailView: View {
                 Label(language.text(en: "Generate Full Reading", zh: "生成完整解读"), systemImage: "sparkles")
             }
             .disabled(paper.localFile == nil)
+        }
+    }
+
+    private func deleteFullReading() {
+        do {
+            try MacPersistenceStore.deleteFullSummary(for: paper.id, in: modelContext)
+            fullSummary = nil
+            isReadingFull = false
+        } catch {
+            appModel.fullSummaryErrors[paper.id] = appModel.appLanguage.text(en: "The full reading could not be deleted.", zh: "完整解读无法删除。")
+        }
+    }
+}
+
+struct MacBalancedSplitView<Leading: View, Trailing: View>: View {
+    @Binding var ratio: Double
+    @ViewBuilder var leading: () -> Leading
+    @ViewBuilder var trailing: () -> Trailing
+    @State private var dragStartRatio: Double?
+
+    var body: some View {
+        GeometryReader { proxy in
+            let availableWidth = max(1, proxy.size.width - 8)
+            HStack(spacing: 0) {
+                leading()
+                    .frame(width: availableWidth * ratio)
+                Rectangle()
+                    .fill(.separator)
+                    .frame(width: 8)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                let start = dragStartRatio ?? ratio
+                                dragStartRatio = start
+                                ratio = min(max(start + (value.translation.width / availableWidth), 0.25), 0.75)
+                            }
+                            .onEnded { _ in dragStartRatio = nil }
+                    )
+                trailing()
+                    .frame(width: availableWidth * (1 - ratio))
+            }
         }
     }
 }

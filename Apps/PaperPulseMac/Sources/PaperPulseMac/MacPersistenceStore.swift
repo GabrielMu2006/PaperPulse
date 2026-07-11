@@ -282,6 +282,20 @@ enum MacPersistenceStore {
         }
     }
 
+    static func deleteFullSummary(for paperID: String, in context: ModelContext) throws {
+        let fullKind = SummaryKind.full.rawValue
+        let descriptor = FetchDescriptor<MacSummaryEntity>(predicate: #Predicate {
+            $0.paperID == paperID && $0.kindRawValue == fullKind
+        })
+        for entity in try context.fetch(descriptor) {
+            if let path = entity.markdownPath {
+                try? FileManager.default.removeItem(at: URL(fileURLWithPath: path))
+            }
+            context.delete(entity)
+        }
+        try context.save()
+    }
+
     static func deleteFeed(id: UUID, in context: ModelContext) throws {
         let descriptor = FetchDescriptor<MacFeedEntity>(predicate: #Predicate { $0.id == id })
         for entity in try context.fetch(descriptor) { context.delete(entity) }
