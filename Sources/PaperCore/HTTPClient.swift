@@ -171,3 +171,14 @@ public enum HTTPError: Error, Equatable, Sendable {
     case timeout
     case transport(URLError.Code)
 }
+
+extension HTTPError {
+    var technicalDescription: String {
+        switch self {
+        case .nonSuccessStatus(let status): "HTTP \(status)"
+        case .cancelled: "request cancelled"
+        case .timeout: "request timed out"
+        case .transport(let code): "network transport \(code.rawValue)"
+        }
+    }
+}

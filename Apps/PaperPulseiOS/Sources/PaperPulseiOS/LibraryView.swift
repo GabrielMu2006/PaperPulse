@@ -137,7 +137,13 @@ struct PaperDetailView: View {
         )
     }
 
-    private var summary: SummaryEntity? { summaries.first }
+    private var shortSummary: SummaryEntity? {
+        summaries.first { $0.kindRawValue == SummaryKind.short.rawValue }
+    }
+
+    private var fullSummary: SummaryEntity? {
+        summaries.first { $0.kindRawValue == SummaryKind.full.rawValue }
+    }
 
     var body: some View {
         let language = appModel.appLanguage
@@ -176,11 +182,11 @@ struct PaperDetailView: View {
                     .buttonStyle(.bordered)
                 }
 
-                if let summary {
+                if let shortSummary {
                     GroupBox(language.text(en: "Short Summary", zh: "短简介")) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(summary.shortText).font(.body)
-                            Text("\(summary.model) · \(summary.language) · \(summary.sourceRange)")
+                            Text(shortSummary.shortText).font(.body)
+                            Text("\(shortSummary.model) · \(shortSummary.language) · \(shortSummary.sourceRange)")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -188,26 +194,20 @@ struct PaperDetailView: View {
                     }
                 }
 
-                if let fullText = summary?.fullText, !fullText.isEmpty {
-                    GroupBox(language.text(en: "Full Summary", zh: "完整简介")) {
-                        Text(fullText).frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-
                 VStack(alignment: .leading, spacing: 12) {
-                    Button {
-                        Task { await appModel.generateFullSummary(for: paper, modelContext: modelContext) }
+                    NavigationLink {
+                        FullInterpretationView(paper: paper)
                     } label: {
                         Label(
-                            appModel.fullSummaryPaperIDs.contains(paper.id)
-                                ? language.text(en: "Generating Full Summary...", zh: "正在生成完整简介...")
-                                : language.text(en: "Generate Full Summary", zh: "生成完整简介"),
+                            fullSummary == nil
+                                ? language.text(en: "Generate Full Reading", zh: "生成完整解读")
+                                : language.text(en: "Open Full Reading", zh: "打开完整解读"),
                             systemImage: "text.book.closed"
                         )
                         .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(appModel.fullSummaryPaperIDs.contains(paper.id) || paper.resolvedPDFURL == nil)
+                    .disabled(paper.resolvedPDFURL == nil)
 
                     if let url = paper.resolvedPDFURL {
                         NavigationLink {
@@ -240,6 +240,152 @@ struct PaperDetailView: View {
             Button(language.text(en: "OK", zh: "确定")) { appModel.errorMessage = nil }
         } message: {
             Text(appModel.errorMessage ?? "")
+        }
+    }
+}
+
+struct FullInterpretationView: View {
+    @Environment(PaperPulseAppModel.self) private var appModel
+    @Environment(\.modelContext) private var modelContext
+    var paper: PaperEntity
+    @Query private var summaries: [SummaryEntity]
+
+    init(paper: PaperEntity) {
+        self.paper = paper
+        let paperID = paper.id
+        let fullKind = SummaryKind.full.rawValue
+        _summaries = Query(
+            filter: #Predicate<SummaryEntity> { summary in
+                summary.paperID == paperID && summary.kindRawValue == fullKind
+            },
+            sort: \SummaryEntity.generatedAt,
+            order: .reverse
+        )
+    }
+
+    private var fullSummary: SummaryEntity? { summaries.first }
+    private var isGenerating: Bool { appModel.fullSummaryPaperIDs.contains(paper.id) }
+
+    var body: some View {
+        let language = appModel.appLanguage
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(paper.title)
+                    .font(.title3.weight(.semibold))
+
+                if let fullSummary {
+                    interpretationContent(summary: fullSummary, language: language)
+                } else if isGenerating {
+                    PaperPulseCard {
+                        VStack(alignment: .leading, spacing: 10) {
+                            ProgressView()
+                            Text(language.text(en: "Preparing the PDF, extracting pages, and building the full reading...", zh: "正在准备 PDF、提取页面并生成完整解读..."))
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                } else if let error = appModel.errorMessage {
+                    ContentUnavailableView(
+                        language.text(en: "Full Reading Unavailable", zh: "完整解读未生成"),
+                        systemImage: "exclamationmark.triangle",
+                        description: Text(error)
+                    )
+                    Button(language.text(en: "Retry", zh: "重新生成")) {
+                        Task { await appModel.generateFullSummary(for: paper, modelContext: modelContext) }
+                    }
+                    .buttonStyle(.borderedProminent)
+                } else {
+                    PaperPulseCard {
+                        Label(language.text(en: "Starting full reading...", zh: "正在启动完整解读..."), systemImage: "text.book.closed")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .padding()
+        }
+        .navigationTitle(language.text(en: "Full Reading", zh: "完整解读"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if fullSummary != nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        Task { await appModel.generateFullSummary(for: paper, modelContext: modelContext) }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .accessibilityLabel(language.text(en: "Regenerate full reading", zh: "重新生成完整解读"))
+                    .disabled(isGenerating)
+                }
+            }
+        }
+        .task(id: paper.id) {
+            guard fullSummary == nil, !isGenerating else { return }
+            await appModel.generateFullSummary(for: paper, modelContext: modelContext)
+        }
+    }
+
+    @ViewBuilder
+    private func interpretationContent(summary: SummaryEntity, language: AppLanguage) -> some View {
+        let interpretation = summary.interpretation
+        Text("\(summary.model) · \(formattedDate(summary.generatedAt)) · \(summary.sourceRange)")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+
+        if let interpretation {
+            ForEach(interpretation.sections) { section in
+                PaperPulseCard {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(section.kind.displayTitle(language: language))
+                            .font(.headline)
+                        Text(section.content)
+                            .font(.body)
+                        Text(pageRange(section.anchors, language: language))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        } else if let fullText = summary.fullText, !fullText.isEmpty {
+            PaperPulseCard {
+                Text(fullText).frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    private func formattedDate(_ date: Date) -> String {
+        date.formatted(date: .abbreviated, time: .shortened)
+    }
+
+    private func pageRange(_ anchors: [PageAnchor], language: AppLanguage) -> String {
+        let pages = anchors.map(\.pageNumber).sorted()
+        guard let first = pages.first, let last = pages.last else {
+            return language.text(en: "No page anchor", zh: "无页码锚点")
+        }
+        return first == last
+            ? language.text(en: "Page \(first)", zh: "第 \(first) 页")
+            : language.text(en: "Pages \(first)-\(last)", zh: "第 \(first)-\(last) 页")
+    }
+}
+
+private extension SummaryEntity {
+    var interpretation: PaperInterpretation? {
+        guard let interpretationData else { return nil }
+        return try? JSONDecoder().decode(PaperInterpretation.self, from: interpretationData)
+    }
+}
+
+private extension PaperInterpretationSectionKind {
+    func displayTitle(language: AppLanguage) -> String {
+        switch self {
+        case .researchQuestion: language.text(en: "Research Question & Background", zh: "研究问题与背景")
+        case .paperStructure: language.text(en: "Paper Structure", zh: "论文结构概览")
+        case .method: language.text(en: "Method", zh: "方法")
+        case .experimentDesign: language.text(en: "Data & Experimental Design", zh: "数据与实验设计")
+        case .results: language.text(en: "Main Results", zh: "主要结果")
+        case .keyArguments: language.text(en: "Key Arguments", zh: "关键论证")
+        case .limitations: language.text(en: "Limitations & Risks", zh: "局限与风险")
+        case .readerFit: language.text(en: "Who Should Read This", zh: "适合读者")
+        case .extensionQuestions: language.text(en: "Extension Questions", zh: "可延伸问题")
         }
     }
 }

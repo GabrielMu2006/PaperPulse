@@ -85,7 +85,7 @@ struct TodayView: View {
 
                         ForEach(lastRun.failures, id: \.self) { failure in
                             PaperPulseCard {
-                                Text(failure.message)
+                                Text(failure.userMessage(language: language))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }

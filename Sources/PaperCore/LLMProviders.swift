@@ -84,10 +84,26 @@ public struct OpenAICompatibleChatProvider: LLMProvider {
         Known institutions: \(paper.candidate.institutions.joined(separator: "; "))
         Mode: \(mode)
 
-        Write the summary in \(language.promptName). Return JSON:
+        Write the summary in \(language.promptName). Return JSON. For short mode use:
+        { "shortText": "\(language.shortTextInstruction)", "fullText": null }
+
+        For full mode use:
         {
-          "shortText": "\(language.shortTextInstruction)",
-          "fullText": "\(language.fullTextInstruction)"
+          "shortText": "",
+          "fullText": "short overall conclusion",
+          "interpretation": {
+            "sections": [
+              {"kind":"researchQuestion","content":"..."},
+              {"kind":"paperStructure","content":"..."},
+              {"kind":"method","content":"..."},
+              {"kind":"experimentDesign","content":"..."},
+              {"kind":"results","content":"..."},
+              {"kind":"keyArguments","content":"..."},
+              {"kind":"limitations","content":"..."},
+              {"kind":"readerFit","content":"..."},
+              {"kind":"extensionQuestions","content":"..."}
+            ]
+          }
         }
 
         Do not invent institutions, experiments, citations, or limitations. Say evidence is unavailable when it is unavailable.
@@ -342,7 +358,8 @@ private enum SummaryContentDecoder {
             language: "",
             model: "",
             generatedAt: .distantPast,
-            sourceRange: ""
+            sourceRange: "",
+            interpretation: payload.interpretation
         )
     }
 }
@@ -350,6 +367,7 @@ private enum SummaryContentDecoder {
 private struct ProviderSummaryPayload: Decodable {
     var shortText: String
     var fullText: String?
+    var interpretation: PaperInterpretation?
 }
 
 extension String {

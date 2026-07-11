@@ -25,8 +25,8 @@ public struct PaperDiscoveryService {
         for kind in enabled {
             guard let outcome = outcomes[kind] else { continue }
             candidates += outcome.candidates
-            if let failureMessage = outcome.failureMessage {
-                failures.append(PipelineFailure(paperID: nil, message: "\(kind.rawValue) source failed: \(failureMessage)"))
+            if let failure = outcome.failure {
+                failures.append(PipelineFailure.sourceUnavailable(kind, error: failure))
             }
         }
 
@@ -52,7 +52,7 @@ public struct PaperDiscoveryService {
                     do {
                         return SourceOutcome(kind: kind, candidates: try await source.search(feed: feed, window: window))
                     } catch {
-                        return SourceOutcome(kind: kind, candidates: [], failureMessage: error.localizedDescription)
+                        return SourceOutcome(kind: kind, candidates: [], failure: error)
                     }
                 }
             }
@@ -81,11 +81,11 @@ private struct ConcurrentPaperSource: @unchecked Sendable {
 private struct SourceOutcome: Sendable {
     var kind: PaperSourceKind
     var candidates: [PaperCandidate]
-    var failureMessage: String?
+    var failure: Error?
 
-    init(kind: PaperSourceKind, candidates: [PaperCandidate], failureMessage: String? = nil) {
+    init(kind: PaperSourceKind, candidates: [PaperCandidate], failure: Error? = nil) {
         self.kind = kind
         self.candidates = candidates
-        self.failureMessage = failureMessage
+        self.failure = failure
     }
 }

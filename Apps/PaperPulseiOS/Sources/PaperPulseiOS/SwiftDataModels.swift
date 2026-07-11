@@ -104,6 +104,7 @@ final class SummaryEntity {
     var providerProfileID: UUID?
     var sourceTextHash: String?
     var anchorsData: Data?
+    var interpretationData: Data?
 
     init(
         id: UUID = UUID(),
@@ -117,7 +118,8 @@ final class SummaryEntity {
         kindRawValue: String = SummaryKind.short.rawValue,
         providerProfileID: UUID? = nil,
         sourceTextHash: String? = nil,
-        anchorsData: Data? = nil
+        anchorsData: Data? = nil,
+        interpretationData: Data? = nil
     ) {
         self.id = id
         self.paperID = paperID
@@ -131,6 +133,7 @@ final class SummaryEntity {
         self.providerProfileID = providerProfileID
         self.sourceTextHash = sourceTextHash
         self.anchorsData = anchorsData
+        self.interpretationData = interpretationData
     }
 }
 

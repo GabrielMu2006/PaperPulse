@@ -296,13 +296,11 @@ final class PaperPulseAppModel {
             switch source {
             case .arxiv:
                 ArxivSource()
-            case .semanticScholar:
-                SemanticScholarSource()
             case .openAlex:
                 OpenAlexSource()
             case .crossref:
                 CrossrefSource()
-            case .unpaywall, .web:
+            case .semanticScholar, .unpaywall, .web:
                 nil
             }
         }
@@ -322,8 +320,9 @@ final class PaperPulseAppModel {
 
     private func saveFullSummary(_ summary: PaperSummary, fallbackPaperID: String, in modelContext: ModelContext) throws {
         let paperID = summary.paperID ?? fallbackPaperID
+        let fullKind = SummaryKind.full.rawValue
         let descriptor = FetchDescriptor<SummaryEntity>(
-            predicate: #Predicate { $0.paperID == paperID }
+            predicate: #Predicate { $0.paperID == paperID && $0.kindRawValue == fullKind }
         )
         let existing = try modelContext.fetch(descriptor).first
         if let existing {
@@ -337,6 +336,7 @@ final class PaperPulseAppModel {
             existing.providerProfileID = summary.providerProfileID
             existing.sourceTextHash = summary.sourceTextHash
             existing.anchorsData = try JSONEncoder().encode(summary.anchors)
+            existing.interpretationData = try summary.interpretation.map { try JSONEncoder().encode($0) }
         } else {
             modelContext.insert(
                 SummaryEntity(
@@ -351,7 +351,8 @@ final class PaperPulseAppModel {
                 kindRawValue: summary.kind.rawValue,
                 providerProfileID: summary.providerProfileID,
                 sourceTextHash: summary.sourceTextHash,
-                anchorsData: try JSONEncoder().encode(summary.anchors)
+                anchorsData: try JSONEncoder().encode(summary.anchors),
+                interpretationData: try summary.interpretation.map { try JSONEncoder().encode($0) }
                 )
             )
         }

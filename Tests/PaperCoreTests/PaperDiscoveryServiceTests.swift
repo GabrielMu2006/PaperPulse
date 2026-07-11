@@ -5,17 +5,17 @@ import XCTest
 final class PaperDiscoveryServiceTests: XCTestCase {
     func testDiscoverUsesOnlyEnabledSourcesLookbackWindowAndKeepsPartialResults() async {
         let arxiv = RecordingPaperSource(results: [candidate(source: .arxiv, sourceID: "2607.00001v1", title: "arXiv result")])
-        let semantic = RecordingPaperSource(error: DiscoveryTestError.unavailable)
+        let openAlex = RecordingPaperSource(error: DiscoveryTestError.unavailable)
         let ignored = RecordingPaperSource(results: [candidate(source: .openAlex, sourceID: "W-ignored", title: "ignored")])
         let service = PaperDiscoveryService(sources: [
             .arxiv: arxiv,
-            .semanticScholar: semantic,
-            .openAlex: ignored
+            .openAlex: openAlex,
+            .crossref: ignored
         ])
         let now = Date(timeIntervalSince1970: 1_783_000_000)
         let feed = FeedConfig(
             name: "Agents",
-            enabledSources: [.semanticScholar, .arxiv],
+            enabledSources: [.openAlex, .arxiv],
             lookbackDays: 3
         )
 
@@ -23,11 +23,12 @@ final class PaperDiscoveryServiceTests: XCTestCase {
 
         XCTAssertEqual(result.candidates.map(\.sourceID), ["2607.00001v1"])
         XCTAssertEqual(result.failures.count, 1)
-        XCTAssertEqual(result.failures[0].message, "semanticScholar source failed: unavailable")
+        XCTAssertEqual(result.failures[0].source, .openAlex)
+        XCTAssertEqual(result.failures[0].phase, .discovery)
         let arxivWindows = await arxiv.windows()
-        let semanticWindows = await semantic.windows()
+        let openAlexWindows = await openAlex.windows()
         XCTAssertEqual(arxivWindows, [DateInterval(start: now.addingTimeInterval(-3 * 86_400), end: now)])
-        XCTAssertEqual(semanticWindows, [DateInterval(start: now.addingTimeInterval(-3 * 86_400), end: now)])
+        XCTAssertEqual(openAlexWindows, [DateInterval(start: now.addingTimeInterval(-3 * 86_400), end: now)])
         let ignoredWindows = await ignored.windows()
         XCTAssertTrue(ignoredWindows.isEmpty)
     }
@@ -74,12 +75,12 @@ final class PaperDiscoveryServiceTests: XCTestCase {
     }
 
     func testMergerFallsBackToArxivBaseIDThenNormalizedTitleHashDeterministically() {
-        let semantic = candidate(
-            source: .semanticScholar,
-            sourceID: "S-1",
+        let crossrefByArxivID = candidate(
+            source: .crossref,
+            sourceID: "C-1",
             baseID: "2607.00002",
             title: "Different displayed title",
-            summary: "semantic"
+            summary: "crossref"
         )
         let arxiv = candidate(
             source: .arxiv,
@@ -91,7 +92,7 @@ final class PaperDiscoveryServiceTests: XCTestCase {
         let titleFirst = candidate(source: .openAlex, sourceID: "W-1", title: "Tool-Using Agents: A Survey", summary: "openalex")
         let titleSecond = candidate(source: .crossref, sourceID: "C-1", title: " tool using agents a survey ", summary: "crossref")
 
-        let merged = PaperCandidateMerger().merge([titleSecond, semantic, titleFirst, arxiv])
+        let merged = PaperCandidateMerger().merge([titleSecond, crossrefByArxivID, titleFirst, arxiv])
 
         XCTAssertEqual(merged.count, 2)
         XCTAssertEqual(merged[0].source, .arxiv)
@@ -101,13 +102,13 @@ final class PaperDiscoveryServiceTests: XCTestCase {
     }
 
     func testMergerUsesArxivIDWhenOnlyOneRecordHasDOI() {
-        let semantic = candidate(
-            source: .semanticScholar,
-            sourceID: "S-2",
+        let crossref = candidate(
+            source: .crossref,
+            sourceID: "C-2",
             baseID: "2607.00003",
-            doi: "10.1000/semantic-only",
-            title: "Semantic title",
-            summary: "semantic"
+            doi: "10.1000/crossref-only",
+            title: "Crossref title",
+            summary: "crossref"
         )
         let arxiv = candidate(
             source: .arxiv,
@@ -117,11 +118,11 @@ final class PaperDiscoveryServiceTests: XCTestCase {
             summary: "arxiv"
         )
 
-        let merged = PaperCandidateMerger().merge([semantic, arxiv])
+        let merged = PaperCandidateMerger().merge([crossref, arxiv])
 
         XCTAssertEqual(merged.count, 1)
-        XCTAssertEqual(merged[0].doi, "10.1000/semantic-only")
-        XCTAssertEqual(merged[0].provenance.map(\.source), [.arxiv, .semanticScholar])
+        XCTAssertEqual(merged[0].doi, "10.1000/crossref-only")
+        XCTAssertEqual(merged[0].provenance.map(\.source), [.arxiv, .crossref])
     }
 
     private func candidate(

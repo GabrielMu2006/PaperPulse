@@ -125,6 +125,7 @@ public struct PersistedSummary: Codable, Hashable, Identifiable, Sendable {
     public var providerProfileID: UUID?
     public var sourceTextHash: String?
     public var anchors: [PageAnchor]
+    public var interpretation: PaperInterpretation?
 
     public init(
         id: UUID,
@@ -138,7 +139,8 @@ public struct PersistedSummary: Codable, Hashable, Identifiable, Sendable {
         kind: SummaryKind = .short,
         providerProfileID: UUID? = nil,
         sourceTextHash: String? = nil,
-        anchors: [PageAnchor] = []
+        anchors: [PageAnchor] = [],
+        interpretation: PaperInterpretation? = nil
     ) {
         self.id = id
         self.paperID = paperID
@@ -152,6 +154,7 @@ public struct PersistedSummary: Codable, Hashable, Identifiable, Sendable {
         self.providerProfileID = providerProfileID
         self.sourceTextHash = sourceTextHash
         self.anchors = anchors
+        self.interpretation = interpretation
     }
 }
 
@@ -271,7 +274,8 @@ public extension PipelineResult {
                     kind: summary.kind,
                     providerProfileID: summary.providerProfileID,
                     sourceTextHash: summary.sourceTextHash,
-                    anchors: summary.anchors
+                    anchors: summary.anchors,
+                    interpretation: summary.interpretation
                 )
             },
             failures: failures

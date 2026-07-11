@@ -152,6 +152,42 @@ final class ProviderTests: XCTestCase {
         XCTAssertEqual(summary.language, "")
     }
 
+    func testOpenAICompatibleProviderDecodesStructuredFullInterpretation() async throws {
+        let response = """
+        {
+          "choices": [{
+            "message": {
+              "content": "{\\"shortText\\":\\"\\",\\"fullText\\":\\"Overall conclusion.\\",\\"interpretation\\":{\\"sections\\":[{\\"kind\\":\\"researchQuestion\\",\\"content\\":\\"The paper studies reliable agents.\\"}]}}"
+            }
+          }]
+        }
+        """
+        let provider = OpenAICompatibleChatProvider(
+            profile: LLMProfile(
+                name: "DeepSeek",
+                providerKind: .deepSeek,
+                baseURL: URL(string: "https://api.example.com/v1")!,
+                model: "deepseek-test",
+                apiKey: "test-key",
+                capabilities: [.fullSummary]
+            ),
+            httpClient: StubHTTPClient { request in
+                let body = try XCTUnwrap(request.httpBody)
+                XCTAssertTrue(String(decoding: body, as: UTF8.self).contains("researchQuestion"))
+                return HTTPResponse(data: Data(response.utf8), statusCode: 200, mimeType: "application/json", finalURL: try XCTUnwrap(request.url))
+            }
+        )
+
+        let summary = try await provider.fullSummary(
+            for: PaperRecord(candidate: .fixture(title: "Paper"), localFile: nil),
+            text: ExtractedPaperText(plainText: "paper text", pages: [])
+        )
+
+        XCTAssertEqual(summary.fullText, "Overall conclusion.")
+        XCTAssertEqual(summary.interpretation?.sections.first?.kind, .researchQuestion)
+        XCTAssertEqual(summary.interpretation?.sections.first?.content, "The paper studies reliable agents.")
+    }
+
     func testProviderRegistryResolvesConfiguredProfileOnlyWhenItSupportsAssignedRole() {
         let shortProfile = LLMProfile(
             name: "Short",

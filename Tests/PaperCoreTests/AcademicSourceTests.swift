@@ -34,36 +34,6 @@ final class AcademicSourceTests: XCTestCase {
         XCTAssertEqual(papers[0].openAccessEvidence?.url, papers[0].openAccessPDFURL)
     }
 
-    func testSemanticScholarSendsOnlyNonemptyAPIKeyAndParsesVerifiedOA() async throws {
-        let response = """
-        { "data": [{
-          "paperId": "semantic-123",
-          "title": "Semantic Agent Paper",
-          "authors": [{ "name": "Ada Lovelace" }],
-          "externalIds": { "DOI": "10.1000/semantic", "ArXiv": "2607.00001v3" },
-          "openAccessPdf": { "url": "https://repository.example/semantic.pdf" }
-        }] }
-        """
-        let keyedClient = StubHTTPClient { request in
-            XCTAssertEqual(request.value(forHTTPHeaderField: "x-api-key"), "secret-key")
-            return HTTPResponse(data: Data(response.utf8), statusCode: 200, mimeType: "application/json", finalURL: try XCTUnwrap(request.url))
-        }
-        let unkeyedClient = StubHTTPClient { request in
-            XCTAssertNil(request.value(forHTTPHeaderField: "x-api-key"))
-            return HTTPResponse(data: Data(response.utf8), statusCode: 200, mimeType: "application/json", finalURL: try XCTUnwrap(request.url))
-        }
-        let feed = FeedConfig(name: "Agents")
-        let window = DateInterval(start: Self.date("2026-07-01"), end: Self.date("2026-07-09"))
-
-        let keyed = try await SemanticScholarSource(apiKey: "secret-key", httpClient: keyedClient).search(feed: feed, window: window)
-        _ = try await SemanticScholarSource(apiKey: "", httpClient: unkeyedClient).search(feed: feed, window: window)
-
-        XCTAssertEqual(keyed[0].baseID, "2607.00001")
-        XCTAssertEqual(keyed[0].provenance.map(\.source), [.semanticScholar])
-        XCTAssertEqual(keyed[0].openAccessEvidence?.status, .verified)
-        XCTAssertEqual(keyed[0].openAccessEvidence?.source, .semanticScholar)
-    }
-
     func testOpenAlexSourceBuildsDateFilteredRequestAndParsesWorkMetadata() async throws {
         let response = """
         {
@@ -231,21 +201,6 @@ final class AcademicSourceTests: XCTestCase {
         XCTAssertEqual(enriched.openAccessEvidence?.status, .verified)
         XCTAssertEqual(enriched.openAccessEvidence?.source, .unpaywall)
         XCTAssertEqual(enriched.provenance.map(\.source), [.unpaywall])
-    }
-
-    func testSemanticScholarRejectsMalformedPayload() async {
-        let client = StubHTTPClient { request in
-            HTTPResponse(data: Data("not json".utf8), statusCode: 200, mimeType: "application/json", finalURL: try XCTUnwrap(request.url))
-        }
-
-        await XCTAssertThrowsErrorAsync(
-            try await SemanticScholarSource(httpClient: client).search(
-                feed: FeedConfig(name: "Agents"),
-                window: DateInterval(start: Self.date("2026-07-01"), end: Self.date("2026-07-09"))
-            )
-        ) { error in
-            XCTAssertTrue(error is DecodingError)
-        }
     }
 
     private static func date(_ value: String) -> Date {

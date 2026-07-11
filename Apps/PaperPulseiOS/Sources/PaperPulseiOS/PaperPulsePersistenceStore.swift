@@ -112,6 +112,7 @@ enum PaperPulsePersistenceStore {
 
     private static func upsertSummary(_ summary: PersistedSummary, in context: ModelContext) throws {
         let anchorsData = try JSONEncoder().encode(summary.anchors)
+        let interpretationData = try summary.interpretation.map { try JSONEncoder().encode($0) }
         if let existing = try fetchSummary(id: summary.id, in: context) {
             existing.paperID = summary.paperID
             existing.shortText = summary.shortText
@@ -124,6 +125,7 @@ enum PaperPulsePersistenceStore {
             existing.providerProfileID = summary.providerProfileID
             existing.sourceTextHash = summary.sourceTextHash
             existing.anchorsData = anchorsData
+            existing.interpretationData = interpretationData
             return
         }
 
@@ -140,7 +142,8 @@ enum PaperPulsePersistenceStore {
                 kindRawValue: summary.kind.rawValue,
                 providerProfileID: summary.providerProfileID,
                 sourceTextHash: summary.sourceTextHash,
-                anchorsData: anchorsData
+                anchorsData: anchorsData,
+                interpretationData: interpretationData
             )
         )
     }

@@ -65,6 +65,41 @@ final class ProcessingServiceTests: XCTestCase {
         ])
         XCTAssertEqual(summary.shortText, "Provider content only")
     }
+
+    func testFullInterpretationUsesPageChunksAndAddsAnchorsToEverySection() async throws {
+        let provider = ChunkRecordingProvider()
+        let service = PaperSummaryService(
+            shortProvider: provider,
+            fullProvider: provider,
+            fullProfile: LLMProfile(
+                name: "Test",
+                baseURL: URL(string: "https://api.example.com/v1")!,
+                model: "test-model",
+                apiKey: "test-key",
+                capabilities: [.shortSummary, .fullSummary]
+            ),
+            fullChunkCharacterLimit: 12
+        )
+        let record = PaperRecord(candidate: .fixture(sourceID: "interpretation"), localFile: nil)
+        let text = ExtractedPaperText(
+            plainText: "page one\n\npage two\n\npage three",
+            pages: [
+                ExtractedPage(pageNumber: 1, text: "page one"),
+                ExtractedPage(pageNumber: 2, text: "page two"),
+                ExtractedPage(pageNumber: 3, text: "page three")
+            ]
+        )
+
+        let summary = try await service.generateFullSummary(for: record, text: text)
+        let interpretation = try XCTUnwrap(summary.interpretation)
+
+        XCTAssertEqual(summary.kind, .full)
+        XCTAssertEqual(provider.fullCallCount, 4)
+        XCTAssertTrue(provider.lastFullInput.contains("Evidence from the paper."))
+        XCTAssertEqual(interpretation.sections.count, PaperInterpretation.requiredSectionKinds.count)
+        XCTAssertTrue(interpretation.sections.allSatisfy { !$0.anchors.isEmpty })
+        XCTAssertEqual(interpretation.pageCount, 3)
+    }
 }
 
 private struct UntrustedSummaryProvider: LLMProvider {
@@ -84,5 +119,53 @@ private struct UntrustedSummaryProvider: LLMProvider {
 
     func fullSummary(for paper: PaperRecord, text: ExtractedPaperText) async throws -> PaperSummary {
         try await shortSummary(for: paper, text: text)
+    }
+}
+
+private final class ChunkRecordingProvider: LLMProvider, @unchecked Sendable {
+    var capabilities: Set<ProviderCapability> { [.shortSummary, .fullSummary] }
+    private let lock = NSLock()
+    private var calls = 0
+    private var latestFullInput = ""
+
+    var fullCallCount: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return calls
+    }
+
+    var lastFullInput: String {
+        lock.withLock { latestFullInput }
+    }
+
+    func shortSummary(for paper: PaperRecord, text: ExtractedPaperText) async throws -> PaperSummary {
+        PaperSummary(shortText: "Short", fullText: nil, language: "", model: "", generatedAt: .distantPast, sourceRange: "")
+    }
+
+    func fullSummary(for paper: PaperRecord, text: ExtractedPaperText) async throws -> PaperSummary {
+        lock.withLock {
+            calls += 1
+            latestFullInput = text.plainText
+        }
+        return PaperSummary(
+            shortText: "",
+            fullText: "Interpretation text",
+            language: "",
+            model: "",
+            generatedAt: .distantPast,
+            sourceRange: "",
+            interpretation: PaperInterpretation.fixture
+        )
+    }
+}
+
+private extension PaperInterpretation {
+    static var fixture: PaperInterpretation {
+        PaperInterpretation(
+            sections: PaperInterpretation.requiredSectionKinds.map {
+                PaperInterpretationSection(kind: $0, content: "Evidence from the paper.")
+            },
+            pageCount: 0
+        )
     }
 }

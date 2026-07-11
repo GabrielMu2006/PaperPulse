@@ -3,6 +3,33 @@ import XCTest
 @testable import PaperCore
 
 final class ModelContractsTests: XCTestCase {
+    func testFeedDecodingRemovesLegacySemanticScholarSource() throws {
+        let json = """
+        {
+          "id": "11111111-1111-1111-1111-111111111111",
+          "name": "Agents",
+          "enabledSources": ["arxiv", "semanticScholar", "openAlex"]
+        }
+        """
+
+        let feed = try JSONDecoder().decode(FeedConfig.self, from: Data(json.utf8))
+
+        XCTAssertEqual(feed.enabledSources, [.arxiv, .openAlex])
+    }
+
+    func testSourceFailureUsesReadableLocalizedMessageInsteadOfUnderlyingError() {
+        let failure = PipelineFailure.sourceUnavailable(
+            .openAlex,
+            error: HTTPError.transport(.cannotConnectToHost)
+        )
+
+        XCTAssertEqual(failure.source, .openAlex)
+        XCTAssertEqual(failure.phase, .discovery)
+        XCTAssertTrue(failure.userMessage(language: .chinese).contains("OpenAlex"))
+        XCTAssertFalse(failure.userMessage(language: .chinese).contains("HTTPError"))
+        XCTAssertTrue(failure.isRetryable)
+    }
+
     func testFeedConfigDefaultsAndProviderProfileAssignmentsAreStable() {
         let searchProfileID = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
         let rerankProfileID = UUID(uuidString: "22222222-2222-2222-2222-222222222222")!
@@ -22,7 +49,7 @@ final class ModelContractsTests: XCTestCase {
             extractionProviderProfileID: extractionProfileID
         )
 
-        XCTAssertEqual(defaults.enabledSources, [.arxiv, .semanticScholar, .openAlex, .crossref])
+        XCTAssertEqual(defaults.enabledSources, [.arxiv, .openAlex, .crossref])
         XCTAssertEqual(defaults.lookbackDays, 7)
         XCTAssertNil(defaults.schedule)
         XCTAssertNil(defaults.searchProviderProfileID)

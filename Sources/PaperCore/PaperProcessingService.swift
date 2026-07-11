@@ -120,6 +120,7 @@ public struct PaperSummaryService {
     private let fullProfile: LLMProfile?
     private let language: SummaryLanguage
     private let now: @Sendable () -> Date
+    private let fullChunkCharacterLimit: Int
 
     public init(
         shortProvider: any LLMProvider,
@@ -127,6 +128,7 @@ public struct PaperSummaryService {
         shortProfile: LLMProfile? = nil,
         fullProfile: LLMProfile? = nil,
         language: SummaryLanguage = .chinese,
+        fullChunkCharacterLimit: Int = 12_000,
         now: @escaping @Sendable () -> Date = Date.init
     ) {
         self.shortProvider = shortProvider
@@ -134,6 +136,7 @@ public struct PaperSummaryService {
         self.shortProfile = shortProfile
         self.fullProfile = fullProfile
         self.language = language
+        self.fullChunkCharacterLimit = max(1, fullChunkCharacterLimit)
         self.now = now
     }
 
@@ -143,8 +146,78 @@ public struct PaperSummaryService {
     }
 
     public func generateFullSummary(for paper: PaperRecord, text: ExtractedPaperText) async throws -> PaperSummary {
-        let summary = try await fullProvider.fullSummary(for: paper, text: text)
-        return trustedMetadata(summary, kind: .full, paper: paper, text: text, profile: fullProfile)
+        let chunkSummaries = try await fullTextChunks(from: text).asyncMap { chunk in
+            try await fullProvider.fullSummary(for: paper, text: chunk)
+        }
+        let synthesisText = ExtractedPaperText(
+            plainText: String(chunkSummaries.map(synthesisMaterial).joined(separator: "\n\n").prefix(36_000)),
+            pages: text.pages
+        )
+        let synthesized = try await fullProvider.fullSummary(for: paper, text: synthesisText)
+        var result = trustedMetadata(synthesized, kind: .full, paper: paper, text: text, profile: fullProfile)
+        let interpretation = normalizedInterpretation(result.interpretation, fallback: result.fullText, text: text)
+        result.interpretation = interpretation
+        result.fullText = renderedText(for: interpretation)
+        return result
+    }
+
+    private func synthesisMaterial(from summary: PaperSummary) -> String {
+        if let interpretation = summary.interpretation, !interpretation.sections.isEmpty {
+            return interpretation.sections
+                .map { "\($0.kind.rawValue): \($0.content)" }
+                .joined(separator: "\n")
+        }
+        return summary.fullText ?? summary.shortText
+    }
+
+    private func fullTextChunks(from text: ExtractedPaperText) -> [ExtractedPaperText] {
+        guard !text.pages.isEmpty else { return [text] }
+        var chunks: [[ExtractedPage]] = []
+        var current: [ExtractedPage] = []
+        var currentCount = 0
+        for page in text.pages {
+            let pageCount = page.text.utf16.count
+            if !current.isEmpty, currentCount + pageCount > fullChunkCharacterLimit {
+                chunks.append(current)
+                current = []
+                currentCount = 0
+            }
+            current.append(page)
+            currentCount += pageCount
+        }
+        if !current.isEmpty { chunks.append(current) }
+        return chunks.map { pages in
+            ExtractedPaperText(plainText: pages.map(\.text).joined(separator: "\n\n"), pages: pages)
+        }
+    }
+
+    private func normalizedInterpretation(
+        _ interpretation: PaperInterpretation?,
+        fallback: String?,
+        text: ExtractedPaperText
+    ) -> PaperInterpretation {
+        let fallbackContent = fallback?.cleanedWhitespace.nilIfEmpty ?? unavailableEvidenceText
+        let sourceAnchors: [PageAnchor] = text.pages.compactMap { page in
+            guard !page.text.isEmpty else { return nil }
+            return PageAnchor(pageNumber: page.pageNumber, startOffset: 0, endOffset: page.text.utf16.count)
+        }
+        let provided = Dictionary(uniqueKeysWithValues: (interpretation?.sections ?? []).map { ($0.kind, $0) })
+        let sections = PaperInterpretation.requiredSectionKinds.map { kind in
+            var section = provided[kind] ?? PaperInterpretationSection(kind: kind, content: fallbackContent)
+            if section.content.isEmpty { section.content = unavailableEvidenceText }
+            if section.anchors.isEmpty { section.anchors = sourceAnchors }
+            return section
+        }
+        return PaperInterpretation(sections: sections, pageCount: text.pages.count)
+    }
+
+    private var unavailableEvidenceText: String {
+        language == .chinese ? "论文未明确说明。" : "The paper does not state this explicitly."
+    }
+
+    private func renderedText(for interpretation: PaperInterpretation) -> String {
+        interpretation.sections.map { "\($0.kind.displayTitle(language: language))\n\($0.content)" }
+            .joined(separator: "\n\n")
     }
 
     private func trustedMetadata(
@@ -178,4 +251,38 @@ public struct PaperSummaryService {
         }
         return first == last ? "page \(first)" : "pages \(first)-\(last)"
     }
+}
+
+private extension Array {
+    func asyncMap<T>(_ transform: (Element) async throws -> T) async throws -> [T] {
+        var results: [T] = []
+        results.reserveCapacity(count)
+        for element in self {
+            results.append(try await transform(element))
+        }
+        return results
+    }
+}
+
+private extension PaperInterpretationSectionKind {
+    func displayTitle(language: SummaryLanguage) -> String {
+        let chinese: String
+        let english: String
+        switch self {
+        case .researchQuestion: (chinese, english) = ("研究问题与背景", "Research question and background")
+        case .paperStructure: (chinese, english) = ("论文结构概览", "Paper structure")
+        case .method: (chinese, english) = ("方法", "Method")
+        case .experimentDesign: (chinese, english) = ("数据与实验设计", "Data and experimental design")
+        case .results: (chinese, english) = ("主要结果", "Main results")
+        case .keyArguments: (chinese, english) = ("关键论证", "Key arguments")
+        case .limitations: (chinese, english) = ("局限与风险", "Limitations and risks")
+        case .readerFit: (chinese, english) = ("适合读者", "Who should read this")
+        case .extensionQuestions: (chinese, english) = ("可延伸问题", "Extension questions")
+        }
+        return language == .chinese ? chinese : english
+    }
+}
+
+private extension String {
+    var nilIfEmpty: String? { isEmpty ? nil : self }
 }

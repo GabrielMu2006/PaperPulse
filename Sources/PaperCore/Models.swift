@@ -171,7 +171,7 @@ public struct FeedSchedule: Codable, Hashable, Sendable {
 }
 
 public struct FeedConfig: Codable, Hashable, Identifiable, Sendable {
-    public static let defaultEnabledSources: [PaperSourceKind] = [.arxiv, .semanticScholar, .openAlex, .crossref]
+    public static let defaultEnabledSources: [PaperSourceKind] = [.arxiv, .openAlex, .crossref]
 
     public var id: UUID
     public var name: String
@@ -240,7 +240,9 @@ public struct FeedConfig: Codable, Hashable, Identifiable, Sendable {
             excludedKeywords: try container.decodeIfPresent([String].self, forKey: .excludedKeywords) ?? [],
             authorityPolicy: try container.decodeIfPresent(AuthorityPolicy.self, forKey: .authorityPolicy) ?? AuthorityPolicy(),
             enableWebAugmentation: try container.decodeIfPresent(Bool.self, forKey: .enableWebAugmentation) ?? false,
-            enabledSources: try container.decodeIfPresent([PaperSourceKind].self, forKey: .enabledSources) ?? Self.defaultEnabledSources,
+            enabledSources: Self.migratedEnabledSources(
+                try container.decodeIfPresent([PaperSourceKind].self, forKey: .enabledSources) ?? Self.defaultEnabledSources
+            ),
             lookbackDays: try container.decodeIfPresent(Int.self, forKey: .lookbackDays) ?? 7,
             schedule: try container.decodeIfPresent(FeedSchedule.self, forKey: .schedule),
             searchProviderProfileID: try container.decodeIfPresent(UUID.self, forKey: .searchProviderProfileID),
@@ -249,6 +251,11 @@ public struct FeedConfig: Codable, Hashable, Identifiable, Sendable {
             fullSummaryProviderProfileID: try container.decodeIfPresent(UUID.self, forKey: .fullSummaryProviderProfileID),
             extractionProviderProfileID: try container.decodeIfPresent(UUID.self, forKey: .extractionProviderProfileID)
         )
+    }
+
+    private static func migratedEnabledSources(_ sources: [PaperSourceKind]) -> [PaperSourceKind] {
+        let migrated = sources.filter { $0 != .semanticScholar }
+        return migrated.isEmpty ? Self.defaultEnabledSources : migrated
     }
 }
 
@@ -613,6 +620,7 @@ public struct PaperSummary: Codable, Hashable, Identifiable, Sendable {
     public var providerProfileID: UUID?
     public var sourceTextHash: String?
     public var anchors: [PageAnchor]
+    public var interpretation: PaperInterpretation?
 
     public init(
         id: UUID = UUID(),
@@ -626,7 +634,8 @@ public struct PaperSummary: Codable, Hashable, Identifiable, Sendable {
         kind: SummaryKind = .short,
         providerProfileID: UUID? = nil,
         sourceTextHash: String? = nil,
-        anchors: [PageAnchor] = []
+        anchors: [PageAnchor] = [],
+        interpretation: PaperInterpretation? = nil
     ) {
         self.id = id
         self.paperID = paperID
@@ -640,11 +649,12 @@ public struct PaperSummary: Codable, Hashable, Identifiable, Sendable {
         self.providerProfileID = providerProfileID
         self.sourceTextHash = sourceTextHash
         self.anchors = anchors
+        self.interpretation = interpretation
     }
 
     private enum CodingKeys: String, CodingKey {
         case id, paperID, shortText, fullText, language, model, generatedAt, sourceRange
-        case kind, providerProfileID, sourceTextHash, anchors
+        case kind, providerProfileID, sourceTextHash, anchors, interpretation
     }
 
     public init(from decoder: Decoder) throws {
@@ -661,7 +671,71 @@ public struct PaperSummary: Codable, Hashable, Identifiable, Sendable {
             kind: try container.decodeIfPresent(SummaryKind.self, forKey: .kind) ?? .short,
             providerProfileID: try container.decodeIfPresent(UUID.self, forKey: .providerProfileID),
             sourceTextHash: try container.decodeIfPresent(String.self, forKey: .sourceTextHash),
+            anchors: try container.decodeIfPresent([PageAnchor].self, forKey: .anchors) ?? [],
+            interpretation: try container.decodeIfPresent(PaperInterpretation.self, forKey: .interpretation)
+        )
+    }
+}
+
+public enum PaperInterpretationSectionKind: String, Codable, CaseIterable, Hashable, Sendable {
+    case researchQuestion
+    case paperStructure
+    case method
+    case experimentDesign
+    case results
+    case keyArguments
+    case limitations
+    case readerFit
+    case extensionQuestions
+}
+
+public struct PaperInterpretationSection: Codable, Hashable, Sendable, Identifiable {
+    public var kind: PaperInterpretationSectionKind
+    public var content: String
+    public var anchors: [PageAnchor]
+
+    public var id: PaperInterpretationSectionKind { kind }
+
+    public init(kind: PaperInterpretationSectionKind, content: String, anchors: [PageAnchor] = []) {
+        self.kind = kind
+        self.content = content.cleanedWhitespace
+        self.anchors = anchors
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case kind, content, anchors
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            kind: try container.decode(PaperInterpretationSectionKind.self, forKey: .kind),
+            content: try container.decode(String.self, forKey: .content),
             anchors: try container.decodeIfPresent([PageAnchor].self, forKey: .anchors) ?? []
+        )
+    }
+}
+
+public struct PaperInterpretation: Codable, Hashable, Sendable {
+    public static let requiredSectionKinds = PaperInterpretationSectionKind.allCases
+
+    public var sections: [PaperInterpretationSection]
+    public var pageCount: Int
+
+    public init(sections: [PaperInterpretationSection], pageCount: Int) {
+        self.sections = sections
+        self.pageCount = pageCount
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case sections, pageCount
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            sections: try container.decodeIfPresent([PaperInterpretationSection].self, forKey: .sections) ?? [],
+            pageCount: try container.decodeIfPresent(Int.self, forKey: .pageCount) ?? 0
         )
     }
 }
@@ -893,13 +967,89 @@ public struct SearchRun: Codable, Hashable, Identifiable, Sendable {
     }
 }
 
+public enum PipelineFailurePhase: String, Codable, Hashable, Sendable {
+    case discovery
+    case enrichment
+    case ranking
+    case processing
+    case summarizing
+}
+
 public struct PipelineFailure: Codable, Hashable, Sendable {
     public var paperID: String?
     public var message: String
+    public var source: PaperSourceKind?
+    public var phase: PipelineFailurePhase?
+    public var isRetryable: Bool
 
-    public init(paperID: String?, message: String) {
+    public init(
+        paperID: String?,
+        message: String,
+        source: PaperSourceKind? = nil,
+        phase: PipelineFailurePhase? = nil,
+        isRetryable: Bool = false
+    ) {
         self.paperID = paperID
         self.message = message
+        self.source = source
+        self.phase = phase
+        self.isRetryable = isRetryable
+    }
+
+    public static func sourceUnavailable(_ source: PaperSourceKind, error: Error) -> PipelineFailure {
+        PipelineFailure(
+            paperID: nil,
+            message: technicalMessage(for: error),
+            source: source,
+            phase: .discovery,
+            isRetryable: retryable(error)
+        )
+    }
+
+    public func userMessage(language: AppLanguage) -> String {
+        let sourceName = source.map(Self.displayName) ?? "Source"
+        switch phase {
+        case .discovery:
+            return language.text(
+                en: "\(sourceName) is temporarily unavailable and was skipped.",
+                zh: "\(sourceName) 暂时不可用，已跳过。"
+            )
+        case .enrichment:
+            return language.text(en: "Metadata could not be completed.", zh: "论文元数据暂未补全。")
+        case .ranking:
+            return language.text(en: "Ranking fell back to the default rules.", zh: "排序已回退到默认规则。")
+        case .processing:
+            return language.text(en: "This paper could not be processed.", zh: "这篇论文暂时无法处理。")
+        case .summarizing:
+            return language.text(en: "The summary can be retried later.", zh: "简介生成失败，可稍后重试。")
+        case .none:
+            return language.text(en: "One step could not be completed.", zh: "有一个步骤未能完成。")
+        }
+    }
+
+    private static func technicalMessage(for error: Error) -> String {
+        if let http = error as? HTTPError { return http.technicalDescription }
+        return String(describing: error)
+    }
+
+    private static func retryable(_ error: Error) -> Bool {
+        guard let http = error as? HTTPError else { return false }
+        return switch http {
+        case .cancelled: false
+        case .nonSuccessStatus(let status): status == 429 || status >= 500
+        case .timeout, .transport: true
+        }
+    }
+
+    private static func displayName(_ source: PaperSourceKind) -> String {
+        switch source {
+        case .arxiv: "arXiv"
+        case .openAlex: "OpenAlex"
+        case .crossref: "Crossref"
+        case .unpaywall: "Unpaywall"
+        case .web: "Web"
+        case .semanticScholar: "Semantic Scholar"
+        }
     }
 }
 
