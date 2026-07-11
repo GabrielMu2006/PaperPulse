@@ -58,8 +58,20 @@ struct MacSettingsView: View {
                 ))
                 TextField(language.text(en: "Model", zh: "模型"), text: $appModel.llmProfile.model)
                 SecureField(language.text(en: "API Key", zh: "API Key"), text: $apiKey)
-                Button(language.text(en: "Save Configuration", zh: "保存配置")) {
-                    appModel.saveLLMProfile(apiKey: apiKey)
+                HStack {
+                    Button(language.text(en: "Save Configuration", zh: "保存配置")) {
+                        appModel.saveLLMProfile(apiKey: apiKey)
+                    }
+                    Button(language.text(en: "Test API", zh: "测试 API")) {
+                        appModel.saveLLMProfile(apiKey: apiKey)
+                        Task { await appModel.testLLMProvider(apiKey: apiKey) }
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                if let providerTestMessage = appModel.providerTestMessage {
+                    Text(providerTestMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
                 Text(language.text(en: "API keys stay in this Mac's Keychain. Claude, Gemini, GPT, DeepSeek, and compatible relays can use a custom Base URL.", zh: "API Key 仅保存在本机 Keychain。Claude、Gemini、GPT、DeepSeek 和兼容中转站均可填写自定义 Base URL。"))
                     .font(.caption)

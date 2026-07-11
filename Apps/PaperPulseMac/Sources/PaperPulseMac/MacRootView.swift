@@ -7,9 +7,37 @@ struct MacRootView: View {
     @Environment(PaperPulseMacModel.self) private var appModel
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openSettings) private var openSettings
+    @Query(sort: \MacPaperEntity.createdAt, order: .reverse) private var storedPapers: [MacPaperEntity]
+    @Query(sort: \MacSummaryEntity.generatedAt, order: .reverse) private var storedSummaries: [MacSummaryEntity]
+    @State private var libraryQuery = ""
+    @State private var libraryScope: MacLibraryScope = .all
+    @State private var editorDraft: MacFeedEditorDraft?
 
     var selectedPaper: PaperRecord? {
-        appModel.papers.first { $0.id == appModel.selectedPaperID }
+        storedPapers.first(where: { $0.id == appModel.selectedPaperID }).flatMap(MacPersistenceStore.record(from:))
+    }
+
+    private var visiblePapers: [MacPaperEntity] {
+        MacLibraryFilter.visible(storedPapers, query: libraryQuery, scope: libraryScope)
+    }
+
+    private func shortSummary(for paperID: String) -> PaperSummary? {
+        guard let entity = storedSummaries.first(where: { $0.paperID == paperID && $0.kindRawValue == SummaryKind.short.rawValue }) else { return nil }
+        let anchors = (try? JSONDecoder().decode([PageAnchor].self, from: entity.anchorsData)) ?? []
+        return PaperSummary(
+            id: entity.id,
+            paperID: entity.paperID,
+            shortText: entity.shortText,
+            fullText: entity.fullText,
+            language: entity.language,
+            model: entity.model,
+            generatedAt: entity.generatedAt,
+            sourceRange: entity.sourceRange,
+            kind: .short,
+            providerProfileID: entity.providerProfileID,
+            sourceTextHash: entity.sourceTextHash,
+            anchors: anchors
+        )
     }
 
     var body: some View {
@@ -17,20 +45,56 @@ struct MacRootView: View {
 
         NavigationSplitView {
             List(selection: $appModel.selectedPaperID) {
-                ForEach(appModel.papers) { paper in
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(paper.candidate.title)
-                            .font(.headline)
-                            .lineLimit(2)
-                        Text(paper.candidate.authors.prefix(3).joined(separator: ", "))
-                            .font(.caption)
+                Section(appModel.appLanguage.text(en: "Feeds", zh: "订阅")) {
+                    ForEach(appModel.feeds) { feed in
+                        let isActive = appModel.activeFeed?.id == feed.id
+                        Button {
+                            appModel.selectFeed(feed)
+                        } label: {
+                            MacFeedRow(feed: feed, isActive: isActive)
+                        }
+                        .buttonStyle(.plain)
+                        .contextMenu {
+                            Button(appModel.appLanguage.text(en: "Edit Feed", zh: "编辑订阅")) {
+                                editorDraft = MacFeedEditorDraft(feed: feed)
+                            }
+                            if appModel.feeds.count > 1 {
+                                Button(appModel.appLanguage.text(en: "Delete Feed", zh: "删除订阅"), role: .destructive) {
+                                    appModel.deleteFeed(feed, modelContext: modelContext)
+                                }
+                            }
+                        }
+                    }
+                    Button {
+                        editorDraft = MacFeedEditorDraft()
+                    } label: {
+                        Label(appModel.appLanguage.text(en: "New Feed", zh: "新建订阅"), systemImage: "plus")
+                    }
+                }
+
+                Section(appModel.appLanguage.text(en: "Library", zh: "论文库")) {
+                    if visiblePapers.isEmpty {
+                        Text(appModel.appLanguage.text(en: "No saved papers", zh: "还没有保存的论文"))
                             .foregroundStyle(.secondary)
                     }
-                    .tag(paper.id)
+                    ForEach(visiblePapers) { paper in
+                        MacLibraryRow(paper: paper, summary: shortSummary(for: paper.id), language: appModel.appLanguage)
+                            .tag(paper.id)
+                    }
                 }
             }
-            .navigationTitle(appModel.appLanguage.text(en: "Papers", zh: "论文"))
+            .searchable(text: $libraryQuery, prompt: appModel.appLanguage.text(en: "Search papers", zh: "搜索论文"))
+            .navigationTitle(appModel.appLanguage.text(en: "PaperPulse", zh: "论文速递"))
             .toolbar {
+                Menu {
+                    Picker(appModel.appLanguage.text(en: "Library filter", zh: "论文筛选"), selection: $libraryScope) {
+                        ForEach(MacLibraryScope.allCases) { scope in
+                            Text(scope.title(language: appModel.appLanguage)).tag(scope)
+                        }
+                    }
+                } label: {
+                    Label(appModel.appLanguage.text(en: "Filter", zh: "筛选"), systemImage: "line.3.horizontal.decrease.circle")
+                }
                 Button {
                     openSettings()
                 } label: {
@@ -56,6 +120,12 @@ struct MacRootView: View {
         .frame(minWidth: 900, minHeight: 600)
         .task {
             appModel.bootstrap(modelContext: modelContext)
+        }
+        .sheet(item: $editorDraft) { draft in
+            MacFeedEditorView(draft: draft) { feed in
+                appModel.saveFeed(feed, modelContext: modelContext)
+            }
+            .environment(appModel)
         }
     }
 }

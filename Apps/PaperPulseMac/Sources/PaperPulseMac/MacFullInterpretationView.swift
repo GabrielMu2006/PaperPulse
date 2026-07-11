@@ -33,6 +33,14 @@ struct MacFullInterpretationView: View {
                 } else if let error = appModel.fullSummaryErrors[paper.id] {
                     ContentUnavailableView(language.text(en: "Full Reading Unavailable", zh: "完整解读未生成"), systemImage: "exclamationmark.triangle", description: Text(error))
                     Button(language.text(en: "Retry", zh: "重新生成")) { generate() }.buttonStyle(.borderedProminent)
+                } else {
+                    ContentUnavailableView(
+                        language.text(en: "Full Reading", zh: "完整解读"),
+                        systemImage: "text.book.closed",
+                        description: Text(language.text(en: "Generate a section-by-section reading from the downloaded PDF.", zh: "基于已下载的 PDF 生成逐节解读。"))
+                    )
+                    Button(language.text(en: "Generate Full Reading", zh: "生成完整解读")) { generate() }
+                        .buttonStyle(.borderedProminent)
                 }
             }
             .padding(24)

@@ -40,4 +40,34 @@ final class PersistenceTests: XCTestCase {
         XCTAssertTrue(entity.isRead)
         XCTAssertEqual(try MacPersistenceStore.shortSummary(for: paper.id, in: context)?.shortText, "短简介")
     }
+
+    func testFullInterpretationRoundTripsWithSectionAnchors() throws {
+        let container = try MacPersistenceStore.makeContainer(inMemory: true)
+        let context = ModelContext(container)
+        let paper = PaperRecord(candidate: PaperCandidate(source: .arxiv, sourceID: "reading", title: "Reading", summary: ""), localFile: nil)
+        let section = PaperInterpretationSection(
+            kind: .method,
+            content: "使用分块汇总。",
+            anchors: [PageAnchor(pageNumber: 3, startOffset: 0, endOffset: 12)]
+        )
+        let fullSummary = PaperSummary(
+            paperID: paper.id,
+            shortText: "完整解读",
+            fullText: "方法\n使用分块汇总。",
+            language: "zh-Hans",
+            model: "local",
+            generatedAt: Date(),
+            sourceRange: "page 3",
+            kind: .full,
+            anchors: section.anchors,
+            interpretation: PaperInterpretation(sections: [section], pageCount: 8)
+        )
+
+        try MacPersistenceStore.saveSummary(fullSummary, in: context)
+
+        let restored = try XCTUnwrap(MacPersistenceStore.fullSummary(for: paper.id, in: context))
+        XCTAssertEqual(restored.kind, .full)
+        XCTAssertEqual(restored.interpretation?.sections.first?.content, "使用分块汇总。")
+        XCTAssertEqual(restored.interpretation?.sections.first?.anchors.first?.pageNumber, 3)
+    }
 }

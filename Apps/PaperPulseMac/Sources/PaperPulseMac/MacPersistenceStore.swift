@@ -188,24 +188,24 @@ enum MacPersistenceStore {
 
     static func fetchPapers(in context: ModelContext) throws -> [PaperRecord] {
         try context.fetch(FetchDescriptor<MacPaperEntity>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)]))
-            .compactMap { entity in
-                guard let candidate = try? JSONDecoder().decode(PaperCandidate.self, from: entity.candidateData) else {
-                    return nil
-                }
-                let file = entity.pdfPath.map { path in
-                    let url = URL(fileURLWithPath: path)
-                    let byteCount = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
-                    return LocalPaperFile(
-                        paperID: entity.id,
-                        fileURL: url,
-                        byteCount: byteCount,
-                        mimeType: "application/pdf",
-                        downloadedAt: entity.createdAt,
-                        sha256: entity.pdfSHA256 ?? ""
-                    )
-                }
-                return PaperRecord(candidate: candidate, localFile: file, createdAt: entity.createdAt)
-            }
+            .compactMap(record(from:))
+    }
+
+    static func record(from entity: MacPaperEntity) -> PaperRecord? {
+        guard let candidate = try? JSONDecoder().decode(PaperCandidate.self, from: entity.candidateData) else { return nil }
+        let file = entity.pdfPath.map { path in
+            let url = URL(fileURLWithPath: path)
+            let byteCount = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+            return LocalPaperFile(
+                paperID: entity.id,
+                fileURL: url,
+                byteCount: byteCount,
+                mimeType: "application/pdf",
+                downloadedAt: entity.createdAt,
+                sha256: entity.pdfSHA256 ?? ""
+            )
+        }
+        return PaperRecord(candidate: candidate, localFile: file, createdAt: entity.createdAt)
     }
 
     static func fetchShortSummaries(in context: ModelContext) throws -> [String: PaperSummary] {

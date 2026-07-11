@@ -90,6 +90,9 @@ struct MacLLMProfileSettingsStore {
             appropriateFor: nil,
             create: true
         )) ?? FileManager.default.temporaryDirectory.appendingPathComponent("PaperPulse"))
-        return LLMProfileFileStore(directory: base.appendingPathComponent("Model Configs", isDirectory: true))
+        return LLMProfileFileStore(directory: base
+            .appendingPathComponent("PaperPulse", isDirectory: true)
+            .appendingPathComponent("macOS", isDirectory: true)
+            .appendingPathComponent("Model Configs", isDirectory: true))
     }
 }

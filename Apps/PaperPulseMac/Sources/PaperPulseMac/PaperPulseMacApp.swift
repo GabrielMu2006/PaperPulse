@@ -29,11 +29,12 @@ struct PaperPulseMacApp: App {
         .commands {
             CommandMenu("PaperPulse") {
                 Button("Refresh Latest Papers") {
-                    if let feed = appModel.activeFeed {
-                        Task { await appModel.run(feed: feed) }
+                    if let feed = appModel.activeFeed, let modelContext = appModel.modelContext {
+                        Task { await appModel.run(feed: feed, modelContext: modelContext) }
                     }
                 }
                 .keyboardShortcut("r", modifiers: [.command])
+                .disabled(appModel.modelContext == nil || appModel.isRunning)
             }
         }
 

@@ -18,8 +18,10 @@ final class PaperPulseMacModel {
     var isRunning = false
     var status = ""
     var errorMessage: String?
+    var providerTestMessage: String?
     var fullSummaryPaperIDs: Set<String> = []
     var fullSummaryErrors: [String: String] = [:]
+    private(set) var modelContext: ModelContext?
 
     private var didBootstrap = false
 
@@ -28,6 +30,7 @@ final class PaperPulseMacModel {
     }
 
     func bootstrap(modelContext: ModelContext) {
+        self.modelContext = modelContext
         guard !didBootstrap else { return }
         providerProfiles = (try? MacLLMProfileSettingsStore.standard.loadProfiles(defaultProfiles: providerProfiles)) ?? providerProfiles
         let restoredProfileID = UserDefaults.standard.string(forKey: Self.selectedProfileKey).flatMap(UUID.init(uuidString:))
@@ -142,6 +145,30 @@ final class PaperPulseMacModel {
             status = appLanguage.text(en: "Provider settings saved.", zh: "模型设置已保存。")
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    func testLLMProvider(apiKey: String? = nil) async {
+        if let apiKey { llmProfile = llmProfile.withAPIKey(apiKey) }
+        guard !llmProfile.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            providerTestMessage = appLanguage.text(en: "Enter and save an API key first.", zh: "请先输入并保存 API Key。")
+            return
+        }
+
+        providerTestMessage = appLanguage.text(en: "Testing API...", zh: "正在测试 API...")
+        do {
+            let health = try await LLMProviderFactory
+                .makeProvider(profile: llmProfile, summaryLanguage: summaryLanguage)
+                .healthCheck()
+            providerTestMessage = appLanguage.text(
+                en: "API test succeeded: \(health.model)",
+                zh: "API 测试成功：\(health.model)"
+            )
+        } catch {
+            providerTestMessage = appLanguage.text(
+                en: "API test failed: \(error.localizedDescription)",
+                zh: "API 测试失败：\(error.localizedDescription)"
+            )
         }
     }
 
