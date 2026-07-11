@@ -188,6 +188,35 @@ final class ProviderTests: XCTestCase {
         XCTAssertEqual(summary.interpretation?.sections.first?.content, "The paper studies reliable agents.")
     }
 
+    func testOpenAICompatibleFullInterpretationUsesBoundedJSONRequestWithoutThinking() async throws {
+        let response = """
+        {"choices":[{"message":{"content":"{\\"shortText\\":\\"\\",\\"fullText\\":\\"Conclusion.\\"}"}}]}
+        """
+        let provider = OpenAICompatibleChatProvider(
+            profile: LLMProfile(
+                name: "DeepSeek",
+                providerKind: .deepSeek,
+                baseURL: URL(string: "https://api.example.com")!,
+                model: "deepseek-v4-pro",
+                apiKey: "test-key",
+                capabilities: [.fullSummary]
+            ),
+            httpClient: StubHTTPClient { request in
+                let body = try XCTUnwrap(request.httpBody)
+                let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+                XCTAssertEqual(json["max_tokens"] as? Int, 2_400)
+                XCTAssertEqual((json["response_format"] as? [String: String])?["type"], "json_object")
+                XCTAssertEqual((json["thinking"] as? [String: String])?["type"], "disabled")
+                return HTTPResponse(data: Data(response.utf8), statusCode: 200, mimeType: "application/json", finalURL: try XCTUnwrap(request.url))
+            }
+        )
+
+        _ = try await provider.fullSummary(
+            for: PaperRecord(candidate: .fixture(title: "Paper"), localFile: nil),
+            text: ExtractedPaperText(plainText: "paper text", pages: [])
+        )
+    }
+
     func testProviderRegistryResolvesConfiguredProfileOnlyWhenItSupportsAssignedRole() {
         let shortProfile = LLMProfile(
             name: "Short",

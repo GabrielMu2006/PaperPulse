@@ -124,6 +124,7 @@ struct PaperDetailView: View {
     @Environment(\.modelContext) private var modelContext
     var paper: PaperEntity
     @Query private var summaries: [SummaryEntity]
+    @State private var isPresentingFullInterpretation = false
 
     init(paper: PaperEntity) {
         self.paper = paper
@@ -195,8 +196,8 @@ struct PaperDetailView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
-                    NavigationLink {
-                        FullInterpretationView(paper: paper)
+                    Button {
+                        isPresentingFullInterpretation = true
                     } label: {
                         Label(
                             fullSummary == nil
@@ -208,6 +209,7 @@ struct PaperDetailView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(paper.resolvedPDFURL == nil)
+                    .accessibilityIdentifier("fullInterpretationButton")
 
                     if let url = paper.resolvedPDFURL {
                         NavigationLink {
@@ -233,6 +235,16 @@ struct PaperDetailView: View {
         }
         .navigationTitle(language.text(en: "Paper", zh: "论文"))
         .navigationBarTitleDisplayMode(.inline)
+        .fullScreenCover(isPresented: $isPresentingFullInterpretation) {
+            NavigationStack {
+                FullInterpretationView(paper: paper)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            DismissFullReadingButton()
+                        }
+                    }
+            }
+        }
         .alert(language.text(en: "Action Failed", zh: "操作失败"), isPresented: Binding(
             get: { appModel.errorMessage != nil },
             set: { if !$0 { appModel.errorMessage = nil } }
@@ -241,6 +253,19 @@ struct PaperDetailView: View {
         } message: {
             Text(appModel.errorMessage ?? "")
         }
+    }
+}
+
+private struct DismissFullReadingButton: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        Button {
+            dismiss()
+        } label: {
+            Image(systemName: "xmark")
+        }
+        .accessibilityLabel("Close full reading")
     }
 }
 
@@ -284,7 +309,7 @@ struct FullInterpretationView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                } else if let error = appModel.errorMessage {
+                } else if let error = appModel.fullSummaryErrorMessage(for: paper.id) {
                     ContentUnavailableView(
                         language.text(en: "Full Reading Unavailable", zh: "完整解读未生成"),
                         systemImage: "exclamationmark.triangle",

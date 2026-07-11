@@ -3,6 +3,13 @@ import XCTest
 @testable import PaperCore
 
 final class ModelContractsTests: XCTestCase {
+    func testTransportErrorUsesReadableRetryMessage() {
+        let message = HTTPError.transport(.networkConnectionLost).userMessage(language: .chinese)
+
+        XCTAssertEqual(message, "模型服务连接中断，请检查网络、Base URL 或稍后重试。")
+        XCTAssertFalse(message.contains("HTTPError"))
+    }
+
     func testFeedDecodingRemovesLegacySemanticScholarSource() throws {
         let json = """
         {

@@ -181,4 +181,23 @@ extension HTTPError {
         case .transport(let code): "network transport \(code.rawValue)"
         }
     }
+
+    public func userMessage(language: AppLanguage) -> String {
+        switch self {
+        case .nonSuccessStatus(let status) where status == 401 || status == 403:
+            language.text(en: "The model service rejected the API key or model access.", zh: "模型服务拒绝了 API Key 或模型访问权限。")
+        case .nonSuccessStatus(402):
+            language.text(en: "The model service account has insufficient balance.", zh: "模型服务账户余额不足。")
+        case .nonSuccessStatus(429):
+            language.text(en: "The model service is rate-limiting requests. Please retry shortly.", zh: "模型服务请求过于频繁，请稍后重试。")
+        case .nonSuccessStatus:
+            language.text(en: "The model service could not complete this request. Please retry later.", zh: "模型服务暂时无法完成请求，请稍后重试。")
+        case .cancelled:
+            language.text(en: "The request was cancelled.", zh: "请求已取消。")
+        case .timeout:
+            language.text(en: "The model service took too long to respond. Please retry later.", zh: "模型服务响应超时，请稍后重试。")
+        case .transport:
+            language.text(en: "The connection to the model service was interrupted. Check the network or Base URL, then retry.", zh: "模型服务连接中断，请检查网络、Base URL 或稍后重试。")
+        }
+    }
 }

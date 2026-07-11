@@ -18,6 +18,7 @@ final class PaperPulseAppModel {
     var isRunning = false
     var errorMessage: String?
     var fullSummaryPaperIDs: Set<String> = []
+    var fullSummaryErrorMessages: [String: String] = [:]
     var providerSettingsMessage: String?
     var providerTestMessage: String?
 
@@ -255,7 +256,7 @@ final class PaperPulseAppModel {
     func generateFullSummary(for paper: PaperEntity, modelContext: ModelContext) async {
         guard !fullSummaryPaperIDs.contains(paper.id) else { return }
         fullSummaryPaperIDs.insert(paper.id)
-        errorMessage = nil
+        fullSummaryErrorMessages[paper.id] = nil
         defer { fullSummaryPaperIDs.remove(paper.id) }
 
         do {
@@ -280,8 +281,22 @@ final class PaperPulseAppModel {
             ).generateFullSummary(for: record, text: text)
             try saveFullSummary(generated, fallbackPaperID: paper.id, in: modelContext)
         } catch {
-            errorMessage = error.localizedDescription
+            fullSummaryErrorMessages[paper.id] = fullSummaryErrorMessage(for: error)
         }
+    }
+
+    func fullSummaryErrorMessage(for paperID: String) -> String? {
+        fullSummaryErrorMessages[paperID]
+    }
+
+    private func fullSummaryErrorMessage(for error: Error) -> String {
+        if let httpError = error as? HTTPError {
+            return httpError.userMessage(language: appLanguage)
+        }
+        return appLanguage.text(
+            en: "The full reading could not be generated. Please retry later.",
+            zh: "完整解读暂时无法生成，请稍后重试。"
+        )
     }
 
     private func configuredLLMProvider(profile: LLMProfile) -> any LLMProvider {

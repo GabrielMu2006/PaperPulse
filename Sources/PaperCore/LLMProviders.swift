@@ -56,13 +56,17 @@ public struct OpenAICompatibleChatProvider: LLMProvider {
         request.setValue("Bearer \(profile.apiKey)", forHTTPHeaderField: "Authorization")
 
         let prompt = Self.prompt(paper: paper, text: text, mode: mode, language: summaryLanguage)
+        let isDeepSeek = profile.providerKind == .deepSeek
         let body = ChatRequest(
             model: profile.model,
             messages: [
                 ChatMessage(role: "system", content: "You summarize scientific papers in \(summaryLanguage.promptName). Return only JSON matching the requested schema."),
                 ChatMessage(role: "user", content: prompt)
             ],
-            temperature: 0.2
+            temperature: 0.2,
+            maxTokens: mode == "full" ? 2_400 : 800,
+            responseFormat: isDeepSeek ? ChatResponseFormat(type: "json_object") : nil,
+            thinking: isDeepSeek ? ChatThinking(type: "disabled") : nil
         )
         request.httpBody = try JSONEncoder().encode(body)
 
@@ -262,6 +266,23 @@ private struct ChatRequest: Encodable {
     var model: String
     var messages: [ChatMessage]
     var temperature: Double
+    var maxTokens: Int?
+    var responseFormat: ChatResponseFormat?
+    var thinking: ChatThinking?
+
+    enum CodingKeys: String, CodingKey {
+        case model, messages, temperature, thinking
+        case maxTokens = "max_tokens"
+        case responseFormat = "response_format"
+    }
+}
+
+private struct ChatResponseFormat: Encodable {
+    var type: String
+}
+
+private struct ChatThinking: Encodable {
+    var type: String
 }
 
 private func providerHealthCheckPaper() -> PaperRecord {
