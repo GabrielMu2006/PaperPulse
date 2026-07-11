@@ -14,8 +14,10 @@
 		268BEBC3A343A98B11BBD088 /* PaperPulseMacModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2325BDFB88A6CB0FAA755B4 /* PaperPulseMacModel.swift */; };
 		3E223076E6AB4BA2F3E08307 /* PaperPulsePersistenceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2310C484CDB9056A3CE86A34 /* PaperPulsePersistenceStore.swift */; };
 		4AC774D9C0D16053A92178FB /* PaperPulseRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A47951FE857D880BA585E3 /* PaperPulseRootView.swift */; };
+		503750A185A91FD4BAA029B3 /* MacPersistenceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE79369C488A0F7FF295A8C /* MacPersistenceStore.swift */; };
 		5D1D73FCAF32329ADFB23391 /* MacLLMProfileSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F2C8BE2D8470E34B83AAE8 /* MacLLMProfileSettingsStore.swift */; };
 		5D6802E679B329E42ECEEFF5 /* BackgroundRefreshCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7E57C1C557FA1ABFD05E44 /* BackgroundRefreshCoordinator.swift */; };
+		5EF21786657B1755867CE6E4 /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E038DB708EDC7E5F40655D3 /* PersistenceTests.swift */; };
 		6040AC9BF12EF5D97E10B949 /* PaperPulseAppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45CE1371FDF63A655B0906C7 /* PaperPulseAppModel.swift */; };
 		64E8DD01AE8D52FCCDA02D6A /* PaperPulseiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5882B3A20D7EC3583362E08 /* PaperPulseiOSApp.swift */; };
 		691BCD46BD245A9BED23D223 /* PaperCore in Frameworks */ = {isa = PBXBuildFile; productRef = CF8E3475E83E5C081C700447 /* PaperCore */; };
@@ -33,7 +35,18 @@
 		FBBCE3087BED2BB870568A83 /* LLMProfileSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FF272AAC7AC40A2F026659 /* LLMProfileSettingsStore.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		4995F8078E335F43D5C51066 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 355283A18486D8F352E39C83 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FF38CE018698A302DFF7F0ED;
+			remoteInfo = PaperPulseMac;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		0E038DB708EDC7E5F40655D3 /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
 		225F4C84B69C04D17B152EA4 /* PaperPulseiOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PaperPulseiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2310C484CDB9056A3CE86A34 /* PaperPulsePersistenceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulsePersistenceStore.swift; sourceTree = "<group>"; };
 		24FD51F934CC3D2D1D0AC2FA /* PaperPulseScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulseScreen.swift; sourceTree = "<group>"; };
@@ -44,6 +57,7 @@
 		443F96166C2F40B5A32C988F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		45CE1371FDF63A655B0906C7 /* PaperPulseAppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulseAppModel.swift; sourceTree = "<group>"; };
 		52A47951FE857D880BA585E3 /* PaperPulseRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulseRootView.swift; sourceTree = "<group>"; };
+		55882FDF5179317F8C1E604B /* PaperPulseMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PaperPulseMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		56A4FC2D35A5F95DB312B5ED /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		841FC56C2EFB68203D39C309 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8CF21959D2B7D1EBA8565AE4 /* PaperEntityResolution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperEntityResolution.swift; sourceTree = "<group>"; };
@@ -52,6 +66,7 @@
 		9E6CE735D5932C7A5DAF8225 /* FeedListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedListView.swift; sourceTree = "<group>"; };
 		9F0D8E29091C6523B554D633 /* MacSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSettingsView.swift; sourceTree = "<group>"; };
 		A2325BDFB88A6CB0FAA755B4 /* PaperPulseMacModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulseMacModel.swift; sourceTree = "<group>"; };
+		ABE79369C488A0F7FF295A8C /* MacPersistenceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPersistenceStore.swift; sourceTree = "<group>"; };
 		AF35B083421AC3F2C7D98AD3 /* MacKeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacKeychainStore.swift; sourceTree = "<group>"; };
 		B57EEE7E663B0A0BF5C40060 /* PaperPulseMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PaperPulseMac.entitlements; sourceTree = "<group>"; };
 		B5F2C8BE2D8470E34B83AAE8 /* MacLLMProfileSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLLMProfileSettingsStore.swift; sourceTree = "<group>"; };
@@ -89,6 +104,7 @@
 			children = (
 				AF35B083421AC3F2C7D98AD3 /* MacKeychainStore.swift */,
 				B5F2C8BE2D8470E34B83AAE8 /* MacLLMProfileSettingsStore.swift */,
+				ABE79369C488A0F7FF295A8C /* MacPersistenceStore.swift */,
 				C527A0A54BD6EA742681E99E /* MacRootView.swift */,
 				9F0D8E29091C6523B554D633 /* MacSettingsView.swift */,
 				C60B8E4A856564B0AA684D2A /* PaperPulseMacApp.swift */,
@@ -105,6 +121,7 @@
 				A3DE3FA982FE239B8B83124F /* Resources */,
 				5CCD0252931DE0CECC1ED7A2 /* Sources */,
 				8966236C851E7F7E336033BC /* Sources */,
+				7C13C9E1D89077A00E81C6C9 /* Tests */,
 				F54BC1B40E4AD0EEC989792A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -131,6 +148,14 @@
 			path = PaperPulseiOS;
 			sourceTree = "<group>";
 		};
+		48D2FC063C0E23ED8D1B920C /* PaperPulseMacTests */ = {
+			isa = PBXGroup;
+			children = (
+				0E038DB708EDC7E5F40655D3 /* PersistenceTests.swift */,
+			);
+			path = PaperPulseMacTests;
+			sourceTree = "<group>";
+		};
 		5A512399D846F8EA496402BE /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -148,6 +173,15 @@
 			);
 			name = Sources;
 			path = Apps/PaperPulseiOS/Sources;
+			sourceTree = "<group>";
+		};
+		7C13C9E1D89077A00E81C6C9 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				48D2FC063C0E23ED8D1B920C /* PaperPulseMacTests */,
+			);
+			name = Tests;
+			path = Apps/PaperPulseMac/Tests;
 			sourceTree = "<group>";
 		};
 		8966236C851E7F7E336033BC /* Sources */ = {
@@ -182,6 +216,7 @@
 			children = (
 				225F4C84B69C04D17B152EA4 /* PaperPulseiOS.app */,
 				CE5CBE0FA99A321B33C65598 /* PaperPulseMac.app */,
+				55882FDF5179317F8C1E604B /* PaperPulseMacTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -189,6 +224,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		50678E386A2CBBCFE95F2747 /* PaperPulseMacTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 572220A1CEF6E24ED3C3C7E5 /* Build configuration list for PBXNativeTarget "PaperPulseMacTests" */;
+			buildPhases = (
+				8D87FFB62B4886355BA2F6BD /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				371B94D3490CFA52259F598A /* PBXTargetDependency */,
+			);
+			name = PaperPulseMacTests;
+			packageProductDependencies = (
+			);
+			productName = PaperPulseMacTests;
+			productReference = 55882FDF5179317F8C1E604B /* PaperPulseMacTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		5880468443EA02CF49C60FEA /* PaperPulseiOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 80943F01B763450777DB9B7A /* Build configuration list for PBXNativeTarget "PaperPulseiOS" */;
@@ -257,6 +310,7 @@
 			projectRoot = "";
 			targets = (
 				FF38CE018698A302DFF7F0ED /* PaperPulseMac */,
+				50678E386A2CBBCFE95F2747 /* PaperPulseMacTests */,
 				5880468443EA02CF49C60FEA /* PaperPulseiOS */,
 			);
 		};
@@ -296,12 +350,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8D87FFB62B4886355BA2F6BD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5EF21786657B1755867CE6E4 /* PersistenceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D3F312E8F6E153ED09E2F4CA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				F9A4848A298FEADF43DE6544 /* MacKeychainStore.swift in Sources */,
 				5D1D73FCAF32329ADFB23391 /* MacLLMProfileSettingsStore.swift in Sources */,
+				503750A185A91FD4BAA029B3 /* MacPersistenceStore.swift in Sources */,
 				0AEE52FCE28B702495A0A38E /* MacRootView.swift in Sources */,
 				7AF9FAF98795B147C4EC89E4 /* MacSettingsView.swift in Sources */,
 				8D58F06B9BF1E6E060271A42 /* PaperPulseMacApp.swift in Sources */,
@@ -311,7 +374,31 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		371B94D3490CFA52259F598A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FF38CE018698A302DFF7F0ED /* PaperPulseMac */;
+			targetProxy = 4995F8078E335F43D5C51066 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		321FE08F293838677738FDD1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PaperPulse.app/Contents/MacOS/PaperPulse";
+			};
+			name = Debug;
+		};
 		6BA5FBEA97FEE3E4A0FA6D3F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -363,6 +450,22 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		7AD5B3007E84AFFC8090F2AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PaperPulse.app/Contents/MacOS/PaperPulse";
 			};
 			name = Release;
 		};
@@ -506,6 +609,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		572220A1CEF6E24ED3C3C7E5 /* Build configuration list for PBXNativeTarget "PaperPulseMacTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				321FE08F293838677738FDD1 /* Debug */,
+				7AD5B3007E84AFFC8090F2AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		80943F01B763450777DB9B7A /* Build configuration list for PBXNativeTarget "PaperPulseiOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

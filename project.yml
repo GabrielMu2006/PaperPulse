@@ -16,6 +16,11 @@ targets:
       path: Apps/PaperPulseiOS/Resources/Info.plist
       properties:
         UILaunchStoryboardName: LaunchScreen
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.gabrielmu.PaperPulse.refresh
+          - com.gabrielmu.PaperPulse.processing
+        UIBackgroundModes:
+          - fetch
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.gabrielmu.PaperPulse.iOS
       PRODUCT_NAME: PaperPulse
@@ -40,3 +45,14 @@ targets:
     dependencies:
       - package: PaperCore
         product: PaperCore
+  PaperPulseMacTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Apps/PaperPulseMac/Tests
+    dependencies:
+      - target: PaperPulseMac
+    settings:
+      TEST_HOST: "$(BUILT_PRODUCTS_DIR)/PaperPulse.app/Contents/MacOS/PaperPulse"
+      BUNDLE_LOADER: "$(TEST_HOST)"
