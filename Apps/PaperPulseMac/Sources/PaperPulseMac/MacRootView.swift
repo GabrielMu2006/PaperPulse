@@ -261,6 +261,7 @@ struct PaperDetailView: View {
             try MacPersistenceStore.deleteFullSummary(for: paper.id, in: modelContext)
             fullSummary = nil
             isReadingFull = false
+            onCloseFullReading()
         } catch {
             appModel.fullSummaryErrors[paper.id] = appModel.appLanguage.text(en: "The full reading could not be deleted.", zh: "完整解读无法删除。")
         }

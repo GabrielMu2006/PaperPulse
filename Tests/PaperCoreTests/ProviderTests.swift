@@ -280,6 +280,10 @@ final class ProviderTests: XCTestCase {
         XCTAssertTrue(LLMProviderFactory.makeProvider(profile: gemini) is GeminiGenerateContentProvider)
     }
 
+    func testProviderFactoryUsesLongerTimeoutForLLMRequests() {
+        XCTAssertEqual(LLMProviderFactory.defaultRequestTimeout, 90)
+    }
+
     func testProfileConfigurationPersistsRelaySettingsWithoutAPIKey() throws {
         let profile = LLMProfile.preset(.claude, apiKey: "secret-key")
             .withBaseURL(URL(string: "https://relay.example.com/v1")!, apiStyle: .openAIChatCompletions)

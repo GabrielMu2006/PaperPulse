@@ -450,10 +450,13 @@ public struct ProviderRegistry {
 }
 
 public enum LLMProviderFactory {
+    /// Model calls can include long PDF excerpts and need more time than metadata requests.
+    public static let defaultRequestTimeout: TimeInterval = 90
+
     public static func makeProvider(
         profile: LLMProfile,
         summaryLanguage: SummaryLanguage = .chinese,
-        httpClient: HTTPClient = URLSessionHTTPClient()
+        httpClient: HTTPClient = URLSessionHTTPClient(timeout: defaultRequestTimeout)
     ) -> any LLMProvider {
         switch profile.apiStyle {
         case .openAIChatCompletions:
@@ -467,7 +470,7 @@ public enum LLMProviderFactory {
 
     public static func makeReranker(
         profile: LLMProfile,
-        httpClient: HTTPClient = URLSessionHTTPClient()
+        httpClient: HTTPClient = URLSessionHTTPClient(timeout: defaultRequestTimeout)
     ) -> (any PaperReranker)? {
         guard profile.apiStyle == .openAIChatCompletions, profile.supports(.rerank) else {
             return nil
