@@ -14,6 +14,8 @@ struct MacRootView: View {
     @State private var libraryScope: MacLibraryScope = .all
     @State private var editorDraft: MacFeedEditorDraft?
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @State private var expandedFeedIDs: Set<UUID> = []
+    @State private var isUnclassifiedExpanded = false
 
     var selectedPaper: PaperRecord? {
         storedPapers.first(where: { $0.id == appModel.selectedPaperID }).flatMap(MacPersistenceStore.record(from:))
@@ -29,8 +31,24 @@ struct MacRootView: View {
     }
 
     private var unclassifiedPapers: [MacPaperEntity] {
-        let linkedPaperIDs = Set(feedPaperLinks.map(\.paperID))
+        let validFeedIDs = Set(appModel.feeds.map(\.id))
+        let linkedPaperIDs = Set(feedPaperLinks.filter { validFeedIDs.contains($0.feedID) }.map(\.paperID))
         return visiblePapers.filter { !linkedPaperIDs.contains($0.id) }
+    }
+
+    private func expandOnly(_ feed: FeedConfig) {
+        appModel.selectFeed(feed)
+        expandedFeedIDs = [feed.id]
+    }
+
+    private func expansionBinding(for feedID: UUID) -> Binding<Bool> {
+        Binding(
+            get: { expandedFeedIDs.contains(feedID) },
+            set: { expanded in
+                if expanded { expandedFeedIDs.insert(feedID) }
+                else { expandedFeedIDs.remove(feedID) }
+            }
+        )
     }
 
     private func shortSummary(for paperID: String) -> PaperSummary? {
@@ -71,7 +89,7 @@ struct MacRootView: View {
                             feed: feed,
                             isActive: isActive,
                             isPushing: appModel.isRunning && isActive,
-                            onSelect: { appModel.selectFeed(feed) },
+                            onSelect: { expandOnly(feed) },
                             onPush: { Task { await appModel.run(feed: feed, modelContext: modelContext) } }
                         )
                         .contextMenu {
@@ -81,6 +99,7 @@ struct MacRootView: View {
                             if appModel.feeds.count > 1 {
                                 Button(appModel.appLanguage.text(en: "Delete Feed", zh: "删除订阅"), role: .destructive) {
                                     appModel.deleteFeed(feed, modelContext: modelContext)
+                                    if let active = appModel.activeFeed { expandedFeedIDs = [active.id] }
                                 }
                             }
                         }
@@ -92,25 +111,41 @@ struct MacRootView: View {
                     }
                 }
 
-                ForEach(appModel.feeds) { feed in
-                    let papers = visiblePapers(for: feed.id)
-                    Section(feed.name) {
-                        if papers.isEmpty {
-                            Text(appModel.appLanguage.text(en: "No pushed papers", zh: "尚未推送论文"))
-                                .foregroundStyle(.secondary)
-                        }
-                        ForEach(papers) { paper in
-                            MacLibraryRow(paper: paper, summary: shortSummary(for: paper.id), language: appModel.appLanguage)
-                                .tag(paper.id)
+                Section(appModel.appLanguage.text(en: "Library", zh: "论文库")) {
+                    ForEach(appModel.feeds) { feed in
+                        let papers = visiblePapers(for: feed.id)
+                        DisclosureGroup(isExpanded: expansionBinding(for: feed.id)) {
+                            if papers.isEmpty {
+                                Text(appModel.appLanguage.text(en: "No pushed papers", zh: "尚未推送论文"))
+                                    .foregroundStyle(.secondary)
+                            }
+                            ForEach(papers) { paper in
+                                MacLibraryRow(paper: paper, summary: shortSummary(for: paper.id), language: appModel.appLanguage)
+                                    .tag(paper.id)
+                            }
+                        } label: {
+                            HStack {
+                                Text(feed.name)
+                                Spacer()
+                                Text("\(papers.count)")
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
-                }
 
-                if !unclassifiedPapers.isEmpty {
-                    Section(appModel.appLanguage.text(en: "Unclassified", zh: "未归类")) {
-                        ForEach(unclassifiedPapers) { paper in
-                        MacLibraryRow(paper: paper, summary: shortSummary(for: paper.id), language: appModel.appLanguage)
-                            .tag(paper.id)
+                    if !unclassifiedPapers.isEmpty {
+                        DisclosureGroup(isExpanded: $isUnclassifiedExpanded) {
+                            ForEach(unclassifiedPapers) { paper in
+                                MacLibraryRow(paper: paper, summary: shortSummary(for: paper.id), language: appModel.appLanguage)
+                                    .tag(paper.id)
+                            }
+                        } label: {
+                            HStack {
+                                Text(appModel.appLanguage.text(en: "Unclassified", zh: "未归类"))
+                                Spacer()
+                                Text("\(unclassifiedPapers.count)")
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                 }
@@ -146,10 +181,12 @@ struct MacRootView: View {
         .frame(minWidth: 900, minHeight: 600)
         .task {
             appModel.bootstrap(modelContext: modelContext)
+            if let active = appModel.activeFeed { expandedFeedIDs = [active.id] }
         }
         .sheet(item: $editorDraft) { draft in
             MacFeedEditorView(draft: draft) { feed in
                 appModel.saveFeed(feed, modelContext: modelContext)
+                expandedFeedIDs = [feed.id]
             }
             .environment(appModel)
         }

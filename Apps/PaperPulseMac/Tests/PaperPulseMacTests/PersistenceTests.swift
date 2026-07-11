@@ -55,6 +55,23 @@ final class PersistenceTests: XCTestCase {
         XCTAssertNil(try MacPersistenceStore.paper(id: paper.id, in: context))
     }
 
+    func testClearUnclassifiedIgnoresLinksToMissingFeeds() throws {
+        let container = try MacPersistenceStore.makeContainer(inMemory: true)
+        let context = ModelContext(container)
+        let feed = FeedConfig(name: "Temporary", keywords: ["agent"])
+        let paper = PaperRecord(candidate: PaperCandidate(source: .arxiv, sourceID: "stale-link", title: "Stale", summary: ""), localFile: nil)
+
+        try MacPersistenceStore.saveFeed(feed, in: context)
+        try MacPersistenceStore.savePaper(paper, in: context, feedID: feed.id)
+        let feedEntity = try XCTUnwrap(context.fetch(FetchDescriptor<MacFeedEntity>()).first)
+        context.delete(feedEntity)
+        try context.save()
+
+        XCTAssertEqual(try MacPersistenceStore.unclassifiedPaperIDs(in: context), [paper.id])
+        XCTAssertEqual(try MacPersistenceStore.clearUnclassifiedPapers(in: context), 1)
+        XCTAssertNil(try MacPersistenceStore.paper(id: paper.id, in: context))
+    }
+
     func testFullInterpretationRoundTripsWithSectionAnchors() throws {
         let container = try MacPersistenceStore.makeContainer(inMemory: true)
         let context = ModelContext(container)

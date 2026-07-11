@@ -199,7 +199,10 @@ enum MacPersistenceStore {
     }
 
     static func unclassifiedPaperIDs(in context: ModelContext) throws -> Set<String> {
-        let linked = Set(try context.fetch(FetchDescriptor<MacFeedPaperEntity>()).map(\.paperID))
+        let feedIDs = Set(try context.fetch(FetchDescriptor<MacFeedEntity>()).map(\.id))
+        let linked = Set(try context.fetch(FetchDescriptor<MacFeedPaperEntity>())
+            .filter { feedIDs.contains($0.feedID) }
+            .map(\.paperID))
         return Set(try context.fetch(FetchDescriptor<MacPaperEntity>()).map(\.id)).subtracting(linked)
     }
 
@@ -343,7 +346,14 @@ enum MacPersistenceStore {
     @discardableResult
     static func clearUnclassifiedPapers(in context: ModelContext) throws -> Int {
         let unclassified = try unclassifiedPaperIDs(in: context)
-        guard !unclassified.isEmpty else { return 0 }
+        let feedIDs = Set(try context.fetch(FetchDescriptor<MacFeedEntity>()).map(\.id))
+        for link in try context.fetch(FetchDescriptor<MacFeedPaperEntity>()) where !feedIDs.contains(link.feedID) {
+            context.delete(link)
+        }
+        guard !unclassified.isEmpty else {
+            try context.save()
+            return 0
+        }
 
         let papers = try context.fetch(FetchDescriptor<MacPaperEntity>())
         let summaries = try context.fetch(FetchDescriptor<MacSummaryEntity>())

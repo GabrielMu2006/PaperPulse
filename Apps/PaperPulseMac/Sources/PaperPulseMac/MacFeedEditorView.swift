@@ -60,30 +60,46 @@ struct MacFeedEditorView: View {
     var body: some View {
         let language = appModel.appLanguage
         VStack(spacing: 0) {
-            Form {
-                Section(language.text(en: "Feed", zh: "订阅")) {
-                    TextField(language.text(en: "Name", zh: "名称"), text: $draft.name)
-                    TextField(language.text(en: "Categories", zh: "分类"), text: $draft.categoriesText)
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(language.text(en: "Keywords (any match)", zh: "关键词（任一匹配）"))
-                        ForEach(appModel.keywordLibrary, id: \.self) { keyword in
-                            Toggle(keyword, isOn: keywordBinding(keyword))
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    editorSection(language.text(en: "Feed", zh: "订阅")) {
+                        TextField(language.text(en: "Name", zh: "名称"), text: $draft.name)
+                        TextField(language.text(en: "Categories", zh: "分类"), text: $draft.categoriesText)
+                    }
+
+                    editorSection(language.text(en: "Keywords (any match)", zh: "关键词（任一匹配）")) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], alignment: .leading, spacing: 10) {
+                            ForEach(appModel.keywordLibrary, id: \.self) { keyword in
+                                Toggle(keyword, isOn: keywordBinding(keyword))
+                            }
                         }
                         TextField(language.text(en: "Custom keywords, comma separated", zh: "自定义关键词，逗号分隔"), text: $draft.customKeywordsText)
                     }
-                    TextField(language.text(en: "Excluded keywords", zh: "排除关键词"), text: $draft.excludedKeywordsText)
-                    TextField(language.text(en: "Institutions", zh: "机构"), text: $draft.institutionsText)
-                    TextField(language.text(en: "Venues", zh: "期刊或会议"), text: $draft.venuesText)
-                }
-                Section(language.text(en: "Sources", zh: "学术来源")) {
-                    ForEach([PaperSourceKind.arxiv, .openAlex, .crossref], id: \.self) { source in
-                        Toggle(source.editorTitle(language: language), isOn: sourceBinding(source))
+
+                    editorSection(language.text(en: "Requirements", zh: "筛选要求")) {
+                        TextField(language.text(en: "Excluded keywords", zh: "排除关键词"), text: $draft.excludedKeywordsText)
+                        TextField(language.text(en: "Institutions: Any", zh: "机构：任意"), text: $draft.institutionsText)
+                        TextField(language.text(en: "Venues: Any", zh: "期刊或会议：任意"), text: $draft.venuesText)
+                        Text(language.text(en: "Leave institutions or venues empty to keep the authority policy without adding a requirement.", zh: "机构或期刊/会议留空即为任意，不增加额外要求；仍会执行权威性判断。"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    editorSection(language.text(en: "Sources", zh: "学术来源")) {
+                        HStack(spacing: 18) {
+                            ForEach([PaperSourceKind.arxiv, .openAlex, .crossref], id: \.self) { source in
+                                Toggle(source.editorTitle(language: language), isOn: sourceBinding(source))
+                                    .toggleStyle(.checkbox)
+                            }
+                        }
+                    }
+
+                    editorSection(language.text(en: "Selection", zh: "筛选")) {
+                        Stepper(language.text(en: "Papers per run: \(draft.dailyLimit)", zh: "每次篇数：\(draft.dailyLimit)"), value: $draft.dailyLimit, in: 1...20)
+                        Stepper(language.text(en: "Look back: \(draft.lookbackDays) days", zh: "检索范围：\(draft.lookbackDays) 天"), value: $draft.lookbackDays, in: 1...30)
                     }
                 }
-                Section(language.text(en: "Selection", zh: "筛选")) {
-                    Stepper(language.text(en: "Papers per run: \(draft.dailyLimit)", zh: "每次篇数：\(draft.dailyLimit)"), value: $draft.dailyLimit, in: 1...20)
-                    Stepper(language.text(en: "Look back: \(draft.lookbackDays) days", zh: "检索范围：\(draft.lookbackDays) 天"), value: $draft.lookbackDays, in: 1...30)
-                }
+                .padding(24)
             }
             Divider()
             HStack {
@@ -98,7 +114,7 @@ struct MacFeedEditorView: View {
             }
             .padding()
         }
-        .frame(width: 560, height: 620)
+        .frame(width: 720, height: 700)
         .navigationTitle(draft.feedID == nil ? language.text(en: "New Feed", zh: "新建订阅") : language.text(en: "Edit Feed", zh: "编辑订阅"))
     }
 
@@ -123,6 +139,15 @@ struct MacFeedEditorView: View {
                 else { draft.selectedLibraryKeywords.remove(keyword) }
             }
         )
+    }
+
+    private func editorSection<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.headline)
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
