@@ -3,7 +3,6 @@ import SwiftUI
 
 struct MacSettingsView: View {
     @Environment(PaperPulseMacModel.self) private var appModel
-    @Environment(\.modelContext) private var modelContext
     @State private var apiKey = ""
     @State private var keywordLibraryText = ""
     @State private var isClearUnclassifiedConfirmationPresented = false
@@ -116,7 +115,7 @@ struct MacSettingsView: View {
         ) {
             Button(language.text(en: "Clear Papers", zh: "清除文章"), role: .destructive) {
                 do {
-                    let count = try MacPersistenceStore.clearUnclassifiedPapers(in: modelContext)
+                    let count = try appModel.clearUnclassifiedPapers()
                     appModel.status = language.text(en: "Cleared \(count) unclassified papers.", zh: "已清除 \(count) 篇未归类文章。")
                 } catch {
                     appModel.errorMessage = error.localizedDescription

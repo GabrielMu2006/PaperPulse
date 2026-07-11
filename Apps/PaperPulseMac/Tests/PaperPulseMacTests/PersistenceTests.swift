@@ -72,6 +72,22 @@ final class PersistenceTests: XCTestCase {
         XCTAssertNil(try MacPersistenceStore.paper(id: paper.id, in: context))
     }
 
+    func testModelClearsUnclassifiedPapersFromItsMainContext() throws {
+        let container = try MacPersistenceStore.makeContainer(inMemory: true)
+        let context = ModelContext(container)
+        let model = PaperPulseMacModel()
+        model.bootstrap(modelContext: context)
+        let paper = PaperRecord(candidate: PaperCandidate(source: .arxiv, sourceID: "settings-clear", title: "Settings Clear", summary: ""), localFile: nil)
+
+        try MacPersistenceStore.savePaper(paper, in: context)
+        model.papers = try MacPersistenceStore.fetchPapers(in: context)
+        model.selectedPaperID = paper.id
+
+        XCTAssertEqual(try model.clearUnclassifiedPapers(), 1)
+        XCTAssertFalse(model.papers.contains { $0.id == paper.id })
+        XCTAssertNil(model.selectedPaperID)
+    }
+
     func testFullInterpretationRoundTripsWithSectionAnchors() throws {
         let container = try MacPersistenceStore.makeContainer(inMemory: true)
         let context = ModelContext(container)

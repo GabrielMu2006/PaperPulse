@@ -81,6 +81,17 @@ final class PaperPulseMacModel {
         }
     }
 
+    @discardableResult
+    func clearUnclassifiedPapers() throws -> Int {
+        guard let modelContext else { throw PaperPulseMacModelError.modelContextUnavailable }
+        let count = try MacPersistenceStore.clearUnclassifiedPapers(in: modelContext)
+        papers = try MacPersistenceStore.fetchPapers(in: modelContext)
+        if selectedPaperID.map({ paperID in !papers.contains { $0.id == paperID } }) == true {
+            selectedPaperID = papers.first?.id
+        }
+        return count
+    }
+
     func run(feed: FeedConfig, modelContext: ModelContext? = nil) async {
         guard !isRunning else { return }
         isRunning = true
@@ -318,4 +329,12 @@ final class PaperPulseMacModel {
     private static let keywordLibraryKey = "PaperPulse.macOS.keywordLibrary"
     private static let selectedFeedKey = "PaperPulse.macOS.selectedFeed"
     private static let selectedProfileKey = "PaperPulse.macOS.selectedProfile"
+}
+
+private enum PaperPulseMacModelError: LocalizedError {
+    case modelContextUnavailable
+
+    var errorDescription: String? {
+        "PaperPulse storage is not ready."
+    }
 }

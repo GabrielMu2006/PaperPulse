@@ -41,6 +41,7 @@ struct PaperPulseMacApp: App {
         Settings {
             MacSettingsView()
                 .environment(appModel)
+                .modelContainer(modelContainer)
         }
     }
 }

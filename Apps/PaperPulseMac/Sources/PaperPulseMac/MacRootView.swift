@@ -39,6 +39,7 @@ struct MacRootView: View {
     private func expandOnly(_ feed: FeedConfig) {
         appModel.selectFeed(feed)
         expandedFeedIDs = [feed.id]
+        isUnclassifiedExpanded = false
     }
 
     private func expansionBinding(for feedID: UUID) -> Binding<Bool> {
