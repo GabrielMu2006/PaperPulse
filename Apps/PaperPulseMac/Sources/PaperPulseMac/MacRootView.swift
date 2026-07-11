@@ -86,29 +86,37 @@ struct MacRootView: View {
             .searchable(text: $libraryQuery, prompt: appModel.appLanguage.text(en: "Search papers", zh: "搜索论文"))
             .navigationTitle(appModel.appLanguage.text(en: "PaperPulse", zh: "论文速递"))
             .toolbar {
-                Menu {
-                    Picker(appModel.appLanguage.text(en: "Library filter", zh: "论文筛选"), selection: $libraryScope) {
-                        ForEach(MacLibraryScope.allCases) { scope in
-                            Text(scope.title(language: appModel.appLanguage)).tag(scope)
+                ToolbarItem(placement: .automatic) {
+                    Menu {
+                        Picker(appModel.appLanguage.text(en: "Library filter", zh: "论文筛选"), selection: $libraryScope) {
+                            ForEach(MacLibraryScope.allCases) { scope in
+                                Text(scope.title(language: appModel.appLanguage)).tag(scope)
+                            }
                         }
+                    } label: {
+                        Label(appModel.appLanguage.text(en: "Filter", zh: "筛选"), systemImage: "line.3.horizontal.decrease.circle")
                     }
-                } label: {
-                    Label(appModel.appLanguage.text(en: "Filter", zh: "筛选"), systemImage: "line.3.horizontal.decrease.circle")
                 }
-                Button {
-                    openSettings()
-                } label: {
-                    Label("Settings", systemImage: "gearshape")
-                }
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button {
+                        openSettings()
+                    } label: {
+                        Label(appModel.appLanguage.text(en: "Settings", zh: "设置"), systemImage: "gearshape")
+                    }
+                    .help(appModel.appLanguage.text(en: "Settings", zh: "设置"))
+                    .accessibilityIdentifier("mac-settings-button")
 
-                Button {
-                    if let feed = appModel.activeFeed {
-                        Task { await appModel.run(feed: feed, modelContext: modelContext) }
+                    Button {
+                        if let feed = appModel.activeFeed {
+                            Task { await appModel.run(feed: feed, modelContext: modelContext) }
+                        }
+                    } label: {
+                        Label(appModel.appLanguage.text(en: "Refresh", zh: "刷新"), systemImage: "arrow.clockwise")
                     }
-                } label: {
-                    Label("Refresh", systemImage: "arrow.clockwise")
+                    .help(appModel.appLanguage.text(en: "Refresh latest papers", zh: "刷新最新论文"))
+                    .accessibilityIdentifier("mac-refresh-button")
+                    .disabled(appModel.isRunning)
                 }
-                .disabled(appModel.isRunning)
             }
         } detail: {
             if let selectedPaper {
