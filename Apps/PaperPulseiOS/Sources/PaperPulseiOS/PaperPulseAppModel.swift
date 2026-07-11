@@ -110,7 +110,10 @@ final class PaperPulseAppModel {
                 reranker: reranker,
                 downloader: URLSessionPaperDownloader(),
                 extractor: PDFKitTextExtractor(),
-                llmProvider: configuredLLMProvider(profile: shortProfile),
+                llmProvider: configuredLLMProvider(
+                    profile: shortProfile,
+                    requestTimeout: LLMProviderFactory.healthCheckAndShortSummaryTimeout
+                ),
                 summaryLanguage: summaryLanguage,
                 shortSummaryProfile: shortProfile
             )
@@ -239,7 +242,11 @@ final class PaperPulseAppModel {
                 pages: [ExtractedPage(pageNumber: 1, text: "Provider smoke test.")]
             )
             let summary = try await LLMProviderFactory
-                .makeProvider(profile: llmProfile, summaryLanguage: summaryLanguage)
+                .makeProvider(
+                    profile: llmProfile,
+                    summaryLanguage: summaryLanguage,
+                    requestTimeout: LLMProviderFactory.healthCheckAndShortSummaryTimeout
+                )
                 .shortSummary(for: record, text: text)
             providerTestMessage = appLanguage.text(
                 en: "API test succeeded: \(String(summary.shortText.prefix(80)))",
@@ -272,10 +279,18 @@ final class PaperPulseAppModel {
             let text = try await PDFKitTextExtractor().extract(from: localFile)
             let registry = ProviderRegistry(profiles: providerProfiles)
             let fullProfile = activeFeed.flatMap { registry.profile(for: .fullSummary, feed: $0) } ?? llmProfile
-            let provider = configuredLLMProvider(profile: fullProfile)
+            let chunkProvider = configuredLLMProvider(
+                profile: fullProfile,
+                requestTimeout: LLMProviderFactory.fullInterpretationChunkTimeout
+            )
+            let synthesisProvider = configuredLLMProvider(
+                profile: fullProfile,
+                requestTimeout: LLMProviderFactory.fullInterpretationSynthesisTimeout
+            )
             let generated = try await PaperSummaryService(
-                shortProvider: provider,
-                fullProvider: provider,
+                shortProvider: chunkProvider,
+                fullProvider: chunkProvider,
+                fullSynthesisProvider: synthesisProvider,
                 fullProfile: fullProfile,
                 language: summaryLanguage
             ).generateFullSummary(for: record, text: text)
@@ -299,11 +314,18 @@ final class PaperPulseAppModel {
         )
     }
 
-    private func configuredLLMProvider(profile: LLMProfile) -> any LLMProvider {
+    private func configuredLLMProvider(
+        profile: LLMProfile,
+        requestTimeout: TimeInterval = LLMProviderFactory.defaultRequestTimeout
+    ) -> any LLMProvider {
         guard !profile.apiKey.isEmpty else {
             return LocalRuleSummaryProvider(language: summaryLanguage)
         }
-        return LLMProviderFactory.makeProvider(profile: profile, summaryLanguage: summaryLanguage)
+        return LLMProviderFactory.makeProvider(
+            profile: profile,
+            summaryLanguage: summaryLanguage,
+            requestTimeout: requestTimeout
+        )
     }
 
     private func academicSources(for feed: FeedConfig) -> [any PaperSource] {

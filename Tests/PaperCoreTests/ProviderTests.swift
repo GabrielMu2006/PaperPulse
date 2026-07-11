@@ -281,7 +281,9 @@ final class ProviderTests: XCTestCase {
     }
 
     func testProviderFactoryUsesLongerTimeoutForLLMRequests() {
-        XCTAssertEqual(LLMProviderFactory.defaultRequestTimeout, 90)
+        XCTAssertEqual(LLMProviderFactory.healthCheckAndShortSummaryTimeout, 60)
+        XCTAssertEqual(LLMProviderFactory.fullInterpretationChunkTimeout, 120)
+        XCTAssertEqual(LLMProviderFactory.fullInterpretationSynthesisTimeout, 150)
     }
 
     func testProfileConfigurationPersistsRelaySettingsWithoutAPIKey() throws {

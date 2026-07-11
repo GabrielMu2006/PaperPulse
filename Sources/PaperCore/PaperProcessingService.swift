@@ -116,6 +116,7 @@ public struct PaperProcessingService {
 public struct PaperSummaryService {
     private let shortProvider: any LLMProvider
     private let fullProvider: any LLMProvider
+    private let fullSynthesisProvider: (any LLMProvider)?
     private let shortProfile: LLMProfile?
     private let fullProfile: LLMProfile?
     private let language: SummaryLanguage
@@ -125,6 +126,7 @@ public struct PaperSummaryService {
     public init(
         shortProvider: any LLMProvider,
         fullProvider: any LLMProvider,
+        fullSynthesisProvider: (any LLMProvider)? = nil,
         shortProfile: LLMProfile? = nil,
         fullProfile: LLMProfile? = nil,
         language: SummaryLanguage = .chinese,
@@ -133,6 +135,7 @@ public struct PaperSummaryService {
     ) {
         self.shortProvider = shortProvider
         self.fullProvider = fullProvider
+        self.fullSynthesisProvider = fullSynthesisProvider
         self.shortProfile = shortProfile
         self.fullProfile = fullProfile
         self.language = language
@@ -153,7 +156,7 @@ public struct PaperSummaryService {
             plainText: String(chunkSummaries.map(synthesisMaterial).joined(separator: "\n\n").prefix(36_000)),
             pages: text.pages
         )
-        let synthesized = try await fullProvider.fullSummary(for: paper, text: synthesisText)
+        let synthesized = try await (fullSynthesisProvider ?? fullProvider).fullSummary(for: paper, text: synthesisText)
         var result = trustedMetadata(synthesized, kind: .full, paper: paper, text: text, profile: fullProfile)
         let interpretation = normalizedInterpretation(result.interpretation, fallback: result.fullText, text: text)
         result.interpretation = interpretation

@@ -450,32 +450,40 @@ public struct ProviderRegistry {
 }
 
 public enum LLMProviderFactory {
-    /// Model calls can include long PDF excerpts and need more time than metadata requests.
+    public static let healthCheckAndShortSummaryTimeout: TimeInterval = 60
+    public static let fullInterpretationChunkTimeout: TimeInterval = 120
+    public static let fullInterpretationSynthesisTimeout: TimeInterval = 150
     public static let defaultRequestTimeout: TimeInterval = 90
 
     public static func makeProvider(
         profile: LLMProfile,
         summaryLanguage: SummaryLanguage = .chinese,
-        httpClient: HTTPClient = URLSessionHTTPClient(timeout: defaultRequestTimeout)
+        requestTimeout: TimeInterval = defaultRequestTimeout,
+        httpClient: (any HTTPClient)? = nil
     ) -> any LLMProvider {
-        switch profile.apiStyle {
+        let client = httpClient ?? URLSessionHTTPClient(timeout: requestTimeout)
+        return switch profile.apiStyle {
         case .openAIChatCompletions:
-            OpenAICompatibleChatProvider(profile: profile, summaryLanguage: summaryLanguage, httpClient: httpClient)
+            OpenAICompatibleChatProvider(profile: profile, summaryLanguage: summaryLanguage, httpClient: client)
         case .anthropicMessages:
-            AnthropicMessagesProvider(profile: profile, summaryLanguage: summaryLanguage, httpClient: httpClient)
+            AnthropicMessagesProvider(profile: profile, summaryLanguage: summaryLanguage, httpClient: client)
         case .geminiGenerateContent:
-            GeminiGenerateContentProvider(profile: profile, summaryLanguage: summaryLanguage, httpClient: httpClient)
+            GeminiGenerateContentProvider(profile: profile, summaryLanguage: summaryLanguage, httpClient: client)
         }
     }
 
     public static func makeReranker(
         profile: LLMProfile,
-        httpClient: HTTPClient = URLSessionHTTPClient(timeout: defaultRequestTimeout)
+        requestTimeout: TimeInterval = defaultRequestTimeout,
+        httpClient: (any HTTPClient)? = nil
     ) -> (any PaperReranker)? {
         guard profile.apiStyle == .openAIChatCompletions, profile.supports(.rerank) else {
             return nil
         }
-        return OpenAICompatiblePaperReranker(profile: profile, httpClient: httpClient)
+        return OpenAICompatiblePaperReranker(
+            profile: profile,
+            httpClient: httpClient ?? URLSessionHTTPClient(timeout: requestTimeout)
+        )
     }
 }
 

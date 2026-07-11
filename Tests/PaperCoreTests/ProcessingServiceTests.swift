@@ -100,6 +100,33 @@ final class ProcessingServiceTests: XCTestCase {
         XCTAssertTrue(interpretation.sections.allSatisfy(\.anchors.isEmpty))
         XCTAssertEqual(interpretation.pageCount, 3)
     }
+
+    func testFullInterpretationUsesDedicatedProviderForFinalSynthesis() async throws {
+        let chunkProvider = ChunkRecordingProvider()
+        let synthesisProvider = ChunkRecordingProvider()
+        let service = PaperSummaryService(
+            shortProvider: chunkProvider,
+            fullProvider: chunkProvider,
+            fullSynthesisProvider: synthesisProvider,
+            fullChunkCharacterLimit: 12
+        )
+        let text = ExtractedPaperText(
+            plainText: "page one\n\npage two\n\npage three",
+            pages: [
+                ExtractedPage(pageNumber: 1, text: "page one"),
+                ExtractedPage(pageNumber: 2, text: "page two"),
+                ExtractedPage(pageNumber: 3, text: "page three")
+            ]
+        )
+
+        _ = try await service.generateFullSummary(
+            for: PaperRecord(candidate: .fixture(sourceID: "separate-synthesis"), localFile: nil),
+            text: text
+        )
+
+        XCTAssertEqual(chunkProvider.fullCallCount, 3)
+        XCTAssertEqual(synthesisProvider.fullCallCount, 1)
+    }
 }
 
 private struct UntrustedSummaryProvider: LLMProvider {
