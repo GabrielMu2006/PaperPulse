@@ -149,42 +149,49 @@ struct PaperDetailView: View {
     @Environment(\.modelContext) private var modelContext
     var paper: PaperRecord
     var summary: PaperSummary?
-    @State private var isShowingFullReading = false
+    @State private var fullSummary: PaperSummary?
+    @State private var isReadingFull = false
 
     var body: some View {
         HSplitView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(paper.candidate.title)
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    Text(paper.candidate.authors.joined(separator: ", "))
-                        .foregroundStyle(.secondary)
-                    HStack {
-                        Button {
-                            if let entity = try? MacPersistenceStore.paper(id: paper.id, in: modelContext) {
-                                entity.isFavorite.toggle()
-                                try? modelContext.save()
-                            }
-                        } label: { Label(appModel.appLanguage.text(en: "Favorite", zh: "收藏"), systemImage: "star") }
-                        Button {
-                            if let entity = try? MacPersistenceStore.paper(id: paper.id, in: modelContext) {
-                                entity.isRead.toggle()
-                                try? modelContext.save()
-                            }
-                        } label: { Label(appModel.appLanguage.text(en: "Mark Read", zh: "标记已读"), systemImage: "checkmark.circle") }
-                        Button {
-                            isShowingFullReading = true
-                        } label: { Label(appModel.appLanguage.text(en: "Full Reading", zh: "完整解读"), systemImage: "text.book.closed") }
-                        .disabled(paper.localFile == nil)
+            if isReadingFull, let fullSummary {
+                MacInterpretationPane(
+                    paper: paper,
+                    summary: fullSummary,
+                    markdownURL: try? MacPersistenceStore.fullSummaryFileURL(for: paper.id, in: modelContext),
+                    onClose: { isReadingFull = false }
+                )
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(paper.candidate.title)
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        Text(paper.candidate.authors.joined(separator: ", "))
+                            .foregroundStyle(.secondary)
+                        HStack {
+                            Button {
+                                if let entity = try? MacPersistenceStore.paper(id: paper.id, in: modelContext) {
+                                    entity.isFavorite.toggle()
+                                    try? modelContext.save()
+                                }
+                            } label: { Label(appModel.appLanguage.text(en: "Favorite", zh: "收藏"), systemImage: "star") }
+                            Button {
+                                if let entity = try? MacPersistenceStore.paper(id: paper.id, in: modelContext) {
+                                    entity.isRead.toggle()
+                                    try? modelContext.save()
+                                }
+                            } label: { Label(appModel.appLanguage.text(en: "Mark Read", zh: "标记已读"), systemImage: "checkmark.circle") }
+                            fullReadingControl
+                        }
+                        Text(summary?.shortText ?? paper.candidate.summary)
+                        if let url = paper.candidate.absURL {
+                            Link("Open source page", destination: url)
+                        }
                     }
-                    Text(summary?.shortText ?? paper.candidate.summary)
-                    if let url = paper.candidate.absURL {
-                        Link("Open source page", destination: url)
-                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             if let file = paper.localFile {
@@ -193,9 +200,33 @@ struct PaperDetailView: View {
                 ContentUnavailableView("PDF not downloaded", systemImage: "doc")
             }
         }
-        .sheet(isPresented: $isShowingFullReading) {
-            MacFullInterpretationView(paper: paper)
-                .environment(appModel)
+        .task {
+            fullSummary = try? MacPersistenceStore.fullSummary(for: paper.id, in: modelContext)
+        }
+    }
+
+    @ViewBuilder
+    private var fullReadingControl: some View {
+        let language = appModel.appLanguage
+        if appModel.fullSummaryPaperIDs.contains(paper.id) {
+            ProgressView(language.text(en: "Generating", zh: "正在生成"))
+                .controlSize(.small)
+        } else if fullSummary != nil {
+            Button {
+                isReadingFull = true
+            } label: {
+                Label(language.text(en: "Open Full Reading", zh: "打开完整解读"), systemImage: "text.book.closed")
+            }
+        } else {
+            Button {
+                Task {
+                    await appModel.generateFullSummary(for: paper, modelContext: modelContext)
+                    fullSummary = try? MacPersistenceStore.fullSummary(for: paper.id, in: modelContext)
+                }
+            } label: {
+                Label(language.text(en: "Generate Full Reading", zh: "生成完整解读"), systemImage: "sparkles")
+            }
+            .disabled(paper.localFile == nil)
         }
     }
 }

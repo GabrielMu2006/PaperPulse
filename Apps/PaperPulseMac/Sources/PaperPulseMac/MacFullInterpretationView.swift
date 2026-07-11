@@ -1,63 +1,59 @@
 import PaperCore
-import SwiftData
 import SwiftUI
 
-struct MacFullInterpretationView: View {
+struct MacInterpretationPane: View {
     @Environment(PaperPulseMacModel.self) private var appModel
-    @Environment(\.modelContext) private var modelContext
     var paper: PaperRecord
-    @State private var summary: PaperSummary?
+    var summary: PaperSummary
+    var markdownURL: URL?
+    var onClose: () -> Void
 
     var body: some View {
         let language = appModel.appLanguage
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text(paper.candidate.title).font(.title2.weight(.semibold))
-                if let summary {
-                    Text("\(summary.model) · \(summary.generatedAt.formatted(date: .abbreviated, time: .shortened)) · \(summary.sourceRange)")
-                        .font(.caption).foregroundStyle(.secondary)
-                    if let interpretation = summary.interpretation {
-                        ForEach(interpretation.sections) { section in
-                            GroupBox(section.kind.macTitle(language: language)) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text(section.content).frame(maxWidth: .infinity, alignment: .leading)
-                                    Text(section.anchors.macPageRange(language: language)).font(.caption).foregroundStyle(.secondary)
-                                }
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(language.text(en: "Full Reading", zh: "完整解读"))
+                            .font(.title2.weight(.semibold))
+                        Text(paper.candidate.title)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+                    Spacer()
+                    Button(action: onClose) {
+                        Label(language.text(en: "Close", zh: "关闭"), systemImage: "xmark")
+                    }
+                }
+
+                Text("\(summary.model) · \(summary.generatedAt.formatted(date: .abbreviated, time: .shortened)) · \(summary.sourceRange)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if let markdownURL {
+                    Text(language.text(en: "Saved locally: \(markdownURL.lastPathComponent)", zh: "已保存到本地：\(markdownURL.lastPathComponent)"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                if let interpretation = summary.interpretation {
+                    ForEach(interpretation.sections) { section in
+                        GroupBox(section.kind.macTitle(language: language)) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(section.content)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                Text(section.anchors.macPageRange(language: language))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
                         }
-                    } else {
-                        Text(summary.fullText ?? summary.shortText)
                     }
-                } else if appModel.fullSummaryPaperIDs.contains(paper.id) {
-                    ProgressView(language.text(en: "Preparing PDF and generating full reading...", zh: "正在提取 PDF 并生成完整解读..."))
-                } else if let error = appModel.fullSummaryErrors[paper.id] {
-                    ContentUnavailableView(language.text(en: "Full Reading Unavailable", zh: "完整解读未生成"), systemImage: "exclamationmark.triangle", description: Text(error))
-                    Button(language.text(en: "Retry", zh: "重新生成")) { generate() }.buttonStyle(.borderedProminent)
                 } else {
-                    ContentUnavailableView(
-                        language.text(en: "Full Reading", zh: "完整解读"),
-                        systemImage: "text.book.closed",
-                        description: Text(language.text(en: "Generate a section-by-section reading from the downloaded PDF.", zh: "基于已下载的 PDF 生成逐节解读。"))
-                    )
-                    Button(language.text(en: "Generate Full Reading", zh: "生成完整解读")) { generate() }
-                        .buttonStyle(.borderedProminent)
+                    Text(summary.fullText ?? summary.shortText)
                 }
             }
-            .padding(24)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .frame(minWidth: 620, minHeight: 600)
-        .toolbar {
-            Button { generate() } label: { Label(language.text(en: "Regenerate", zh: "重新生成"), systemImage: "arrow.clockwise") }
-                .disabled(appModel.fullSummaryPaperIDs.contains(paper.id))
-        }
-        .task { summary = try? MacPersistenceStore.fullSummary(for: paper.id, in: modelContext) }
-    }
-
-    private func generate() {
-        Task {
-            await appModel.generateFullSummary(for: paper, modelContext: modelContext)
-            summary = try? MacPersistenceStore.fullSummary(for: paper.id, in: modelContext)
+            .padding(20)
+            .frame(minWidth: 420, maxWidth: .infinity, alignment: .leading)
         }
     }
 }

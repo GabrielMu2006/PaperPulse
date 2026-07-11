@@ -70,4 +70,34 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(restored.interpretation?.sections.first?.content, "使用分块汇总。")
         XCTAssertEqual(restored.interpretation?.sections.first?.anchors.first?.pageNumber, 3)
     }
+
+    func testFullInterpretationIsSavedAsLocalMarkdown() throws {
+        let container = try MacPersistenceStore.makeContainer(inMemory: true)
+        let context = ModelContext(container)
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let paper = PaperRecord(candidate: PaperCandidate(source: .arxiv, sourceID: "markdown", title: "Markdown Paper", summary: ""), localFile: nil)
+        let section = PaperInterpretationSection(
+            kind: .results,
+            content: "结果显示方法在两个基准上提升。",
+            anchors: [PageAnchor(pageNumber: 5, startOffset: 0, endOffset: 16)]
+        )
+        let summary = PaperSummary(
+            paperID: paper.id,
+            shortText: "完整解读",
+            fullText: "结果",
+            language: "zh-Hans",
+            model: "test-model",
+            generatedAt: Date(timeIntervalSince1970: 0),
+            sourceRange: "page 5",
+            kind: .full,
+            interpretation: PaperInterpretation(sections: [section], pageCount: 5)
+        )
+
+        let fileURL = try MacPersistenceStore.saveFullSummary(summary, for: paper, in: context, directory: directory)
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: fileURL.path))
+        XCTAssertTrue(try String(contentsOf: fileURL).contains("# Markdown Paper"))
+        XCTAssertTrue(try String(contentsOf: fileURL).contains("## 主要结果"))
+        XCTAssertEqual(try MacPersistenceStore.fullSummaryFileURL(for: paper.id, in: context), fileURL)
+    }
 }

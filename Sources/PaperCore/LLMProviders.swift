@@ -64,7 +64,7 @@ public struct OpenAICompatibleChatProvider: LLMProvider {
                 ChatMessage(role: "user", content: prompt)
             ],
             temperature: 0.2,
-            maxTokens: mode == "full" ? 2_400 : 800,
+            maxTokens: mode == "full" ? 4_000 : 800,
             responseFormat: isDeepSeek ? ChatResponseFormat(type: "json_object") : nil,
             thinking: isDeepSeek ? ChatThinking(type: "disabled") : nil
         )
@@ -94,7 +94,7 @@ public struct OpenAICompatibleChatProvider: LLMProvider {
         For full mode use:
         {
           "shortText": "",
-          "fullText": "short overall conclusion",
+          "fullText": "detailed overall conclusion",
           "interpretation": {
             "sections": [
               {"kind":"researchQuestion","content":"..."},
@@ -110,7 +110,7 @@ public struct OpenAICompatibleChatProvider: LLMProvider {
           }
         }
 
-        Do not invent institutions, experiments, citations, or limitations. Say evidence is unavailable when it is unavailable.
+        For full mode, write a detailed, evidence-based reading rather than a short summary. Explain each section with concrete mechanisms, experimental setup, comparison baselines, numerical findings, assumptions, and trade-offs only when the supplied text supports them. Give each section enough detail for a reader to understand the paper without reopening every page. Do not invent institutions, experiments, citations, numerical results, or limitations. Say evidence is unavailable when it is unavailable.
 
         Text:
         \(clipped)

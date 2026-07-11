@@ -71,6 +71,7 @@ final class MacSummaryEntity {
     var sourceTextHash: String?
     var anchorsData: Data
     var interpretationData: Data?
+    var markdownPath: String?
 
     init(summary: PaperSummary) throws {
         id = summary.id
@@ -86,6 +87,7 @@ final class MacSummaryEntity {
         sourceTextHash = summary.sourceTextHash
         anchorsData = try JSONEncoder().encode(summary.anchors)
         interpretationData = try summary.interpretation.map { try JSONEncoder().encode($0) }
+        markdownPath = nil
     }
 
     func update(from summary: PaperSummary) throws {
@@ -175,6 +177,23 @@ enum MacPersistenceStore {
         try context.save()
     }
 
+    static func saveFullSummary(
+        _ summary: PaperSummary,
+        for paper: PaperRecord,
+        in context: ModelContext,
+        directory: URL? = nil
+    ) throws -> URL {
+        let fileURL = try writeMarkdown(summary: summary, paper: paper, directory: directory ?? interpretationDirectory())
+        try saveSummary(summary, in: context)
+        let descriptor = FetchDescriptor<MacSummaryEntity>(predicate: #Predicate { $0.id == summary.id })
+        guard let entity = try context.fetch(descriptor).first else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+        entity.markdownPath = fileURL.path
+        try context.save()
+        return fileURL
+    }
+
     static func paper(id: String, in context: ModelContext) throws -> MacPaperEntity? {
         try context.fetch(FetchDescriptor<MacPaperEntity>(predicate: #Predicate { $0.id == id })).first
     }
@@ -254,9 +273,80 @@ enum MacPersistenceStore {
         )
     }
 
+    static func fullSummaryFileURL(for paperID: String, in context: ModelContext) throws -> URL? {
+        let fullKind = SummaryKind.full.rawValue
+        return try context.fetch(FetchDescriptor<MacSummaryEntity>(predicate: #Predicate {
+            $0.paperID == paperID && $0.kindRawValue == fullKind
+        })).sorted(by: { $0.generatedAt > $1.generatedAt }).first.flatMap { entity in
+            entity.markdownPath.map(URL.init(fileURLWithPath:))
+        }
+    }
+
     static func deleteFeed(id: UUID, in context: ModelContext) throws {
         let descriptor = FetchDescriptor<MacFeedEntity>(predicate: #Predicate { $0.id == id })
         for entity in try context.fetch(descriptor) { context.delete(entity) }
         try context.save()
+    }
+
+    private static func interpretationDirectory() throws -> URL {
+        let base = try FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )
+        return base
+            .appendingPathComponent("PaperPulse", isDirectory: true)
+            .appendingPathComponent("macOS", isDirectory: true)
+            .appendingPathComponent("Interpretations", isDirectory: true)
+    }
+
+    private static func writeMarkdown(summary: PaperSummary, paper: PaperRecord, directory: URL) throws -> URL {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let filename = paper.id.replacingOccurrences(of: "[^A-Za-z0-9._-]", with: "-", options: .regularExpression)
+        let fileURL = directory.appendingPathComponent("\(filename).md")
+        try renderedMarkdown(summary: summary, paper: paper).write(to: fileURL, atomically: true, encoding: .utf8)
+        return fileURL
+    }
+
+    private static func renderedMarkdown(summary: PaperSummary, paper: PaperRecord) -> String {
+        var lines = [
+            "# \(paper.candidate.title)",
+            "",
+            "- 模型：\(summary.model)",
+            "- 生成时间：\(summary.generatedAt.formatted(date: .numeric, time: .shortened))",
+            "- 文本范围：\(summary.sourceRange)",
+            ""
+        ]
+        if let interpretation = summary.interpretation {
+            for section in interpretation.sections {
+                lines.append("## \(markdownTitle(for: section.kind))")
+                lines.append("")
+                lines.append(section.content)
+                let pages = section.anchors.map(\.pageNumber).sorted()
+                if let first = pages.first, let last = pages.last {
+                    lines.append("")
+                    lines.append(first == last ? "证据页码：第 \(first) 页" : "证据页码：第 \(first)-\(last) 页")
+                }
+                lines.append("")
+            }
+        } else {
+            lines.append(summary.fullText ?? summary.shortText)
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    private static func markdownTitle(for kind: PaperInterpretationSectionKind) -> String {
+        switch kind {
+        case .researchQuestion: "研究问题与背景"
+        case .paperStructure: "论文结构概览"
+        case .method: "方法"
+        case .experimentDesign: "数据与实验设计"
+        case .results: "主要结果"
+        case .keyArguments: "关键论证"
+        case .limitations: "局限与风险"
+        case .readerFit: "适合读者"
+        case .extensionQuestions: "可延伸问题"
+        }
     }
 }

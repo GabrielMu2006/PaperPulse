@@ -213,7 +213,7 @@ final class PaperPulseMacModel {
                 fullProfile: llmProfile,
                 language: summaryLanguage
             ).generateFullSummary(for: paper, text: text)
-            try MacPersistenceStore.saveSummary(summary, in: modelContext)
+            _ = try MacPersistenceStore.saveFullSummary(summary, for: paper, in: modelContext)
         } catch let error as HTTPError {
             fullSummaryErrors[paper.id] = error.userMessage(language: appLanguage)
         } catch {
