@@ -130,7 +130,8 @@ struct MacRootView: View {
                 PaperDetailView(
                     paper: selectedPaper,
                     summary: appModel.summaries[selectedPaper.id],
-                    onOpenFullReading: { columnVisibility = .detailOnly }
+                    onOpenFullReading: { columnVisibility = .detailOnly },
+                    onCloseFullReading: { columnVisibility = .all }
                 )
                 .id(selectedPaper.id)
             } else {
@@ -156,6 +157,7 @@ struct PaperDetailView: View {
     var paper: PaperRecord
     var summary: PaperSummary?
     var onOpenFullReading: () -> Void
+    var onCloseFullReading: () -> Void
     @State private var fullSummary: PaperSummary?
     @State private var isReadingFull = false
     @AppStorage("PaperPulse.macOS.detailSplitRatio") private var detailSplitRatio = 0.5
@@ -167,7 +169,10 @@ struct PaperDetailView: View {
                     paper: paper,
                     summary: fullSummary,
                     markdownURL: try? MacPersistenceStore.fullSummaryFileURL(for: paper.id, in: modelContext),
-                    onClose: { isReadingFull = false },
+                    onClose: {
+                        isReadingFull = false
+                        onCloseFullReading()
+                    },
                     onDelete: deleteFullReading
                 )
             } else {
@@ -192,6 +197,11 @@ struct PaperDetailView: View {
                                 }
                             } label: { Label(appModel.appLanguage.text(en: "Mark Read", zh: "标记已读"), systemImage: "checkmark.circle") }
                             fullReadingControl
+                        }
+                        if let error = appModel.fullSummaryErrors[paper.id] {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundStyle(.red)
                         }
                         Text(summary?.shortText ?? paper.candidate.summary)
                         if let url = paper.candidate.absURL {
@@ -235,7 +245,12 @@ struct PaperDetailView: View {
                     fullSummary = try? MacPersistenceStore.fullSummary(for: paper.id, in: modelContext)
                 }
             } label: {
-                Label(language.text(en: "Generate Full Reading", zh: "生成完整解读"), systemImage: "sparkles")
+                Label(
+                    appModel.fullSummaryErrors[paper.id] == nil
+                        ? language.text(en: "Generate Full Reading", zh: "生成完整解读")
+                        : language.text(en: "Retry Full Reading", zh: "重新生成完整解读"),
+                    systemImage: "sparkles"
+                )
             }
             .disabled(paper.localFile == nil)
         }

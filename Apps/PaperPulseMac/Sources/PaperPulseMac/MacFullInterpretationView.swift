@@ -8,6 +8,7 @@ struct MacInterpretationPane: View {
     var markdownURL: URL?
     var onClose: () -> Void
     var onDelete: () -> Void
+    @State private var isDeleteConfirmationPresented = false
 
     var body: some View {
         let language = appModel.appLanguage
@@ -24,7 +25,9 @@ struct MacInterpretationPane: View {
                     }
                     Spacer()
                     HStack(spacing: 8) {
-                        Button(role: .destructive, action: onDelete) {
+                        Button(role: .destructive) {
+                            isDeleteConfirmationPresented = true
+                        } label: {
                             Label(language.text(en: "Delete", zh: "删除"), systemImage: "trash")
                         }
                         Button(action: onClose) {
@@ -47,6 +50,8 @@ struct MacInterpretationPane: View {
                         GroupBox(section.kind.macTitle(language: language)) {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(section.content)
+                                    .font(.system(size: 17))
+                                    .lineSpacing(4)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 Text(section.anchors.macPageRange(language: language))
                                     .font(.caption)
@@ -60,6 +65,16 @@ struct MacInterpretationPane: View {
             }
             .padding(20)
             .frame(minWidth: 420, maxWidth: .infinity, alignment: .leading)
+        }
+        .confirmationDialog(
+            language.text(en: "Delete Full Reading?", zh: "删除完整解读？"),
+            isPresented: $isDeleteConfirmationPresented,
+            titleVisibility: .visible
+        ) {
+            Button(language.text(en: "Delete", zh: "删除"), role: .destructive, action: onDelete)
+            Button(language.text(en: "Cancel", zh: "取消"), role: .cancel) {}
+        } message: {
+            Text(language.text(en: "This removes the saved Markdown file for this paper.", zh: "这会删除当前论文保存的 Markdown 解读文件。"))
         }
     }
 }

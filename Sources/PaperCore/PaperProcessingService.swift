@@ -197,15 +197,10 @@ public struct PaperSummaryService {
         text: ExtractedPaperText
     ) -> PaperInterpretation {
         let fallbackContent = fallback?.cleanedWhitespace.nilIfEmpty ?? unavailableEvidenceText
-        let sourceAnchors: [PageAnchor] = text.pages.compactMap { page in
-            guard !page.text.isEmpty else { return nil }
-            return PageAnchor(pageNumber: page.pageNumber, startOffset: 0, endOffset: page.text.utf16.count)
-        }
         let provided = Dictionary(uniqueKeysWithValues: (interpretation?.sections ?? []).map { ($0.kind, $0) })
         let sections = PaperInterpretation.requiredSectionKinds.map { kind in
             var section = provided[kind] ?? PaperInterpretationSection(kind: kind, content: fallbackContent)
             if section.content.isEmpty { section.content = unavailableEvidenceText }
-            if section.anchors.isEmpty { section.anchors = sourceAnchors }
             return section
         }
         return PaperInterpretation(sections: sections, pageCount: text.pages.count)

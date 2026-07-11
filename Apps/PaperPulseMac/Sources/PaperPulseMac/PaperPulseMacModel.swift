@@ -217,7 +217,11 @@ final class PaperPulseMacModel {
         } catch let error as HTTPError {
             fullSummaryErrors[paper.id] = error.userMessage(language: appLanguage)
         } catch {
-            fullSummaryErrors[paper.id] = appLanguage.text(en: "The full reading could not be generated. Please retry later.", zh: "完整解读暂时无法生成，请稍后重试。")
+            let detail = error.localizedDescription
+            fullSummaryErrors[paper.id] = appLanguage.text(
+                en: "The full reading could not be generated: \(detail)",
+                zh: "完整解读生成失败：\(detail)"
+            )
         }
     }
 

@@ -97,7 +97,7 @@ final class ProcessingServiceTests: XCTestCase {
         XCTAssertEqual(provider.fullCallCount, 4)
         XCTAssertTrue(provider.lastFullInput.contains("Evidence from the paper."))
         XCTAssertEqual(interpretation.sections.count, PaperInterpretation.requiredSectionKinds.count)
-        XCTAssertTrue(interpretation.sections.allSatisfy { !$0.anchors.isEmpty })
+        XCTAssertTrue(interpretation.sections.allSatisfy(\.anchors.isEmpty))
         XCTAssertEqual(interpretation.pageCount, 3)
     }
 }

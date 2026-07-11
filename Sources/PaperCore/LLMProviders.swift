@@ -81,7 +81,13 @@ public struct OpenAICompatibleChatProvider: LLMProvider {
     }
 
     private static func prompt(paper: PaperRecord, text: ExtractedPaperText, mode: String, language: SummaryLanguage) -> String {
-        let clipped = String(text.plainText.prefix(mode == "short" ? 12_000 : 45_000))
+        let sourceText: String
+        if mode == "full", !text.pages.isEmpty {
+            sourceText = text.pages.map { "[Page \($0.pageNumber)]\n\($0.text)" }.joined(separator: "\n\n")
+        } else {
+            sourceText = text.plainText
+        }
+        let clipped = String(sourceText.prefix(mode == "short" ? 12_000 : 45_000))
         return """
         Paper title: \(paper.candidate.title)
         Authors: \(paper.candidate.authors.joined(separator: ", "))
@@ -97,20 +103,20 @@ public struct OpenAICompatibleChatProvider: LLMProvider {
           "fullText": "detailed overall conclusion",
           "interpretation": {
             "sections": [
-              {"kind":"researchQuestion","content":"..."},
-              {"kind":"paperStructure","content":"..."},
-              {"kind":"method","content":"..."},
-              {"kind":"experimentDesign","content":"..."},
-              {"kind":"results","content":"..."},
-              {"kind":"keyArguments","content":"..."},
-              {"kind":"limitations","content":"..."},
-              {"kind":"readerFit","content":"..."},
-              {"kind":"extensionQuestions","content":"..."}
+              {"kind":"researchQuestion","content":"...","anchors":[{"pageNumber":1,"startOffset":0,"endOffset":0}]},
+              {"kind":"paperStructure","content":"...","anchors":[]},
+              {"kind":"method","content":"...","anchors":[]},
+              {"kind":"experimentDesign","content":"...","anchors":[]},
+              {"kind":"results","content":"...","anchors":[]},
+              {"kind":"keyArguments","content":"...","anchors":[]},
+              {"kind":"limitations","content":"...","anchors":[]},
+              {"kind":"readerFit","content":"...","anchors":[]},
+              {"kind":"extensionQuestions","content":"...","anchors":[]}
             ]
           }
         }
 
-        For full mode, write a detailed, evidence-based reading rather than a short summary. Explain each section with concrete mechanisms, experimental setup, comparison baselines, numerical findings, assumptions, and trade-offs only when the supplied text supports them. Give each section enough detail for a reader to understand the paper without reopening every page. Do not invent institutions, experiments, citations, numerical results, or limitations. Say evidence is unavailable when it is unavailable.
+        For full mode, write a detailed, evidence-based reading rather than a short summary. Explain each section with concrete mechanisms, experimental setup, comparison baselines, numerical findings, assumptions, and trade-offs only when the supplied text supports them. Give each section enough detail for a reader to understand the paper without reopening every page. The source text has [Page N] labels: add only the relevant page numbers to each section's anchors. Use an empty anchors array when the text does not support a precise page, and never list every page merely as a fallback. Do not invent institutions, experiments, citations, numerical results, or limitations. Say evidence is unavailable when it is unavailable.
 
         Text:
         \(clipped)
