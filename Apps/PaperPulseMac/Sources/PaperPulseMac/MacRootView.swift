@@ -45,6 +45,32 @@ struct MacRootView: View {
 
         NavigationSplitView {
             List(selection: $appModel.selectedPaperID) {
+                Section {
+                    HStack(spacing: 8) {
+                        Button {
+                            if let feed = appModel.activeFeed {
+                                Task { await appModel.run(feed: feed, modelContext: modelContext) }
+                            }
+                        } label: {
+                            Label(appModel.appLanguage.text(en: "Refresh", zh: "刷新"), systemImage: "arrow.clockwise")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .disabled(appModel.isRunning)
+                        .accessibilityIdentifier("mac-refresh-button")
+
+                        Button {
+                            openSettings()
+                        } label: {
+                            Label(appModel.appLanguage.text(en: "Settings", zh: "设置"), systemImage: "gearshape")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .accessibilityIdentifier("mac-settings-button")
+                    }
+                    .controlSize(.small)
+                    .buttonStyle(.bordered)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                }
+
                 Section(appModel.appLanguage.text(en: "Feeds", zh: "订阅")) {
                     ForEach(appModel.feeds) { feed in
                         let isActive = appModel.activeFeed?.id == feed.id
@@ -96,26 +122,6 @@ struct MacRootView: View {
                     } label: {
                         Label(appModel.appLanguage.text(en: "Filter", zh: "筛选"), systemImage: "line.3.horizontal.decrease.circle")
                     }
-                }
-                ToolbarItemGroup(placement: .primaryAction) {
-                    Button {
-                        openSettings()
-                    } label: {
-                        Label(appModel.appLanguage.text(en: "Settings", zh: "设置"), systemImage: "gearshape")
-                    }
-                    .help(appModel.appLanguage.text(en: "Settings", zh: "设置"))
-                    .accessibilityIdentifier("mac-settings-button")
-
-                    Button {
-                        if let feed = appModel.activeFeed {
-                            Task { await appModel.run(feed: feed, modelContext: modelContext) }
-                        }
-                    } label: {
-                        Label(appModel.appLanguage.text(en: "Refresh", zh: "刷新"), systemImage: "arrow.clockwise")
-                    }
-                    .help(appModel.appLanguage.text(en: "Refresh latest papers", zh: "刷新最新论文"))
-                    .accessibilityIdentifier("mac-refresh-button")
-                    .disabled(appModel.isRunning)
                 }
             }
         } detail: {
