@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		002EB65A4E0ED3F840866648 /* SwiftDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2726A87A2B8E96DDA161185A /* SwiftDataModels.swift */; };
 		0AEE52FCE28B702495A0A38E /* MacRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C527A0A54BD6EA742681E99E /* MacRootView.swift */; };
+		1829CBBA4A63D990E6AAC81D /* ProfileStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7159E61831FADF21A7CAEFE1 /* ProfileStoreTests.swift */; };
 		196728B0A7DB25F5FD5602B1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28B5586F0195632E7D6AB7BF /* LaunchScreen.storyboard */; };
 		256F09CC33A32D5A94465279 /* PaperCore in Frameworks */ = {isa = PBXBuildFile; productRef = D075BB6D5347B18832760776 /* PaperCore */; };
 		268BEBC3A343A98B11BBD088 /* PaperPulseMacModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2325BDFB88A6CB0FAA755B4 /* PaperPulseMacModel.swift */; };
@@ -59,6 +60,7 @@
 		52A47951FE857D880BA585E3 /* PaperPulseRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperPulseRootView.swift; sourceTree = "<group>"; };
 		55882FDF5179317F8C1E604B /* PaperPulseMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PaperPulseMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		56A4FC2D35A5F95DB312B5ED /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		7159E61831FADF21A7CAEFE1 /* ProfileStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStoreTests.swift; sourceTree = "<group>"; };
 		841FC56C2EFB68203D39C309 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8CF21959D2B7D1EBA8565AE4 /* PaperEntityResolution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperEntityResolution.swift; sourceTree = "<group>"; };
 		93A1FBF28E14B485F9E23AFE /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
@@ -152,6 +154,7 @@
 			isa = PBXGroup;
 			children = (
 				0E038DB708EDC7E5F40655D3 /* PersistenceTests.swift */,
+				7159E61831FADF21A7CAEFE1 /* ProfileStoreTests.swift */,
 			);
 			path = PaperPulseMacTests;
 			sourceTree = "<group>";
@@ -355,6 +358,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5EF21786657B1755867CE6E4 /* PersistenceTests.swift in Sources */,
+				1829CBBA4A63D990E6AAC81D /* ProfileStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,9 +1,11 @@
 import PDFKit
 import PaperCore
+import SwiftData
 import SwiftUI
 
 struct MacRootView: View {
     @Environment(PaperPulseMacModel.self) private var appModel
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.openSettings) private var openSettings
 
     var selectedPaper: PaperRecord? {
@@ -27,7 +29,7 @@ struct MacRootView: View {
                     .tag(paper.id)
                 }
             }
-            .navigationTitle("Papers")
+            .navigationTitle(appModel.appLanguage.text(en: "Papers", zh: "论文"))
             .toolbar {
                 Button {
                     openSettings()
@@ -36,7 +38,9 @@ struct MacRootView: View {
                 }
 
                 Button {
-                    Task { await appModel.runDefaultFeed() }
+                    if let feed = appModel.activeFeed {
+                        Task { await appModel.run(feed: feed, modelContext: modelContext) }
+                    }
                 } label: {
                     Label("Refresh", systemImage: "arrow.clockwise")
                 }
@@ -50,6 +54,9 @@ struct MacRootView: View {
             }
         }
         .frame(minWidth: 900, minHeight: 600)
+        .task {
+            appModel.bootstrap(modelContext: modelContext)
+        }
     }
 }
 

@@ -1,118 +1,202 @@
 import Foundation
 import Observation
 import PaperCore
+import SwiftData
 
 @MainActor
 @Observable
 final class PaperPulseMacModel {
-    var feed = FeedConfig(
-        name: "LLM Agents",
-        categories: ["cs.AI", "cs.CL", "cs.LG", "cs.RO", "stat.ML"],
-        keywords: ["agent", "tool use", "world model", "planning", "embodied"],
-        authorityPolicy: AuthorityPolicy(dailyLimit: 8)
-    )
+    var feeds: [FeedConfig] = [PaperPulseMacModel.defaultFeed]
+    var selectedFeedID: UUID?
     var papers: [PaperRecord] = []
     var summaries: [String: PaperSummary] = [:]
     var selectedPaperID: String?
     var llmProfile = LLMProfile.preset(.gpt)
+    var providerProfiles: [LLMProfile] = [LLMProfile.preset(.gpt)]
     var appLanguage: AppLanguage = .chinese
     var summaryLanguage: SummaryLanguage = .chinese
     var isRunning = false
-    var status = "Ready"
+    var status = ""
+    var errorMessage: String?
 
-    private var didBootstrapProviderProfile = false
+    private var didBootstrap = false
 
-    func bootstrapProviderProfile() {
-        guard !didBootstrapProviderProfile else { return }
-        llmProfile = MacLLMProfileSettingsStore.standard.loadProfile(defaultProfile: llmProfile)
-        appLanguage = restoredAppLanguage()
-        summaryLanguage = restoredSummaryLanguage()
-        didBootstrapProviderProfile = true
+    var activeFeed: FeedConfig? {
+        feeds.first { $0.id == selectedFeedID } ?? feeds.first
     }
 
-    func runDefaultFeed() async {
-        guard !isRunning else { return }
-        isRunning = true
-        defer { isRunning = false }
+    func bootstrap(modelContext: ModelContext) {
+        guard !didBootstrap else { return }
+        providerProfiles = (try? MacLLMProfileSettingsStore.standard.loadProfiles(defaultProfiles: providerProfiles)) ?? providerProfiles
+        let restoredProfileID = UserDefaults.standard.string(forKey: Self.selectedProfileKey).flatMap(UUID.init(uuidString:))
+        llmProfile = providerProfiles.first { $0.id == restoredProfileID } ?? providerProfiles[0]
+        appLanguage = UserDefaults.standard.string(forKey: Self.appLanguageKey).flatMap(AppLanguage.init(rawValue:)) ?? .chinese
+        summaryLanguage = UserDefaults.standard.string(forKey: Self.summaryLanguageKey).flatMap(SummaryLanguage.init(rawValue:)) ?? .chinese
 
+        feeds = (try? MacPersistenceStore.fetchFeeds(in: modelContext)) ?? []
+        if feeds.isEmpty {
+            feeds = [Self.defaultFeed]
+            try? MacPersistenceStore.saveFeed(Self.defaultFeed, in: modelContext)
+        }
+        selectedFeedID = UserDefaults.standard.string(forKey: Self.selectedFeedKey).flatMap(UUID.init(uuidString:))
+        if activeFeed == nil { selectedFeedID = feeds[0].id }
+        papers = (try? MacPersistenceStore.fetchPapers(in: modelContext)) ?? []
+        summaries = (try? MacPersistenceStore.fetchShortSummaries(in: modelContext)) ?? [:]
+        selectedPaperID = papers.first?.id
+        didBootstrap = true
+    }
+
+    func selectFeed(_ feed: FeedConfig) {
+        selectedFeedID = feed.id
+        UserDefaults.standard.set(feed.id.uuidString, forKey: Self.selectedFeedKey)
+    }
+
+    func saveFeed(_ feed: FeedConfig, modelContext: ModelContext) {
         do {
-            let directory = try Self.paperDirectory()
-            let pipeline = PaperPipeline(
-                sources: [ArxivSource(), OpenAlexSource(), CrossrefSource()],
-                augmentors: [],
-                ranker: PaperRanker(),
-                downloader: URLSessionPaperDownloader(),
-                extractor: PDFKitTextExtractor(),
-                llmProvider: configuredLLMProvider()
-            )
-            let result = try await pipeline.run(feed: feed, now: Date(), outputDirectory: directory)
-            papers = result.papers
-            summaries = Dictionary(uniqueKeysWithValues: result.summaries.compactMap { summary in
-                guard let id = summary.paperID else { return nil }
-                return (id, summary)
-            })
-            selectedPaperID = papers.first?.id
-            status = "Selected \(papers.count) papers"
+            try MacPersistenceStore.saveFeed(feed, in: modelContext)
+            if let index = feeds.firstIndex(where: { $0.id == feed.id }) { feeds[index] = feed } else { feeds.append(feed) }
+            selectFeed(feed)
         } catch {
-            status = error.localizedDescription
+            errorMessage = error.localizedDescription
         }
     }
 
+    func deleteFeed(_ feed: FeedConfig, modelContext: ModelContext) {
+        guard feeds.count > 1 else { return }
+        do {
+            try MacPersistenceStore.deleteFeed(id: feed.id, in: modelContext)
+            feeds.removeAll { $0.id == feed.id }
+            selectFeed(feeds[0])
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func run(feed: FeedConfig, modelContext: ModelContext? = nil) async {
+        guard !isRunning else { return }
+        isRunning = true
+        errorMessage = nil
+        defer { isRunning = false }
+
+        do {
+            let registry = ProviderRegistry(profiles: providerProfiles)
+            let shortProfile = registry.profile(for: .shortSummary, feed: feed) ?? llmProfile
+            let reranker = registry.profile(for: .rerank, feed: feed).flatMap { LLMProviderFactory.makeReranker(profile: $0) }
+            let pipeline = PaperPipeline(
+                sources: academicSources(for: feed),
+                augmentors: [],
+                ranker: PaperRanker(),
+                reranker: reranker,
+                downloader: URLSessionPaperDownloader(),
+                extractor: PDFKitTextExtractor(),
+                llmProvider: configuredProvider(profile: shortProfile),
+                summaryLanguage: summaryLanguage,
+                shortSummaryProfile: shortProfile
+            )
+            let result = try await pipeline.run(feed: feed, now: Date(), outputDirectory: try Self.paperDirectory())
+            papers = result.papers
+            summaries = Dictionary(uniqueKeysWithValues: result.summaries.compactMap { summary in
+                summary.paperID.map { ($0, summary) }
+            })
+            selectedPaperID = papers.first?.id
+            if let modelContext {
+                try MacPersistenceStore.saveFeed(feed, in: modelContext)
+                for paper in result.papers { try MacPersistenceStore.savePaper(paper, in: modelContext) }
+                for summary in result.summaries { try MacPersistenceStore.saveSummary(summary, in: modelContext) }
+            }
+            status = appLanguage.text(en: "Selected \(papers.count) papers", zh: "已选取 \(papers.count) 篇论文")
+        } catch {
+            errorMessage = error.localizedDescription
+            status = appLanguage.text(en: "Run failed", zh: "运行失败")
+        }
+    }
+
+    func addLLMProfile(kind: LLMProviderKind) {
+        let profile = LLMProfile.preset(kind)
+        providerProfiles.append(profile)
+        selectLLMProfile(profile.id)
+        saveLLMProfile()
+    }
+
+    func selectLLMProfile(_ id: UUID) {
+        guard let profile = providerProfiles.first(where: { $0.id == id }) else { return }
+        llmProfile = profile
+        UserDefaults.standard.set(id.uuidString, forKey: Self.selectedProfileKey)
+    }
+
     func applyProviderPreset(_ kind: LLMProviderKind) {
-        let apiKey = llmProfile.apiKey
-        llmProfile = LLMProfile.preset(kind).withAPIKey(apiKey)
+        var updated = LLMProfile.preset(kind).withAPIKey(llmProfile.apiKey)
+        updated.id = llmProfile.id
+        llmProfile = updated
     }
 
     func saveLLMProfile(apiKey: String? = nil) {
-        let profile = apiKey.map { llmProfile.withAPIKey($0) } ?? llmProfile
+        var profile = apiKey.map { llmProfile.withAPIKey($0) } ?? llmProfile
+        profile.name = profile.model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? profile.providerKind.displayName : profile.model
+        if let index = providerProfiles.firstIndex(where: { $0.id == profile.id }) { providerProfiles[index] = profile } else { providerProfiles.append(profile) }
         do {
-            try MacLLMProfileSettingsStore.standard.save(profile)
-            llmProfile = profile
+            try MacLLMProfileSettingsStore.standard.saveProfiles(providerProfiles)
+            selectLLMProfile(profile.id)
             status = appLanguage.text(en: "Provider settings saved.", zh: "模型设置已保存。")
         } catch {
-            status = error.localizedDescription
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func deleteLLMProfile() {
+        guard providerProfiles.count > 1 else { return }
+        do {
+            try MacLLMProfileSettingsStore.standard.deleteProfile(llmProfile)
+            providerProfiles.removeAll { $0.id == llmProfile.id }
+            selectLLMProfile(providerProfiles[0].id)
+            status = appLanguage.text(en: "Profile deleted.", zh: "模型配置已删除。")
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 
     func saveAppLanguage(_ language: AppLanguage) {
         appLanguage = language
-        UserDefaults.standard.set(language.rawValue, forKey: Self.appLanguageDefaultsKey)
+        UserDefaults.standard.set(language.rawValue, forKey: Self.appLanguageKey)
     }
 
     func saveSummaryLanguage(_ language: SummaryLanguage) {
         summaryLanguage = language
-        UserDefaults.standard.set(language.rawValue, forKey: Self.summaryLanguageDefaultsKey)
+        UserDefaults.standard.set(language.rawValue, forKey: Self.summaryLanguageKey)
     }
 
-    private func configuredLLMProvider() -> any LLMProvider {
-        guard !llmProfile.apiKey.isEmpty else {
-            return LocalRuleSummaryProvider(language: summaryLanguage)
+    private func configuredProvider(profile: LLMProfile) -> any LLMProvider {
+        profile.apiKey.isEmpty ? LocalRuleSummaryProvider(language: summaryLanguage) : LLMProviderFactory.makeProvider(profile: profile, summaryLanguage: summaryLanguage)
+    }
+
+    private func academicSources(for feed: FeedConfig) -> [any PaperSource] {
+        feed.enabledSources.compactMap {
+            switch $0 {
+            case .arxiv: ArxivSource()
+            case .openAlex: OpenAlexSource()
+            case .crossref: CrossrefSource()
+            case .semanticScholar, .unpaywall, .web: nil
+            }
         }
-        return LLMProviderFactory.makeProvider(profile: llmProfile, summaryLanguage: summaryLanguage)
     }
-
-    private func restoredSummaryLanguage() -> SummaryLanguage {
-        UserDefaults.standard.string(forKey: Self.summaryLanguageDefaultsKey)
-            .flatMap(SummaryLanguage.init(rawValue:)) ?? .chinese
-    }
-
-    private func restoredAppLanguage() -> AppLanguage {
-        UserDefaults.standard.string(forKey: Self.appLanguageDefaultsKey)
-            .flatMap(AppLanguage.init(rawValue:)) ?? .chinese
-    }
-
-    private static let appLanguageDefaultsKey = "PaperPulse.appLanguage"
-    private static let summaryLanguageDefaultsKey = "PaperPulse.summaryLanguage"
 
     private static func paperDirectory() throws -> URL {
-        let base = try FileManager.default.url(
-            for: .documentDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )
-        let directory = base.appendingPathComponent("PaperPulse/PDFs", isDirectory: true)
+        let base = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        let directory = base.appendingPathComponent("PaperPulse/macOS/PDFs", isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         return directory
     }
+
+    static let defaultFeed = FeedConfig(
+        id: UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!,
+        name: "LLM Agents",
+        categories: ["cs.AI", "cs.CL", "cs.LG", "cs.RO", "stat.ML"],
+        keywords: ["agent", "tool use", "world model", "planning", "embodied"],
+        authorityPolicy: AuthorityPolicy(dailyLimit: 5)
+    )
+
+    private static let appLanguageKey = "PaperPulse.macOS.appLanguage"
+    private static let summaryLanguageKey = "PaperPulse.macOS.summaryLanguage"
+    private static let selectedFeedKey = "PaperPulse.macOS.selectedFeed"
+    private static let selectedProfileKey = "PaperPulse.macOS.selectedProfile"
 }

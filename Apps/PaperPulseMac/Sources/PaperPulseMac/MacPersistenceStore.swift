@@ -185,4 +185,54 @@ enum MacPersistenceStore {
             $0.paperID == paperID && $0.kindRawValue == shortKind
         })).first
     }
+
+    static func fetchPapers(in context: ModelContext) throws -> [PaperRecord] {
+        try context.fetch(FetchDescriptor<MacPaperEntity>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)]))
+            .compactMap { entity in
+                guard let candidate = try? JSONDecoder().decode(PaperCandidate.self, from: entity.candidateData) else {
+                    return nil
+                }
+                let file = entity.pdfPath.map { path in
+                    let url = URL(fileURLWithPath: path)
+                    let byteCount = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+                    return LocalPaperFile(
+                        paperID: entity.id,
+                        fileURL: url,
+                        byteCount: byteCount,
+                        mimeType: "application/pdf",
+                        downloadedAt: entity.createdAt,
+                        sha256: entity.pdfSHA256 ?? ""
+                    )
+                }
+                return PaperRecord(candidate: candidate, localFile: file, createdAt: entity.createdAt)
+            }
+    }
+
+    static func fetchShortSummaries(in context: ModelContext) throws -> [String: PaperSummary] {
+        let shortKind = SummaryKind.short.rawValue
+        return try context.fetch(FetchDescriptor<MacSummaryEntity>(predicate: #Predicate { $0.kindRawValue == shortKind }))
+            .reduce(into: [:]) { result, entity in
+                let anchors = (try? JSONDecoder().decode([PageAnchor].self, from: entity.anchorsData)) ?? []
+                result[entity.paperID] = PaperSummary(
+                    id: entity.id,
+                    paperID: entity.paperID,
+                    shortText: entity.shortText,
+                    fullText: entity.fullText,
+                    language: entity.language,
+                    model: entity.model,
+                    generatedAt: entity.generatedAt,
+                    sourceRange: entity.sourceRange,
+                    kind: .short,
+                    providerProfileID: entity.providerProfileID,
+                    sourceTextHash: entity.sourceTextHash,
+                    anchors: anchors
+                )
+            }
+    }
+
+    static func deleteFeed(id: UUID, in context: ModelContext) throws {
+        let descriptor = FetchDescriptor<MacFeedEntity>(predicate: #Predicate { $0.id == id })
+        for entity in try context.fetch(descriptor) { context.delete(entity) }
+        try context.save()
+    }
 }

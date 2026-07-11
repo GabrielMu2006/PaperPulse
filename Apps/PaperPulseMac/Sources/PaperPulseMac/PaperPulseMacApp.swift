@@ -25,14 +25,13 @@ struct PaperPulseMacApp: App {
             MacRootView()
                 .environment(appModel)
                 .modelContainer(modelContainer)
-                .task {
-                    appModel.bootstrapProviderProfile()
-                }
         }
         .commands {
             CommandMenu("PaperPulse") {
                 Button("Refresh Latest Papers") {
-                    Task { await appModel.runDefaultFeed() }
+                    if let feed = appModel.activeFeed {
+                        Task { await appModel.run(feed: feed) }
+                    }
                 }
                 .keyboardShortcut("r", modifiers: [.command])
             }
