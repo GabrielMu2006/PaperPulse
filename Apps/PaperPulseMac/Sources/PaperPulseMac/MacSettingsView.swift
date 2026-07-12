@@ -94,11 +94,11 @@ struct MacSettingsView: View {
                         if let providerTestMessage = appModel.providerTestMessage {
                             Text(providerTestMessage)
                                 .font(.caption)
-                                .foregroundStyle(MacBrand.paperSecondary)
+                                .foregroundStyle(.white.opacity(0.70))
                         }
                         Text(language.text(en: "API keys stay in this Mac's Keychain. Claude, Gemini, GPT, DeepSeek, and compatible relays can use a custom Base URL.", zh: "API Key 仅保存在本机 Keychain。Claude、Gemini、GPT、DeepSeek 和兼容中转站均可填写自定义 Base URL。"))
                             .font(.caption)
-                            .foregroundStyle(MacBrand.paperSecondary)
+                            .foregroundStyle(.white.opacity(0.70))
                     }
 
                     if !appModel.status.isEmpty {
@@ -144,11 +144,11 @@ struct MacSettingsView: View {
     }
 
     private func settingsSection<Content: View>(_ title: String, @ViewBuilder content: @escaping () -> Content) -> some View {
-        MacSurfaceCard {
+        MacFormCard {
             VStack(alignment: .leading, spacing: 12) {
                 Text(title)
                     .font(.headline)
-                    .foregroundStyle(MacBrand.paperInk)
+                    .foregroundStyle(.white)
                 content()
             }
         }

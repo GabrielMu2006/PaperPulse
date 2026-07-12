@@ -91,7 +91,7 @@ struct MacFeedEditorView: View {
                             TextField(language.text(en: "Venues: Any", zh: "期刊或会议：任意"), text: $draft.venuesText)
                             Text(language.text(en: "Leave institutions or venues empty to keep the authority policy without adding a requirement.", zh: "机构或期刊/会议留空即为任意，不增加额外要求；仍会执行权威性判断。"))
                                 .font(.caption)
-                                .foregroundStyle(MacBrand.paperSecondary)
+                                .foregroundStyle(.white.opacity(0.70))
                         }
 
                         editorSection(language.text(en: "Sources", zh: "学术来源")) {
@@ -160,11 +160,11 @@ struct MacFeedEditorView: View {
     }
 
     private func editorSection<Content: View>(_ title: String, @ViewBuilder content: @escaping () -> Content) -> some View {
-        MacSurfaceCard {
+        MacFormCard {
             VStack(alignment: .leading, spacing: 10) {
                 Text(title)
                     .font(.headline)
-                    .foregroundStyle(MacBrand.paperInk)
+                    .foregroundStyle(.white)
                 content()
             }
         }

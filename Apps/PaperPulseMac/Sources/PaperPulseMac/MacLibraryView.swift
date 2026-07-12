@@ -130,6 +130,38 @@ struct MacGlassPanel<Content: View>: View {
     }
 }
 
+struct MacFormCard<Content: View>: View {
+    var padding: CGFloat = 18
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            content()
+        }
+        .padding(padding)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .foregroundStyle(.white)
+        .tint(MacBrand.pulseRed)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.13),
+                    Color.white.opacity(0.075),
+                    MacBrand.pulsePurple.opacity(0.10)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(Color.white.opacity(0.20), lineWidth: 1)
+        }
+        .shadow(color: MacBrand.midnight.opacity(0.26), radius: 14, y: 10)
+    }
+}
+
 struct MacSurfaceCard<Content: View>: View {
     var padding: CGFloat = 16
     @ViewBuilder var content: () -> Content
