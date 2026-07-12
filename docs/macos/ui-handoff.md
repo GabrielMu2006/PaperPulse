@@ -42,7 +42,6 @@ PaperPulse/
 - 修改 target、来源目录、entitlement 或 build setting 时先改 `project.yml`，之后执行 `scripts/generate_project.sh` 重新生成 Xcode 工程。
 - 普通 SwiftUI/UI 修改只改 `Apps/PaperPulseMac/Sources/PaperPulseMac/`。
 - 检索、下载、PDF 抽取、LLM 格式或排序规则属于 `Sources/PaperCore/`，不要为了视觉改动碰它们。
-- `automation/` 是历史 Python/launchd 原型，仅供参考，不能作为 macOS App 的运行时依赖。
 
 ## 3. macOS App 的入口与依赖注入
 
@@ -252,7 +251,7 @@ MacFeedRow 纸飞机
 - macOS 全面 UI 自动化尚未建立；现有 macOS 测试主要覆盖持久化、profile 存储和库筛选。
 - 大型完整解读依赖外部 LLM，网络慢或模型响应慢时可能超时。当前 chunk 和 synthesis 已使用不同 timeout，但视觉上仍需要清晰的“生成中/失败后重试”状态。
 - 详情页部分源链接和空状态仍可能使用英文固定文案，双语重构时应一并收口。
-- 不要随意删除历史 PDF、Automation 文件或用户的 Application Support 数据库；它们可能是用户数据或测试 fixture。
+- 不要随意删除用户的 Application Support 数据库或其本地 PDF；它们可能是用户数据或测试 fixture。
 
 ## 11. 测试和构建
 

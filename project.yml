@@ -37,9 +37,14 @@ targets:
       - path: Apps/PaperPulseMac/Resources
     info:
       path: Apps/PaperPulseMac/Resources/Info.plist
+      properties:
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.gabrielmu.PaperPulse.macOS
       PRODUCT_NAME: PaperPulse
+      MARKETING_VERSION: 0.1.0
+      CURRENT_PROJECT_VERSION: 1
       INFOPLIST_KEY_CFBundleDisplayName: PaperPulse
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       CODE_SIGN_ENTITLEMENTS: Apps/PaperPulseMac/Resources/PaperPulseMac.entitlements
