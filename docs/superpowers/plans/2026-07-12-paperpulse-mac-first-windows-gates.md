@@ -327,4 +327,3 @@ Final acceptance:
 - The Windows 11 Phase0 report names the validated commit.
 - Apple behavior is unchanged.
 - Phase1 does not begin before these conditions pass.
-
