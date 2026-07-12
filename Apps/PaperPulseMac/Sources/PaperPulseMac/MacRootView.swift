@@ -72,123 +72,13 @@ struct MacRootView: View {
     }
 
     var body: some View {
-        @Bindable var appModel = appModel
-
         NavigationSplitView(columnVisibility: $columnVisibility) {
-            List(selection: $appModel.selectedPaperID) {
-                Section {
-                    MacSidebarBrandHeader(
-                        language: appModel.appLanguage,
-                        isRunning: appModel.isRunning,
-                        status: appModel.status
-                    )
-                }
-
-                Section {
-                    Button { openSettings() } label: {
-                        Label(appModel.appLanguage.text(en: "Settings", zh: "设置"), systemImage: "gearshape")
-                    }
-                    .accessibilityIdentifier("mac-settings-button")
-                }
-
-                Section(appModel.appLanguage.text(en: "Feeds", zh: "订阅")) {
-                    ForEach(appModel.feeds) { feed in
-                        let isActive = appModel.activeFeed?.id == feed.id
-                        MacFeedRow(
-                            feed: feed,
-                            language: appModel.appLanguage,
-                            isActive: isActive,
-                            isPushing: appModel.isRunning && isActive,
-                            onSelect: { expandOnly(feed) },
-                            onPush: { Task { await appModel.run(feed: feed, modelContext: modelContext) } }
-                        )
-                        .contextMenu {
-                            Button(appModel.appLanguage.text(en: "Edit Feed", zh: "编辑订阅")) {
-                                editorDraft = MacFeedEditorDraft(feed: feed, keywordLibrary: appModel.keywordLibrary)
-                            }
-                            if appModel.feeds.count > 1 {
-                                Button(appModel.appLanguage.text(en: "Delete Feed", zh: "删除订阅"), role: .destructive) {
-                                    appModel.deleteFeed(feed, modelContext: modelContext)
-                                    if let active = appModel.activeFeed { expandedFeedIDs = [active.id] }
-                                }
-                            }
-                        }
-                    }
-                    Button {
-                        editorDraft = MacFeedEditorDraft(keywordLibrary: appModel.keywordLibrary)
-                    } label: {
-                        Label(appModel.appLanguage.text(en: "New Feed", zh: "新建订阅"), systemImage: "plus")
-                    }
-                }
-
-                Section(appModel.appLanguage.text(en: "Library", zh: "论文库")) {
-                    ForEach(appModel.feeds) { feed in
-                        let papers = visiblePapers(for: feed.id)
-                        DisclosureGroup(isExpanded: expansionBinding(for: feed.id)) {
-                            if papers.isEmpty {
-                                MacEmptyInlineRow(text: appModel.appLanguage.text(en: "No pushed papers", zh: "尚未推送论文"))
-                            }
-                            ForEach(papers) { paper in
-                                MacLibraryRow(paper: paper, summary: shortSummary(for: paper.id), language: appModel.appLanguage)
-                                    .tag(paper.id)
-                            }
-                        } label: {
-                            MacLibraryGroupLabel(
-                                title: feed.name,
-                                count: papers.count,
-                                isActive: appModel.activeFeed?.id == feed.id
-                            )
-                        }
-                    }
-
-                    if !unclassifiedPapers.isEmpty {
-                        DisclosureGroup(isExpanded: $isUnclassifiedExpanded) {
-                            ForEach(unclassifiedPapers) { paper in
-                                MacLibraryRow(paper: paper, summary: shortSummary(for: paper.id), language: appModel.appLanguage)
-                                    .tag(paper.id)
-                            }
-                        } label: {
-                            MacLibraryGroupLabel(
-                                title: appModel.appLanguage.text(en: "Unclassified", zh: "未归类"),
-                                count: unclassifiedPapers.count
-                            )
-                        }
-                    }
-                }
-            }
-            .searchable(text: $libraryQuery, prompt: appModel.appLanguage.text(en: "Search papers", zh: "搜索论文"))
-            .listStyle(.sidebar)
-            .navigationTitle(appModel.appLanguage.text(en: "PaperPulse", zh: "论文速递"))
-            .toolbar {
-                ToolbarItem(placement: .automatic) {
-                    Menu {
-                        Picker(appModel.appLanguage.text(en: "Library filter", zh: "论文筛选"), selection: $libraryScope) {
-                            ForEach(MacLibraryScope.allCases) { scope in
-                                Text(scope.title(language: appModel.appLanguage)).tag(scope)
-                            }
-                        }
-                    } label: {
-                        Label(appModel.appLanguage.text(en: "Filter", zh: "筛选"), systemImage: "line.3.horizontal.decrease.circle")
-                    }
-                }
-            }
+            sidebarColumn
+                .navigationSplitViewColumnWidth(min: 300, ideal: 340, max: 420)
         } detail: {
-            if let selectedPaper {
-                PaperDetailView(
-                    paper: selectedPaper,
-                    summary: appModel.summaries[selectedPaper.id],
-                    onOpenFullReading: { columnVisibility = .detailOnly },
-                    onCloseFullReading: { columnVisibility = .all }
-                )
-                .id(selectedPaper.id)
-            } else {
-                ContentUnavailableView(
-                    appModel.appLanguage.text(en: "No Paper Selected", zh: "未选择论文"),
-                    systemImage: "doc.text.magnifyingglass",
-                    description: Text(appModel.appLanguage.text(en: "Choose a paper from the library to start reading.", zh: "从论文库中选择一篇论文开始阅读。"))
-                )
-            }
+            detailColumn
         }
+        .preferredColorScheme(.dark)
         .frame(minWidth: 900, minHeight: 600)
         .task {
             appModel.bootstrap(modelContext: modelContext)
@@ -200,6 +90,184 @@ struct MacRootView: View {
                 expandedFeedIDs = [feed.id]
             }
             .environment(appModel)
+        }
+    }
+
+    private var sidebarColumn: some View {
+        let language = appModel.appLanguage
+
+        return ZStack {
+            MacBrandShellBackground()
+
+            VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .leading, spacing: 12) {
+                    MacSidebarBrandHeader(
+                        language: language,
+                        isRunning: appModel.isRunning,
+                        status: appModel.status
+                    )
+
+                    MacSearchField(
+                        text: $libraryQuery,
+                        prompt: language.text(en: "Search papers, authors, abstracts", zh: "搜索论文、作者、摘要")
+                    )
+
+                    MacScopeToggle(selection: $libraryScope, language: language)
+
+                    HStack(spacing: 8) {
+                        MacSidebarActionButton(
+                            title: language.text(en: "Settings", zh: "设置"),
+                            icon: "gearshape",
+                            action: { openSettings() }
+                        )
+                        .accessibilityIdentifier("mac-settings-button")
+
+                        MacSidebarActionButton(
+                            title: language.text(en: "New Feed", zh: "新建订阅"),
+                            icon: "plus",
+                            action: { editorDraft = MacFeedEditorDraft(keywordLibrary: appModel.keywordLibrary) }
+                        )
+                    }
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        feedsPanel(language: language)
+                        libraryPanel(language: language)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 18)
+                }
+                .scrollContentBackground(.hidden)
+            }
+        }
+    }
+
+    private func feedsPanel(language: AppLanguage) -> some View {
+        MacGlassPanel(padding: 12) {
+            MacSidebarSectionTitle(title: language.text(en: "Feeds", zh: "订阅"))
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(appModel.feeds) { feed in
+                    let isActive = appModel.activeFeed?.id == feed.id
+                    MacFeedRow(
+                        feed: feed,
+                        language: language,
+                        isActive: isActive,
+                        isPushing: appModel.isRunning && isActive,
+                        onSelect: { expandOnly(feed) },
+                        onPush: { Task { await appModel.run(feed: feed, modelContext: modelContext) } }
+                    )
+                    .contextMenu {
+                        Button(language.text(en: "Edit Feed", zh: "编辑订阅")) {
+                            editorDraft = MacFeedEditorDraft(feed: feed, keywordLibrary: appModel.keywordLibrary)
+                        }
+                        if appModel.feeds.count > 1 {
+                            Button(language.text(en: "Delete Feed", zh: "删除订阅"), role: .destructive) {
+                                appModel.deleteFeed(feed, modelContext: modelContext)
+                                if let active = appModel.activeFeed { expandedFeedIDs = [active.id] }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func libraryPanel(language: AppLanguage) -> some View {
+        MacGlassPanel(padding: 12) {
+            HStack {
+                MacSidebarSectionTitle(title: language.text(en: "Library", zh: "论文库"))
+                Spacer()
+                Text("\(visiblePapers.count)")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.white.opacity(0.70))
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 2)
+                    .background(Color.white.opacity(0.10), in: Capsule())
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(appModel.feeds) { feed in
+                    let papers = visiblePapers(for: feed.id)
+                    DisclosureGroup(isExpanded: expansionBinding(for: feed.id)) {
+                        if papers.isEmpty {
+                            MacEmptyInlineRow(text: language.text(en: "No pushed papers", zh: "尚未推送论文"))
+                        }
+                        ForEach(papers) { paper in
+                            MacSelectablePaperRow(
+                                paper: paper,
+                                summary: shortSummary(for: paper.id),
+                                language: language,
+                                isSelected: appModel.selectedPaperID == paper.id,
+                                onSelect: { appModel.selectedPaperID = paper.id }
+                            )
+                        }
+                    } label: {
+                        MacLibraryGroupLabel(
+                            title: feed.name,
+                            count: papers.count,
+                            isActive: appModel.activeFeed?.id == feed.id
+                        )
+                    }
+                    .tint(.white.opacity(0.70))
+                }
+
+                if !unclassifiedPapers.isEmpty {
+                    DisclosureGroup(isExpanded: $isUnclassifiedExpanded) {
+                        ForEach(unclassifiedPapers) { paper in
+                            MacSelectablePaperRow(
+                                paper: paper,
+                                summary: shortSummary(for: paper.id),
+                                language: language,
+                                isSelected: appModel.selectedPaperID == paper.id,
+                                onSelect: { appModel.selectedPaperID = paper.id }
+                            )
+                        }
+                    } label: {
+                        MacLibraryGroupLabel(
+                            title: language.text(en: "Unclassified", zh: "未归类"),
+                            count: unclassifiedPapers.count
+                        )
+                    }
+                    .tint(.white.opacity(0.70))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var detailColumn: some View {
+        ZStack {
+            MacBrandShellBackground()
+            if let selectedPaper {
+                PaperDetailView(
+                    paper: selectedPaper,
+                    summary: appModel.summaries[selectedPaper.id],
+                    onOpenFullReading: { columnVisibility = .detailOnly },
+                    onCloseFullReading: { columnVisibility = .all }
+                )
+                .id(selectedPaper.id)
+            } else {
+                VStack {
+                    MacGlassPanel(padding: 24) {
+                        Label(
+                            appModel.appLanguage.text(en: "No Paper Selected", zh: "未选择论文"),
+                            systemImage: "doc.text.magnifyingglass"
+                        )
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(.white)
+                        Text(appModel.appLanguage.text(en: "Choose a paper from the library to start reading.", zh: "从论文库中选择一篇论文开始阅读。"))
+                            .font(.body)
+                            .foregroundStyle(.white.opacity(0.66))
+                    }
+                    .frame(maxWidth: 460)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(32)
+            }
         }
     }
 }
@@ -309,16 +377,31 @@ struct PaperDetailView: View {
                 .background(MacWorkbenchBackground())
             }
         } trailing: {
-            if let file = paper.localFile {
-                MacPDFView(url: file.fileURL)
-            } else {
-                ContentUnavailableView(
-                    appModel.appLanguage.text(en: "PDF not downloaded", zh: "尚未下载 PDF"),
-                    systemImage: "doc",
-                    description: Text(appModel.appLanguage.text(en: "Only open-access PDFs are saved locally.", zh: "仅公开可访问的 PDF 会保存到本地。"))
-                )
+            ZStack {
+                Color.black.opacity(0.20)
+                if let file = paper.localFile {
+                    MacPDFView(url: file.fileURL)
+                } else {
+                    VStack {
+                        MacGlassPanel(padding: 22) {
+                            Label(
+                                appModel.appLanguage.text(en: "PDF not downloaded", zh: "尚未下载 PDF"),
+                                systemImage: "doc"
+                            )
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            Text(appModel.appLanguage.text(en: "Only open-access PDFs are saved locally.", zh: "仅公开可访问的 PDF 会保存到本地。"))
+                                .font(.callout)
+                                .foregroundStyle(.white.opacity(0.66))
+                        }
+                        .frame(maxWidth: 360)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(24)
+                }
             }
         }
+        .background(MacBrandShellBackground())
         .task(id: paper.id) {
             fullSummary = try? MacPersistenceStore.fullSummary(for: paper.id, in: modelContext)
             isFavorite = (try? MacPersistenceStore.paper(id: paper.id, in: modelContext)?.isFavorite) ?? false
@@ -391,23 +474,14 @@ struct MacInfoPill: View {
             .lineLimit(1)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(MacBrand.quietFill, in: Capsule())
-            .foregroundStyle(.secondary)
+            .background(MacBrand.pulseRed.opacity(0.09), in: Capsule())
+            .foregroundStyle(MacBrand.paperSecondary)
     }
 }
 
 struct MacWorkbenchBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                Color(nsColor: .windowBackgroundColor),
-                MacBrand.deepBlue.opacity(0.04),
-                MacBrand.pulseMagenta.opacity(0.035)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+        MacBrandShellBackground()
     }
 }
 
@@ -437,8 +511,13 @@ struct MacBalancedSplitView<Leading: View, Trailing: View>: View {
                 leading()
                     .frame(width: availableWidth * ratio)
                 Rectangle()
-                    .fill(.separator)
+                    .fill(Color.white.opacity(0.14))
                     .frame(width: 8)
+                    .overlay {
+                        Capsule()
+                            .fill(Color.white.opacity(0.24))
+                            .frame(width: 2, height: 48)
+                    }
                     .contentShape(Rectangle())
                     .gesture(
                         DragGesture(minimumDistance: 0)

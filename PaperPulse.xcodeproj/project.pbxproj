@@ -13,6 +13,7 @@
 		196728B0A7DB25F5FD5602B1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28B5586F0195632E7D6AB7BF /* LaunchScreen.storyboard */; };
 		256F09CC33A32D5A94465279 /* PaperCore in Frameworks */ = {isa = PBXBuildFile; productRef = D075BB6D5347B18832760776 /* PaperCore */; };
 		268BEBC3A343A98B11BBD088 /* PaperPulseMacModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2325BDFB88A6CB0FAA755B4 /* PaperPulseMacModel.swift */; };
+		39EE28503009D5A17E016570 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 321EDDF3F0C3645BB6CC9D4A /* Assets.xcassets */; };
 		3E223076E6AB4BA2F3E08307 /* PaperPulsePersistenceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2310C484CDB9056A3CE86A34 /* PaperPulsePersistenceStore.swift */; };
 		4519342FE877D5A4E48444A4 /* MacFeedEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E658F786E508D6B26AD115D5 /* MacFeedEditorView.swift */; };
 		4AC774D9C0D16053A92178FB /* PaperPulseRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A47951FE857D880BA585E3 /* PaperPulseRootView.swift */; };
@@ -58,6 +59,7 @@
 		2726A87A2B8E96DDA161185A /* SwiftDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataModels.swift; sourceTree = "<group>"; };
 		28B5586F0195632E7D6AB7BF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2BC4BFECB248C38EBED74AEF /* MacLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLibraryView.swift; sourceTree = "<group>"; };
+		321EDDF3F0C3645BB6CC9D4A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3CC48A8FA6944D6EEDFFA413 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		3D0EABFADE6A1C5B25F8517B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		443F96166C2F40B5A32C988F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -211,6 +213,7 @@
 		A3DE3FA982FE239B8B83124F /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				321EDDF3F0C3645BB6CC9D4A /* Assets.xcassets */,
 				841FC56C2EFB68203D39C309 /* Info.plist */,
 				B57EEE7E663B0A0BF5C40060 /* PaperPulseMac.entitlements */,
 			);
@@ -282,6 +285,7 @@
 			buildConfigurationList = A874CEEAF965D45EA65339CF /* Build configuration list for PBXNativeTarget "PaperPulseMac" */;
 			buildPhases = (
 				D3F312E8F6E153ED09E2F4CA /* Sources */,
+				D947BBB574617F92912AFBC6 /* Resources */,
 				81D6D0534943EF1525971445 /* Frameworks */,
 			);
 			buildRules = (
@@ -337,6 +341,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				196728B0A7DB25F5FD5602B1 /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D947BBB574617F92912AFBC6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				39EE28503009D5A17E016570 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

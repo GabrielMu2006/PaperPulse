@@ -41,6 +41,7 @@ targets:
       PRODUCT_BUNDLE_IDENTIFIER: com.gabrielmu.PaperPulse.macOS
       PRODUCT_NAME: PaperPulse
       INFOPLIST_KEY_CFBundleDisplayName: PaperPulse
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       CODE_SIGN_ENTITLEMENTS: Apps/PaperPulseMac/Resources/PaperPulseMac.entitlements
     dependencies:
       - package: PaperCore
