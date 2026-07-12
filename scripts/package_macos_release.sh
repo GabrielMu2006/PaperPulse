@@ -41,6 +41,11 @@ if [[ "$ACTUAL_VERSION" != "$VERSION" ]]; then
   exit 1
 fi
 
+# Xcode builds with code signing disabled leave the app bundle incomplete.
+# Sign the whole bundle ad hoc so macOS can verify its code and resources.
+codesign --force --deep --sign - "$APP_PATH"
+codesign --verify --deep --strict --verbose=4 "$APP_PATH"
+
 rm -f "$ARCHIVE_PATH"
 ditto -c -k --keepParent "$APP_PATH" "$ARCHIVE_PATH"
 
