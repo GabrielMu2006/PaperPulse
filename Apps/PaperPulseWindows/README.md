@@ -40,6 +40,19 @@ cd Apps\PaperPulseWindows
 
 The package script creates an unsigned sideload MSIX for local validation only. Public release packages must be code signed before distribution.
 
+## macOS Core Validation
+
+The macOS workflow validates only portable C# projects. It does not build WinUI, package MSIX, or validate WebView2 or Credential Locker.
+
+Install the SDK version pinned by `global.json`, then run:
+
+```bash
+export DOTNET_ROOT="$HOME/.dotnet"
+export PATH="$DOTNET_ROOT:$PATH"
+cd Apps/PaperPulseWindows
+./scripts/validate-core.sh Debug
+```
+
 ## macOS Status
 
 This repository update was prepared on macOS arm64, where `dotnet` and `pwsh` are not installed. Windows build, test, package, and F5 launch must be verified on a Windows machine with the toolchain above.
