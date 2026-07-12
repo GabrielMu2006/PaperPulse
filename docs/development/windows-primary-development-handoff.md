@@ -29,12 +29,13 @@ origin https://github.com/GabrielMu2006/PaperPulse.git
 当前分支：
 
 ```text
-codex/paperpulse-v1
+codex/paperpulse-windows-migration
 ```
 
-当前本地分支相对 `origin/main` 超前 3 个提交：
+迁移分支当前保留以下基础提交：
 
 ```text
+97c025a docs: add windows primary development handoff
 83bc79d docs: add windows migration transfer guide
 ab63f04 chore: scaffold PaperPulse Windows phase 0
 a241f27 docs: add windows migration handoff
@@ -45,6 +46,7 @@ a241f27 docs: add windows migration handoff
 - `a241f27`：Windows 迁移总 handoff，定义技术路线、产品契约、阶段边界和资料来源。
 - `ab63f04`：Phase 0 Windows 工程空壳，创建 `Apps/PaperPulseWindows`。
 - `83bc79d`：跨设备转移说明，记录如何把当前工作交给 Windows 机器。
+- `97c025a`：Windows 主开发机交接说明，定义 Windows 作为长期开发环境的工作方式。
 
 本文是 Windows 主开发工作流的补充文档。
 
@@ -106,7 +108,7 @@ xcodebuild -project PaperPulse.xcodeproj -scheme PaperPulseMacTests -configurati
 ```bash
 cd /Users/gabrielmu/Documents/papers
 git status --short --branch
-git push origin codex/paperpulse-v1
+git push origin codex/paperpulse-windows-migration
 ```
 
 在 Windows 上克隆：
@@ -114,7 +116,7 @@ git push origin codex/paperpulse-v1
 ```powershell
 git clone https://github.com/GabrielMu2006/PaperPulse.git
 cd PaperPulse
-git checkout codex/paperpulse-v1
+git checkout codex/paperpulse-windows-migration
 ```
 
 如果 Windows 上已有仓库：
@@ -122,7 +124,7 @@ git checkout codex/paperpulse-v1
 ```powershell
 cd PaperPulse
 git fetch origin
-git checkout codex/paperpulse-v1
+git checkout codex/paperpulse-windows-migration
 git pull --ff-only
 ```
 
@@ -136,6 +138,7 @@ git status --short --branch
 期望看到：
 
 ```text
+97c025a docs: add windows primary development handoff
 83bc79d docs: add windows migration transfer guide
 ab63f04 chore: scaffold PaperPulse Windows phase 0
 a241f27 docs: add windows migration handoff
@@ -386,7 +389,7 @@ Phase 1 完成标准：
 
 建议：
 
-- 继续使用 `codex/paperpulse-v1` 作为迁移开发分支。
+- 继续使用 `codex/paperpulse-windows-migration` 作为迁移开发分支。
 - 每个阶段至少一个提交。
 - 每个阶段提交前运行可用测试。
 - 阶段未完成时不合并到 `main`。
@@ -408,7 +411,7 @@ ci: add windows build workflow
 推送策略：
 
 - 本地开发可以频繁提交。
-- 需要跨设备或备份时，推送 `codex/paperpulse-v1`。
+- 需要跨设备或备份时，推送 `codex/paperpulse-windows-migration`。
 - 发布或 PR 前再整理 commit/说明。
 
 ## Mac 这边后续只负责什么
@@ -501,7 +504,7 @@ docs: record windows phase 0 validation blockers
 在 Windows 主开发机上第一件事不是写业务代码，而是验证 Phase 0：
 
 ```powershell
-git checkout codex/paperpulse-v1
+git checkout codex/paperpulse-windows-migration
 git status --short --branch
 cd Apps\PaperPulseWindows
 dotnet --info

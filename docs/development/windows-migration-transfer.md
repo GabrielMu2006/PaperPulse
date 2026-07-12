@@ -16,12 +16,14 @@ origin https://github.com/GabrielMu2006/PaperPulse.git
 Current local branch:
 
 ```text
-codex/paperpulse-v1
+codex/paperpulse-windows-migration
 ```
 
 Current known local commits on top of `origin/main`:
 
 ```text
+97c025a docs: add windows primary development handoff
+83bc79d docs: add windows migration transfer guide
 ab63f04 chore: scaffold PaperPulse Windows phase 0
 a241f27 docs: add windows migration handoff
 3481d62 origin/main docs: restore feature overview before downloads
@@ -122,7 +124,7 @@ On the current Mac, push the local branch:
 ```bash
 cd /Users/gabrielmu/Documents/papers
 git status --short --branch
-git push origin codex/paperpulse-v1
+git push origin codex/paperpulse-windows-migration
 ```
 
 On the Windows machine, clone or fetch the branch:
@@ -130,7 +132,7 @@ On the Windows machine, clone or fetch the branch:
 ```powershell
 git clone https://github.com/GabrielMu2006/PaperPulse.git
 cd PaperPulse
-git checkout codex/paperpulse-v1
+git checkout codex/paperpulse-windows-migration
 ```
 
 If the repository is already cloned on Windows:
@@ -138,7 +140,7 @@ If the repository is already cloned on Windows:
 ```powershell
 cd PaperPulse
 git fetch origin
-git checkout codex/paperpulse-v1
+git checkout codex/paperpulse-windows-migration
 git pull --ff-only
 ```
 
@@ -211,7 +213,7 @@ Avoid starting Codex inside only `Apps\PaperPulseWindows` for planning tasks, be
 
 Do not:
 
-- Merge `codex/paperpulse-v1` into `main` before Windows Phase 0 validation.
+- Merge `codex/paperpulse-windows-migration` into `main` before Windows Phase 0 validation.
 - Delete `a241f27` or `ab63f04`.
 - Rewrite the Windows scaffold into a Swift-on-Windows approach.
 - Modify `Apps/PaperPulseMac`, `Apps/PaperPulseiOS`, `Sources/PaperCore`, or `PaperPulse.xcodeproj` during Phase 0 validation.
