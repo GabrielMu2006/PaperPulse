@@ -351,10 +351,14 @@ struct PaperDetailView: View {
                                 Spacer()
                                 fullReadingControl
                             }
-                            Text(summary?.shortText ?? paper.candidate.summary)
-                                .font(.body)
-                                .lineSpacing(4)
-                                .textSelection(.enabled)
+                            if appModel.fullSummaryPaperIDs.contains(paper.id) {
+                                MacFullReadingGenerationStatus(language: appModel.appLanguage)
+                            } else {
+                                Text(summary?.shortText ?? paper.candidate.summary)
+                                    .font(.body)
+                                    .lineSpacing(4)
+                                    .textSelection(.enabled)
+                            }
                         }
 
                         if let error = appModel.fullSummaryErrors[paper.id] {
@@ -413,8 +417,7 @@ struct PaperDetailView: View {
     private var fullReadingControl: some View {
         let language = appModel.appLanguage
         if appModel.fullSummaryPaperIDs.contains(paper.id) {
-            ProgressView(language.text(en: "Generating", zh: "正在生成"))
-                .controlSize(.small)
+            EmptyView()
         } else if fullSummary != nil {
             Button {
                 isReadingFull = true
@@ -461,6 +464,31 @@ struct PaperDetailView: View {
         } catch {
             appModel.fullSummaryErrors[paper.id] = appModel.appLanguage.text(en: "The full reading could not be deleted.", zh: "完整解读无法删除。")
         }
+    }
+}
+
+private struct MacFullReadingGenerationStatus: View {
+    var language: AppLanguage
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Divider()
+            HStack(alignment: .center, spacing: 12) {
+                ProgressView()
+                    .controlSize(.regular)
+                    .tint(MacBrand.pulseRed)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(language.text(en: "Generating Full Reading", zh: "正在生成完整解读"))
+                        .font(.body.weight(.semibold))
+                    Text(language.text(en: "Reading the PDF and building an evidence-based interpretation. You can keep browsing.", zh: "正在读取 PDF 并整理基于原文的解读；你可以继续浏览其他论文。"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.vertical, 4)
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 

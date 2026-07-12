@@ -241,6 +241,13 @@ final class PaperPulseMacModel {
 
     func generateFullSummary(for paper: PaperRecord, modelContext: ModelContext) async {
         guard !fullSummaryPaperIDs.contains(paper.id) else { return }
+        guard hasConfiguredAPIKey else {
+            fullSummaryErrors[paper.id] = appLanguage.text(
+                en: "No API is configured. Configure and save an API key before generating a full reading.",
+                zh: "未配置 API，无法生成完整解读。请先在设置中配置并保存 API Key。"
+            )
+            return
+        }
         guard let localFile = paper.localFile else {
             fullSummaryErrors[paper.id] = appLanguage.text(en: "A downloaded PDF is required.", zh: "需要先下载 PDF。")
             return
@@ -251,12 +258,14 @@ final class PaperPulseMacModel {
 
         do {
             let text = try await PDFKitTextExtractor().extract(from: localFile)
-            let chunkProvider = configuredProvider(
+            let chunkProvider = LLMProviderFactory.makeProvider(
                 profile: llmProfile,
+                summaryLanguage: summaryLanguage,
                 requestTimeout: LLMProviderFactory.fullInterpretationChunkTimeout
             )
-            let synthesisProvider = configuredProvider(
+            let synthesisProvider = LLMProviderFactory.makeProvider(
                 profile: llmProfile,
+                summaryLanguage: summaryLanguage,
                 requestTimeout: LLMProviderFactory.fullInterpretationSynthesisTimeout
             )
             let summary = try await PaperSummaryService(
@@ -289,6 +298,10 @@ final class PaperPulseMacModel {
                 summaryLanguage: summaryLanguage,
                 requestTimeout: requestTimeout
             )
+    }
+
+    private var hasConfiguredAPIKey: Bool {
+        !llmProfile.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     private func academicSources(for feed: FeedConfig) -> [any PaperSource] {
