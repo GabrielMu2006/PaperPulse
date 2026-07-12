@@ -1,0 +1,12 @@
+<Window
+    x:Class="PaperPulse.Windows.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="PaperPulse">
+    <Grid Padding="32">
+        <StackPanel Spacing="12" VerticalAlignment="Center">
+            <TextBlock Text="PaperPulse Windows" FontSize="28" FontWeight="SemiBold" />
+            <TextBlock Text="Phase 0 WinUI shell" FontSize="16" />
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsPackageType>MSIX</WindowsPackageType>
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AppxManifest>Package.appxmanifest</AppxManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PaperPulse.Contracts\PaperPulse.Contracts.csproj" />
+    <ProjectReference Include="..\PaperPulse.Engine\PaperPulse.Engine.csproj" />
+    <ProjectReference Include="..\PaperPulse.Pdf\PaperPulse.Pdf.csproj" />
+    <ProjectReference Include="..\PaperPulse.Storage\PaperPulse.Storage.csproj" />
+  </ItemGroup>
+</Project>

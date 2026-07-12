@@ -1,0 +1,7 @@
+bin/
+obj/
+TestResults/
+AppPackages/
+BundleArtifacts/
+*.user
+*.suo

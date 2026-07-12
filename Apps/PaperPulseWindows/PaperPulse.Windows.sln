@@ -1,0 +1,69 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.0.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaperPulse.Contracts", "src\PaperPulse.Contracts\PaperPulse.Contracts.csproj", "{A92E0945-3D11-4EAC-9C44-33E687F71E80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaperPulse.Engine", "src\PaperPulse.Engine\PaperPulse.Engine.csproj", "{0F38A9BB-042C-4B27-8A93-D93868191D3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaperPulse.Storage", "src\PaperPulse.Storage\PaperPulse.Storage.csproj", "{5573A4EB-F579-48D9-AF21-9F6A84A3C4D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaperPulse.Pdf", "src\PaperPulse.Pdf\PaperPulse.Pdf.csproj", "{1AA88859-019E-42EE-A7B8-7A6C2A64F6D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaperPulse.Windows", "src\PaperPulse.Windows\PaperPulse.Windows.csproj", "{3A61E0E7-A997-4F34-A464-4F262DD0B5F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaperPulse.Contracts.Tests", "tests\PaperPulse.Contracts.Tests\PaperPulse.Contracts.Tests.csproj", "{D9E9A4C8-68E4-4D05-A10C-B9DF452B184D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaperPulse.Engine.Tests", "tests\PaperPulse.Engine.Tests\PaperPulse.Engine.Tests.csproj", "{04B06108-2533-4EAD-B72F-B990E60C4CBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaperPulse.Storage.Tests", "tests\PaperPulse.Storage.Tests\PaperPulse.Storage.Tests.csproj", "{E0EEEC87-151C-4902-9566-C4171FA1D40C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaperPulse.Windows.Tests", "tests\PaperPulse.Windows.Tests\PaperPulse.Windows.Tests.csproj", "{B6373413-34B4-422C-8E66-41022968CB8A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A92E0945-3D11-4EAC-9C44-33E687F71E80}.Debug|x64.ActiveCfg = Debug|x64
+		{A92E0945-3D11-4EAC-9C44-33E687F71E80}.Debug|x64.Build.0 = Debug|x64
+		{A92E0945-3D11-4EAC-9C44-33E687F71E80}.Release|x64.ActiveCfg = Release|x64
+		{A92E0945-3D11-4EAC-9C44-33E687F71E80}.Release|x64.Build.0 = Release|x64
+		{0F38A9BB-042C-4B27-8A93-D93868191D3E}.Debug|x64.ActiveCfg = Debug|x64
+		{0F38A9BB-042C-4B27-8A93-D93868191D3E}.Debug|x64.Build.0 = Debug|x64
+		{0F38A9BB-042C-4B27-8A93-D93868191D3E}.Release|x64.ActiveCfg = Release|x64
+		{0F38A9BB-042C-4B27-8A93-D93868191D3E}.Release|x64.Build.0 = Release|x64
+		{5573A4EB-F579-48D9-AF21-9F6A84A3C4D4}.Debug|x64.ActiveCfg = Debug|x64
+		{5573A4EB-F579-48D9-AF21-9F6A84A3C4D4}.Debug|x64.Build.0 = Debug|x64
+		{5573A4EB-F579-48D9-AF21-9F6A84A3C4D4}.Release|x64.ActiveCfg = Release|x64
+		{5573A4EB-F579-48D9-AF21-9F6A84A3C4D4}.Release|x64.Build.0 = Release|x64
+		{1AA88859-019E-42EE-A7B8-7A6C2A64F6D8}.Debug|x64.ActiveCfg = Debug|x64
+		{1AA88859-019E-42EE-A7B8-7A6C2A64F6D8}.Debug|x64.Build.0 = Debug|x64
+		{1AA88859-019E-42EE-A7B8-7A6C2A64F6D8}.Release|x64.ActiveCfg = Release|x64
+		{1AA88859-019E-42EE-A7B8-7A6C2A64F6D8}.Release|x64.Build.0 = Release|x64
+		{3A61E0E7-A997-4F34-A464-4F262DD0B5F0}.Debug|x64.ActiveCfg = Debug|x64
+		{3A61E0E7-A997-4F34-A464-4F262DD0B5F0}.Debug|x64.Build.0 = Debug|x64
+		{3A61E0E7-A997-4F34-A464-4F262DD0B5F0}.Release|x64.ActiveCfg = Release|x64
+		{3A61E0E7-A997-4F34-A464-4F262DD0B5F0}.Release|x64.Build.0 = Release|x64
+		{D9E9A4C8-68E4-4D05-A10C-B9DF452B184D}.Debug|x64.ActiveCfg = Debug|x64
+		{D9E9A4C8-68E4-4D05-A10C-B9DF452B184D}.Debug|x64.Build.0 = Debug|x64
+		{D9E9A4C8-68E4-4D05-A10C-B9DF452B184D}.Release|x64.ActiveCfg = Release|x64
+		{D9E9A4C8-68E4-4D05-A10C-B9DF452B184D}.Release|x64.Build.0 = Release|x64
+		{04B06108-2533-4EAD-B72F-B990E60C4CBF}.Debug|x64.ActiveCfg = Debug|x64
+		{04B06108-2533-4EAD-B72F-B990E60C4CBF}.Debug|x64.Build.0 = Debug|x64
+		{04B06108-2533-4EAD-B72F-B990E60C4CBF}.Release|x64.ActiveCfg = Release|x64
+		{04B06108-2533-4EAD-B72F-B990E60C4CBF}.Release|x64.Build.0 = Release|x64
+		{E0EEEC87-151C-4902-9566-C4171FA1D40C}.Debug|x64.ActiveCfg = Debug|x64
+		{E0EEEC87-151C-4902-9566-C4171FA1D40C}.Debug|x64.Build.0 = Debug|x64
+		{E0EEEC87-151C-4902-9566-C4171FA1D40C}.Release|x64.ActiveCfg = Release|x64
+		{E0EEEC87-151C-4902-9566-C4171FA1D40C}.Release|x64.Build.0 = Release|x64
+		{B6373413-34B4-422C-8E66-41022968CB8A}.Debug|x64.ActiveCfg = Debug|x64
+		{B6373413-34B4-422C-8E66-41022968CB8A}.Debug|x64.Build.0 = Debug|x64
+		{B6373413-34B4-422C-8E66-41022968CB8A}.Release|x64.ActiveCfg = Release|x64
+		{B6373413-34B4-422C-8E66-41022968CB8A}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
