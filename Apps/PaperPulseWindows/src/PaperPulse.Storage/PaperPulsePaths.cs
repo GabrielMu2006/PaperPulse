@@ -63,6 +63,30 @@ public sealed class PaperFileStore(PaperPulsePaths paths)
         return resolved;
     }
 
+    public async Task<string> WriteInterpretationAsync(string stablePaperId, string markdown, CancellationToken cancellationToken = default)
+    {
+        paths.EnsureCreated();
+        string relativePath = Path.Combine("Interpretations", $"{SafeStem(stablePaperId)}.md");
+        string destination = ResolveRelativePath(relativePath);
+        string temporary = $"{destination}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            await File.WriteAllTextAsync(temporary, markdown, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
+            File.Move(temporary, destination, overwrite: true);
+            return relativePath;
+        }
+        finally
+        {
+            if (File.Exists(temporary)) File.Delete(temporary);
+        }
+    }
+
+    public void DeleteRelativeFile(string relativePath)
+    {
+        string path = ResolveRelativePath(relativePath);
+        if (File.Exists(path)) File.Delete(path);
+    }
+
     private static string SafeStem(string value)
     {
         StringBuilder builder = new();

@@ -5,6 +5,8 @@ using PaperPulse.Contracts;
 namespace PaperPulse.Storage;
 
 public sealed record class StoredPaper(PaperCandidate Candidate, string? PdfRelativePath, string? PdfSha256, DateTimeOffset CreatedAt, bool IsFavorite);
+public sealed record class StoredSummary(Guid Id, string PaperId, string Kind, string MetadataJson, string? MarkdownRelativePath);
+public sealed record class StoredProfileConfiguration(Guid Id, string ConfigurationJson);
 
 public sealed class SqlitePaperPulseRepository
 {
@@ -112,6 +114,40 @@ public sealed class SqlitePaperPulseRepository
         Initialize(); using SqliteConnection connection = Open(); connection.Open();
         using SqliteCommand command = connection.CreateCommand(); command.CommandText = "DELETE FROM papers WHERE NOT EXISTS (SELECT 1 FROM feed_papers fp INNER JOIN feeds f ON f.id=fp.feed_id WHERE fp.paper_id=papers.id);";
         return command.ExecuteNonQuery();
+    }
+
+    public void SaveSummary(StoredSummary summary)
+    {
+        Initialize(); using SqliteConnection connection = Open(); connection.Open();
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = "INSERT INTO summaries (id,paper_id,metadata_json,markdown_relative_path) VALUES ($id,$paper,$json,$path) ON CONFLICT(id) DO UPDATE SET paper_id=excluded.paper_id,metadata_json=excluded.metadata_json,markdown_relative_path=excluded.markdown_relative_path;";
+        command.Parameters.AddWithValue("$id", summary.Id.ToString("D")); command.Parameters.AddWithValue("$paper", summary.PaperId); command.Parameters.AddWithValue("$json", summary.MetadataJson); command.Parameters.AddWithValue("$path", (object?)summary.MarkdownRelativePath ?? DBNull.Value); command.ExecuteNonQuery();
+    }
+
+    public StoredSummary? FullSummaryFor(string paperId)
+    {
+        Initialize(); using SqliteConnection connection = Open(); connection.Open(); using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = "SELECT id,paper_id,metadata_json,markdown_relative_path FROM summaries WHERE paper_id=$paper AND json_extract(metadata_json, '$.kind')='full' LIMIT 1;"; command.Parameters.AddWithValue("$paper", paperId);
+        using SqliteDataReader reader = command.ExecuteReader();
+        return reader.Read() ? new StoredSummary(Guid.Parse(reader.GetString(0)), reader.GetString(1), "full", reader.GetString(2), reader.IsDBNull(3) ? null : reader.GetString(3)) : null;
+    }
+
+    public string? DeleteFullSummary(string paperId)
+    {
+        StoredSummary? summary = FullSummaryFor(paperId); if (summary is null) return null;
+        Initialize(); using SqliteConnection connection = Open(); connection.Open(); using SqliteCommand command = connection.CreateCommand(); command.CommandText = "DELETE FROM summaries WHERE id=$id;"; command.Parameters.AddWithValue("$id", summary.Id.ToString("D")); command.ExecuteNonQuery(); return summary.MarkdownRelativePath;
+    }
+
+    public void SaveProfileConfiguration(StoredProfileConfiguration profile)
+    {
+        Initialize(); using SqliteConnection connection = Open(); connection.Open();
+        Execute(connection, "CREATE TABLE IF NOT EXISTS profile_configurations (id TEXT PRIMARY KEY, configuration_json TEXT NOT NULL);");
+        using SqliteCommand command = connection.CreateCommand(); command.CommandText = "INSERT INTO profile_configurations (id,configuration_json) VALUES ($id,$json) ON CONFLICT(id) DO UPDATE SET configuration_json=excluded.configuration_json;"; command.Parameters.AddWithValue("$id", profile.Id.ToString("D")); command.Parameters.AddWithValue("$json", profile.ConfigurationJson); command.ExecuteNonQuery();
+    }
+
+    public IReadOnlyList<StoredProfileConfiguration> LoadProfileConfigurations()
+    {
+        Initialize(); using SqliteConnection connection = Open(); connection.Open(); Execute(connection, "CREATE TABLE IF NOT EXISTS profile_configurations (id TEXT PRIMARY KEY, configuration_json TEXT NOT NULL);"); using SqliteCommand command = connection.CreateCommand(); command.CommandText = "SELECT id,configuration_json FROM profile_configurations ORDER BY id;"; using SqliteDataReader reader = command.ExecuteReader(); List<StoredProfileConfiguration> profiles = []; while (reader.Read()) profiles.Add(new StoredProfileConfiguration(Guid.Parse(reader.GetString(0)), reader.GetString(1))); return profiles;
     }
 
     public void SetSetting(string key, string value) { Initialize(); using SqliteConnection connection = Open(); connection.Open(); Execute(connection, "INSERT INTO settings (key,value) VALUES ($key,$value) ON CONFLICT(key) DO UPDATE SET value=excluded.value;", "$key", key, extraName: "$value", extraValue: value); }

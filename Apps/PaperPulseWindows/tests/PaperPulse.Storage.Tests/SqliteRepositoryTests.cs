@@ -63,6 +63,24 @@ public sealed class SqliteRepositoryTests : IDisposable
         Assert.False(File.Exists(paths.DatabasePath));
     }
 
+    [Fact]
+    public async Task FullSummaryDeletionOnlyRemovesItsOwnMarkdownAndProfileJsonHasNoSecret()
+    {
+        PaperPulsePaths paths = new(directory); PaperFileStore files = new(paths); SqlitePaperPulseRepository repository = new(paths);
+        string firstPath = await files.WriteInterpretationAsync("arxiv:first", "# First");
+        string secondPath = await files.WriteInterpretationAsync("arxiv:second", "# Second");
+        repository.SaveSummary(new StoredSummary(Guid.NewGuid(), "arxiv:first", "full", "{\"kind\":\"full\",\"model\":\"test\"}", firstPath));
+        repository.SaveSummary(new StoredSummary(Guid.NewGuid(), "arxiv:second", "full", "{\"kind\":\"full\"}", secondPath));
+        Guid profileId = Guid.NewGuid(); repository.SaveProfileConfiguration(new StoredProfileConfiguration(profileId, "{\"model\":\"gpt\"}"));
+
+        string? deleted = repository.DeleteFullSummary("arxiv:first"); if (deleted is not null) files.DeleteRelativeFile(deleted);
+
+        Assert.False(File.Exists(files.ResolveRelativePath(firstPath)));
+        Assert.True(File.Exists(files.ResolveRelativePath(secondPath)));
+        Assert.NotNull(repository.FullSummaryFor("arxiv:second"));
+        Assert.Equal("{\"model\":\"gpt\"}", Assert.Single(repository.LoadProfileConfigurations()).ConfigurationJson);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
