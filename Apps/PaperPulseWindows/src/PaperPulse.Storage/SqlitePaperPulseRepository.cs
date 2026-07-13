@@ -117,7 +117,7 @@ public sealed class SqlitePaperPulseRepository
     public void SetSetting(string key, string value) { Initialize(); using SqliteConnection connection = Open(); connection.Open(); Execute(connection, "INSERT INTO settings (key,value) VALUES ($key,$value) ON CONFLICT(key) DO UPDATE SET value=excluded.value;", "$key", key, extraName: "$value", extraValue: value); }
     public string? GetSetting(string key) { Initialize(); using SqliteConnection connection = Open(); connection.Open(); using SqliteCommand command = connection.CreateCommand(); command.CommandText = "SELECT value FROM settings WHERE key=$key;"; command.Parameters.AddWithValue("$key", key); return command.ExecuteScalar() as string; }
 
-    private SqliteConnection Open() => new(new SqliteConnectionStringBuilder { DataSource = paths.DatabasePath }.ToString());
+    private SqliteConnection Open() => new(new SqliteConnectionStringBuilder { DataSource = paths.DatabasePath, Pooling = false }.ToString());
     private static long ScalarLong(SqliteConnection c, string sql) { using SqliteCommand command = c.CreateCommand(); command.CommandText = sql; return (long)(command.ExecuteScalar() ?? 0L); }
     private static void LinkPaper(SqliteConnection c, SqliteTransaction t, string paperId, Guid feedId)
     {
