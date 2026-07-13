@@ -79,14 +79,28 @@
             </ScrollViewer>
         </Grid>
 
-        <StackPanel Grid.Column="2" Grid.Row="1" Spacing="12">
-            <TextBlock Text="Details" FontWeight="SemiBold" />
-            <TextBlock FontSize="20" Text="{Binding SelectedPaper.Candidate.Title}" TextWrapping="Wrap" />
-            <TextBlock Text="{Binding SelectedPaper.Candidate.Summary}" TextWrapping="Wrap" />
-            <Button Click="Favorite_Click" ToolTipService.ToolTip="Toggle favorite for selected paper">
-                <SymbolIcon Symbol="Favorite" />
-            </Button>
-        </StackPanel>
+        <Grid Grid.Column="2" Grid.Row="1" RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid>
+                <TextBlock Text="Details" FontWeight="SemiBold" />
+                <Button
+                    Click="Favorite_Click"
+                    HorizontalAlignment="Right"
+                    IsEnabled="{Binding HasSelectedPaper}"
+                    ToolTipService.ToolTip="Toggle favorite for selected paper">
+                    <SymbolIcon Symbol="Favorite" />
+                </Button>
+            </Grid>
+            <ScrollViewer Grid.Row="1">
+                <StackPanel Spacing="12">
+                    <TextBlock FontSize="20" Text="{Binding SelectedPaperTitle}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding SelectedPaperSummary}" TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
 
         <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Opacity="0.75" Text="{Binding Status}" />
     </Grid>

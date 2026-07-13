@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Net;
+using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PaperPulse.Contracts;
 using PaperPulse.Engine;
@@ -9,6 +11,8 @@ namespace PaperPulse.Windows;
 public sealed partial class MainWindowViewModel : ObservableObject
 {
     private static readonly IReadOnlySet<string> EmptyPaperIds = new HashSet<string>();
+    private static readonly Regex Markup = new("<[^>]+>", RegexOptions.Compiled);
+    private static readonly Regex Whitespace = new("\\s+", RegexOptions.Compiled);
 
     private readonly SqlitePaperPulseRepository repository;
     private readonly PaperDiscoveryService discovery;
@@ -35,8 +39,18 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public StoredPaper? SelectedPaper
     {
         get => selectedPaper;
-        set => SetProperty(ref selectedPaper, value);
+        set
+        {
+            if (!SetProperty(ref selectedPaper, value)) return;
+            OnPropertyChanged(nameof(SelectedPaperTitle));
+            OnPropertyChanged(nameof(SelectedPaperSummary));
+            OnPropertyChanged(nameof(HasSelectedPaper));
+        }
     }
+
+    public string SelectedPaperTitle => SelectedPaper?.Candidate.Title ?? "Select a paper";
+    public string SelectedPaperSummary => SelectedPaper?.Candidate.Summary ?? "Select a paper to view its abstract.";
+    public bool HasSelectedPaper => SelectedPaper is not null;
 
     public string SearchText
     {
@@ -178,7 +192,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             feeds.Add(feed);
         }
 
-        List<StoredPaper> papers = repository.LoadPapers().ToList();
+        List<StoredPaper> papers = repository.LoadPapers().Select(NormalizeForDisplay).ToList();
         IReadOnlyDictionary<Guid, IReadOnlySet<string>> memberships = feeds.ToDictionary(
             feed => feed.Id,
             feed => repository.PaperIdsForFeed(feed.Id));
@@ -219,6 +233,19 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
 
         if (SelectedPaper is not null && !LibraryGroups.SelectMany(group => group.Papers).Any(paper => paper.Candidate.StableId == SelectedPaper.Candidate.StableId)) SelectedPaper = null;
+    }
+
+    private static StoredPaper NormalizeForDisplay(StoredPaper paper) => paper with
+    {
+        Candidate = paper.Candidate with { Summary = DisplaySummary(paper.Candidate.Summary) }
+    };
+
+    private static string DisplaySummary(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return "No abstract provided by this source.";
+        string decoded = WebUtility.HtmlDecode(value);
+        string plainText = Whitespace.Replace(Markup.Replace(decoded, " "), " ").Trim();
+        return plainText.Length == 0 ? "No abstract provided by this source." : plainText;
     }
 
     private sealed record LibrarySnapshot(

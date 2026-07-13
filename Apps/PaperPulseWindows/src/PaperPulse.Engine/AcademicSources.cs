@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using PaperPulse.Contracts;
 using static PaperPulse.Engine.JsonMapping;
 
@@ -169,7 +171,7 @@ public sealed class CrossrefSource(IHttpTransport transport) : IPaperSource
             PaperSourceKind.Crossref,
             sourceId,
             title,
-            String(item, "abstract") ?? string.Empty,
+            PlainTextAbstract(String(item, "abstract")),
             doi: doi,
             authors: Authors(item),
             publishedAt: IssuedDate(item),
@@ -177,6 +179,14 @@ public sealed class CrossrefSource(IHttpTransport transport) : IPaperSource
             pdfUrl: pdfUrl,
             venue: Strings(item, "container-title").FirstOrDefault(),
             provenance: [new PaperProvenance { Source = PaperSourceKind.Crossref, SourceId = sourceId, SourceUrl = Uri(url) }]);
+    }
+
+    private static string PlainTextAbstract(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        string decoded = WebUtility.HtmlDecode(value);
+        string withoutMarkup = Regex.Replace(decoded, "<[^>]+>", " ");
+        return Regex.Replace(withoutMarkup, "\\s+", " ").Trim();
     }
 
     private static IEnumerable<string> Authors(JsonElement item) => Object(item, "author") is JsonElement authors && authors.ValueKind == JsonValueKind.Array

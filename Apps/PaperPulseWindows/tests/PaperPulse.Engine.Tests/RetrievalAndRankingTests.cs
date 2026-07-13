@@ -26,7 +26,7 @@ public sealed class RetrievalAndRankingTests
             {"results":[{"id":"https://openalex.org/W123","doi":"https://doi.org/10.1145/example","display_name":"Open Agent Benchmarks","publication_date":"2026-07-08","cited_by_count":42,"abstract_inverted_index":{"Agents":[0],"coordinate":[1],"tools.":[2]},"authorships":[{"author":{"display_name":"A. Researcher"},"institutions":[{"display_name":"Stanford University"}]}],"open_access":{"oa_url":"https://publisher.example/paper.pdf"},"primary_location":{"source":{"display_name":"ExampleConf"}}}]}
             """;
         const string crossrefJson = """
-            {"message":{"items":[{"DOI":"10.5555/crossref.example","title":["Crossref Agent Evaluation"],"abstract":"A metadata-rich agent evaluation paper.","author":[{"given":"Ada","family":"Lovelace"}],"issued":{"date-parts":[[2026,7,7]]},"URL":"https://doi.org/10.5555/crossref.example","container-title":["Journal of Agent Systems"],"link":[{"URL":"https://publisher.example/crossref-agent.pdf","content-type":"application/pdf"}]}]}}
+            {"message":{"items":[{"DOI":"10.5555/crossref.example","title":["Crossref Agent Evaluation"],"abstract":"<jats:p>A <jats:italic>metadata-rich</jats:italic> agent evaluation paper.</jats:p>","author":[{"given":"Ada","family":"Lovelace"}],"issued":{"date-parts":[[2026,7,7]]},"URL":"https://doi.org/10.5555/crossref.example","container-title":["Journal of Agent Systems"],"link":[{"URL":"https://publisher.example/crossref-agent.pdf","content-type":"application/pdf"}]}]}}
             """;
 
         List<Uri> observedUris = [];
@@ -62,6 +62,7 @@ public sealed class RetrievalAndRankingTests
         Assert.Equal(["A. Researcher"], openAlex[0].Authors);
         Assert.Equal("10.5555/crossref.example", crossref[0].SourceId);
         Assert.Equal(["Ada Lovelace"], crossref[0].Authors);
+        Assert.Equal("A metadata-rich agent evaluation paper.", crossref[0].Summary);
         Assert.Null(crossref[0].OpenAccessEvidence);
         Assert.Contains("from_publication_date:2026-07-01,to_publication_date:2026-07-09", Uri.UnescapeDataString(observedUris[1].Query));
         Assert.Contains("from-pub-date:2026-07-01,until-pub-date:2026-07-09", Uri.UnescapeDataString(observedUris[2].Query));
