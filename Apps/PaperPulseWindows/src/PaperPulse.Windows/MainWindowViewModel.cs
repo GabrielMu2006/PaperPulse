@@ -131,8 +131,21 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         if (SelectedPaper is null) return;
         StoredPaper paper = SelectedPaper;
-        await Task.Run(() => repository.SetFavorite(paper.Candidate.StableId, !paper.IsFavorite));
-        await ReloadAsync(SelectedFeed?.Id);
+        bool isFavorite = !paper.IsFavorite;
+        try
+        {
+            await Task.Run(() => repository.SetFavorite(paper.Candidate.StableId, isFavorite));
+            StoredPaper updated = paper with { IsFavorite = isFavorite };
+            int index = Papers.ToList().FindIndex(candidate => candidate.Candidate.StableId == paper.Candidate.StableId);
+            if (index >= 0) Papers[index] = updated;
+            SelectedPaper = updated;
+            RefreshLibraryGroups(focusSelectedFeed: false);
+            Status = isFavorite ? "Added to favorites." : "Removed from favorites.";
+        }
+        catch (Exception error)
+        {
+            Status = $"Could not update favorite: {error.Message}";
+        }
     }
 
     public void ToggleFavoritesFilter() => FavoritesOnly = !FavoritesOnly;
