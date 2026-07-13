@@ -16,12 +16,15 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     private readonly SqlitePaperPulseRepository repository;
     private readonly PaperDiscoveryService discovery;
+    private readonly PaperFileStore fileStore;
+    private readonly PaperPdfDownloader pdfDownloader;
 
     private FeedConfig? selectedFeed;
     private StoredPaper? selectedPaper;
     private string searchText = string.Empty;
     private string status = "Starting PaperPulse...";
     private bool isRefreshing;
+    private bool isDownloadingPdf;
     private bool favoritesOnly;
     private bool isInitialized;
     private IReadOnlyDictionary<Guid, IReadOnlySet<string>> paperIdsByFeed = new Dictionary<Guid, IReadOnlySet<string>>();
@@ -45,12 +48,26 @@ public sealed partial class MainWindowViewModel : ObservableObject
             OnPropertyChanged(nameof(SelectedPaperTitle));
             OnPropertyChanged(nameof(SelectedPaperSummary));
             OnPropertyChanged(nameof(HasSelectedPaper));
+            OnPropertyChanged(nameof(SelectedPdfPath));
+            OnPropertyChanged(nameof(HasSelectedPdf));
         }
     }
 
     public string SelectedPaperTitle => SelectedPaper?.Candidate.Title ?? "Select a paper";
     public string SelectedPaperSummary => SelectedPaper?.Candidate.Summary ?? "Select a paper to view its abstract.";
     public bool HasSelectedPaper => SelectedPaper is not null;
+
+    public string? SelectedPdfPath
+    {
+        get
+        {
+            if (SelectedPaper?.PdfRelativePath is not { Length: > 0 } relativePath) return null;
+            try { return fileStore.ResolveRelativePath(relativePath); }
+            catch (InvalidOperationException) { return null; }
+        }
+    }
+
+    public bool HasSelectedPdf => SelectedPdfPath is { } path && File.Exists(path);
 
     public string SearchText
     {
@@ -73,6 +90,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
         set => SetProperty(ref isRefreshing, value);
     }
 
+    public bool IsDownloadingPdf
+    {
+        get => isDownloadingPdf;
+        set => SetProperty(ref isDownloadingPdf, value);
+    }
+
     public bool FavoritesOnly
     {
         get => favoritesOnly;
@@ -90,9 +113,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         PaperPulsePaths paths = new();
         repository = new SqlitePaperPulseRepository(paths);
+        fileStore = new PaperFileStore(paths);
         HttpClient client = new() { Timeout = TimeSpan.FromSeconds(30) };
         IHttpTransport transport = new RetryingHttpTransport(new HttpClientTransport(client));
         discovery = new PaperDiscoveryService([new ArxivSource(transport), new OpenAlexSource(transport), new CrossrefSource(transport)]);
+        pdfDownloader = new PaperPdfDownloader(transport);
     }
 
     public async Task InitializeAsync()
@@ -149,6 +174,36 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     public void ToggleFavoritesFilter() => FavoritesOnly = !FavoritesOnly;
+
+    public async Task DownloadSelectedPdfAsync()
+    {
+        if (SelectedPaper is null || IsDownloadingPdf) return;
+        StoredPaper paper = SelectedPaper;
+        IsDownloadingPdf = true;
+        Status = $"Downloading PDF for {paper.Candidate.Title}...";
+        try
+        {
+            DownloadedPaperPdf downloaded = await pdfDownloader.DownloadAsync(paper.Candidate);
+            await using MemoryStream input = new(downloaded.Content, writable: false);
+            StoredFile stored = await fileStore.WritePdfAsync(paper.Candidate.StableId, input);
+            StoredPaper updated = paper with { PdfRelativePath = stored.RelativePath, PdfSha256 = stored.Sha256 };
+            await Task.Run(() => repository.SavePaper(updated));
+            ReplacePaper(updated);
+            Status = "PDF downloaded.";
+        }
+        catch (PaperPdfDownloadException error)
+        {
+            Status = error.Message;
+        }
+        catch (Exception error)
+        {
+            Status = $"Could not download PDF: {error.Message}";
+        }
+        finally
+        {
+            IsDownloadingPdf = false;
+        }
+    }
 
     public async Task SaveFeedAsync(FeedConfig feed)
     {
@@ -246,6 +301,14 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
 
         if (SelectedPaper is not null && !LibraryGroups.SelectMany(group => group.Papers).Any(paper => paper.Candidate.StableId == SelectedPaper.Candidate.StableId)) SelectedPaper = null;
+    }
+
+    private void ReplacePaper(StoredPaper updated)
+    {
+        int index = Papers.ToList().FindIndex(paper => paper.Candidate.StableId == updated.Candidate.StableId);
+        if (index >= 0) Papers[index] = updated;
+        SelectedPaper = updated;
+        RefreshLibraryGroups(focusSelectedFeed: false);
     }
 
     private static StoredPaper NormalizeForDisplay(StoredPaper paper) => paper with

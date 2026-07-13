@@ -2,6 +2,7 @@
     x:Class="PaperPulse.Windows.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:wv2="using:Microsoft.Web.WebView2.WinUI"
     x:Name="Root"
     Title="PaperPulse">
     <Grid ColumnSpacing="16" Padding="16">
@@ -82,6 +83,7 @@
         <Grid Grid.Column="2" Grid.Row="1" RowSpacing="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid>
@@ -94,10 +96,26 @@
                     <SymbolIcon Symbol="Favorite" />
                 </Button>
             </Grid>
-            <ScrollViewer Grid.Row="1">
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+                <Button
+                    Click="DownloadPdf_Click"
+                    IsEnabled="{Binding HasSelectedPaper}"
+                    ToolTipService.ToolTip="Download verified open-access PDF">
+                    <SymbolIcon Symbol="Download" />
+                </Button>
+                <Button
+                    Click="OpenPdf_Click"
+                    IsEnabled="{Binding HasSelectedPdf}"
+                    ToolTipService.ToolTip="Open downloaded PDF">
+                    <SymbolIcon Symbol="OpenFile" />
+                </Button>
+            </StackPanel>
+            <ScrollViewer Grid.Row="2">
                 <StackPanel Spacing="12">
                     <TextBlock FontSize="20" Text="{Binding SelectedPaperTitle}" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding SelectedPaperSummary}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="PdfEmptyState" Opacity="0.7" Text="Download a verified open-access PDF to read it here." TextWrapping="Wrap" />
+                    <wv2:WebView2 x:Name="PdfViewer" Height="420" Visibility="Collapsed" />
                 </StackPanel>
             </ScrollViewer>
         </Grid>

@@ -20,6 +20,14 @@ public sealed partial class MainWindow : Window
 
     private async void Favorite_Click(object sender, RoutedEventArgs e) => await ViewModel.ToggleFavoriteAsync();
 
+    private async void DownloadPdf_Click(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.DownloadSelectedPdfAsync();
+        await ShowSelectedPdfAsync();
+    }
+
+    private async void OpenPdf_Click(object sender, RoutedEventArgs e) => await ShowSelectedPdfAsync();
+
     private void FavoritesFilter_Click(object sender, RoutedEventArgs e) => ViewModel.ToggleFavoritesFilter();
 
     private async void AddFeed_Click(object sender, RoutedEventArgs e) => await EditFeedAsync(null);
@@ -45,7 +53,9 @@ public sealed partial class MainWindow : Window
 
     private void PaperList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (sender is ListView { SelectedItem: StoredPaper paper }) ViewModel.SelectPaper(paper);
+        if (sender is not ListView { SelectedItem: StoredPaper paper }) return;
+        ViewModel.SelectPaper(paper);
+        HidePdfViewer();
     }
 
     private async Task EditFeedAsync(FeedConfig? existing)
@@ -77,5 +87,36 @@ public sealed partial class MainWindow : Window
                 .ToList()
         };
         await ViewModel.SaveFeedAsync(feed);
+    }
+
+    private async Task ShowSelectedPdfAsync()
+    {
+        if (!ViewModel.HasSelectedPdf || ViewModel.SelectedPdfPath is not { } path)
+        {
+            HidePdfViewer();
+            return;
+        }
+
+        try
+        {
+            await PdfViewer.EnsureCoreWebView2Async();
+            PdfViewer.Source = new Uri(path);
+            PdfViewer.Visibility = Visibility.Visible;
+            PdfEmptyState.Visibility = Visibility.Collapsed;
+        }
+        catch (Exception error)
+        {
+            PdfEmptyState.Text = $"Could not open PDF: {error.Message}";
+            PdfEmptyState.Visibility = Visibility.Visible;
+            PdfViewer.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void HidePdfViewer()
+    {
+        PdfViewer.Source = null;
+        PdfViewer.Visibility = Visibility.Collapsed;
+        PdfEmptyState.Text = "Download a verified open-access PDF to read it here.";
+        PdfEmptyState.Visibility = Visibility.Visible;
     }
 }
