@@ -9,4 +9,9 @@
     <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
     <ProjectReference Include="..\..\src\PaperPulse.Engine\PaperPulse.Engine.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\Tests\PaperCoreTests\Fixtures\phase1_retrieval_contract.json"
+          Link="Fixtures\phase1_retrieval_contract.json"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

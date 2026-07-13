@@ -125,6 +125,36 @@ final class PaperDiscoveryServiceTests: XCTestCase {
         XCTAssertEqual(merged[0].provenance.map(\.source), [.arxiv, .crossref])
     }
 
+    func testSharedPhaseOneRetrievalFixturePreservesMergeAndRankOrder() throws {
+        struct Fixture: Decodable {
+            let feed: FeedConfig
+            let now: Date
+            let candidates: [PaperCandidate]
+
+            struct Expected: Decodable {
+                let mergedSourceIDs: [String]
+                let rankedSourceIDs: [String]
+            }
+
+            let expected: Expected
+        }
+
+        guard let url = Bundle.module.url(forResource: "phase1_retrieval_contract", withExtension: "json") else {
+            XCTFail("Missing shared Phase 1 retrieval fixture.")
+            return
+        }
+
+        let fixture = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url))
+        let merged = PaperCandidateMerger().merge(fixture.candidates)
+        let ranked = PaperRanker().rank(merged, feed: fixture.feed, now: fixture.now)
+
+        XCTAssertEqual(merged.map(\.sourceID), fixture.expected.mergedSourceIDs)
+        XCTAssertEqual(ranked.map { $0.candidate.sourceID }, fixture.expected.rankedSourceIDs)
+        XCTAssertEqual(merged[0].authors, ["Ada", "Grace"])
+        XCTAssertEqual(merged[0].venue, "ExampleConf")
+        XCTAssertTrue(ranked[0].reasons.contains("preferred institution"))
+    }
+
     private func candidate(
         source: PaperSourceKind,
         sourceID: String,

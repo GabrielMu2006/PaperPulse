@@ -1,0 +1,61 @@
+{
+  "feed": {
+    "id": "22222222-2222-2222-2222-222222222222",
+    "name": "Agents",
+    "categories": ["cs.AI"],
+    "keywords": ["agent"],
+    "authorityPolicy": {
+      "preferredInstitutions": ["Trusted University"],
+      "blockedInstitutions": ["Blocked Institute"],
+      "preferredVenues": [],
+      "minimumCitationCount": null,
+      "dailyLimit": 2
+    }
+  },
+  "now": 864000,
+  "candidates": [
+    {
+      "source": "arxiv",
+      "sourceID": "2607.00001v1",
+      "baseID": "2607.00001",
+      "doi": "https://doi.org/10.1000/Example",
+      "title": "Agent Planning",
+      "summary": "An agent learns planning.",
+      "authors": ["Ada"],
+      "institutions": ["Trusted University"],
+      "categories": ["cs.AI"],
+      "publishedAt": 777600,
+      "openAccessPDFURL": "https://arxiv.org/pdf/2607.00001.pdf",
+      "openAccessEvidence": {
+        "status": "verified",
+        "source": "arxiv",
+        "url": "https://arxiv.org/pdf/2607.00001.pdf"
+      }
+    },
+    {
+      "source": "openAlex",
+      "sourceID": "https://openalex.org/W1",
+      "doi": "doi:10.1000/example",
+      "title": "Agent Planning",
+      "summary": "Metadata supplement.",
+      "authors": ["Grace"],
+      "categories": ["cs.CL"],
+      "citationCount": 12,
+      "venue": "ExampleConf"
+    },
+    {
+      "source": "crossref",
+      "sourceID": "blocked",
+      "title": "Agent Planning at Blocked Institute",
+      "summary": "agent",
+      "institutions": ["Blocked Institute"],
+      "categories": ["cs.AI"],
+      "publishedAt": 864000,
+      "citationCount": 1000
+    }
+  ],
+  "expected": {
+    "mergedSourceIDs": ["2607.00001v1", "blocked"],
+    "rankedSourceIDs": ["2607.00001v1"]
+  }
+}
