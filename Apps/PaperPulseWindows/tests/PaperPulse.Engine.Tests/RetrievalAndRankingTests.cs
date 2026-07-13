@@ -106,6 +106,42 @@ public sealed class RetrievalAndRankingTests
     }
 
     [Fact]
+    public async Task PdfDownloaderAcceptsOnlyVerifiedHttpsPdfResponses()
+    {
+        PaperCandidate paper = new(
+            PaperSourceKind.Arxiv,
+            "2607.00001",
+            "Verified PDF",
+            "",
+            openAccessPdfUrl: new Uri("https://example.org/paper.pdf"),
+            openAccessEvidence: new OpenAccessEvidence
+            {
+                Status = OpenAccessStatus.Verified,
+                Source = PaperSourceKind.Arxiv,
+                Url = new Uri("https://example.org/paper.pdf")
+            });
+        StubTransport transport = new(request => Task.FromResult(new HttpResponse(
+            "%PDF-1.7 test"u8.ToArray(),
+            200,
+            "application/pdf",
+            request.RequestUri!)));
+        PaperPdfDownloader downloader = new(transport, minimumBytes: 4);
+
+        DownloadedPaperPdf downloaded = await downloader.DownloadAsync(paper);
+
+        Assert.Equal("application/pdf", downloaded.MimeType);
+        Assert.Equal("%PDF", System.Text.Encoding.UTF8.GetString(downloaded.Content[..4]));
+        Assert.Equal(64, downloaded.Sha256.Length);
+
+        PaperCandidate unverified = paper with
+        {
+            OpenAccessEvidence = new OpenAccessEvidence { Status = OpenAccessStatus.Unverified, Source = PaperSourceKind.Crossref }
+        };
+        PaperPdfDownloadException error = await Assert.ThrowsAsync<PaperPdfDownloadException>(() => downloader.DownloadAsync(unverified));
+        Assert.Equal(PaperPdfDownloadFailure.UnverifiedOpenAccess, error.Failure);
+    }
+
+    [Fact]
     public async Task DiscoveryUsesEnabledSourcesAndKeepsPartialResults()
     {
         RecordingSource arxiv = new(PaperSourceKind.Arxiv, [new PaperCandidate(PaperSourceKind.Arxiv, "2607.00001v1", "arXiv result", "")]);
