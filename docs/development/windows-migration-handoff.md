@@ -15,6 +15,13 @@
 - 以 Swift `PaperCore` 的模型、JSON 编码和测试 fixtures 为行为规范，新增跨平台契约测试，避免检索、筛选、去重和 LLM 行为漂移。
 - 第一版优先面向 Windows 11 x64；在测试与发布稳定后再增加 Windows on ARM64。
 
+## 当前实施与验证模式
+
+- Mac 是日常实现机，负责可移植 C# 模块、测试、文档、提交与推送。
+- GitHub Actions 是 Windows 编译、核心测试、未签名 MSIX 打包与 artifact 的权威验证。
+- Windows 11 只在同一 commit 的 CI 变绿后执行 F5、本地 MSIX 安装，以及 PasswordVault、WebView2、干净 VM 等运行时 gate。
+- 不在两台设备间手工复制目录或归档；远端迁移分支是唯一交接源。
+
 WinUI 3 是 Windows App SDK 提供的原生桌面 UI，支持 C#，并支持 MSIX、带外部位置的打包和未打包分发。[WinUI 入门](https://learn.microsoft.com/en-us/windows/apps/get-started/winui-get-started-overview)
 
 ## 当前工程盘点
@@ -182,7 +189,7 @@ WinUI 3 内嵌 `WebView2`，导航到 `file:///` PDF 路径。微软文档说明
 - 选择 Windows App SDK 的稳定版本并写入集中包版本管理。
 - 写 `README` 或 Windows 开发说明，明确 Windows 数据不会读取 macOS 本地库。
 
-验收：Windows 开发机可 `dotnet build`、F5 运行空壳；macOS `swift test` 与 `PaperPulseMacTests` 仍通过。
+验收：macOS `validate-core.sh`、Swift 基线测试和同一 commit 的 GitHub Windows workflow 通过；Windows 11 在 F5 与本地未签名 MSIX 安装后生成 Phase0 gate 记录。
 
 ### 阶段 1：模型契约与检索核心
 
@@ -216,9 +223,9 @@ WinUI 3 内嵌 `WebView2`，导航到 `file:///` PDF 路径。微软文档说明
 
 验收：完整解读可异步生成、取消/失败可见、删除只影响当前论文。
 
-### 阶段 5：发布与 CI
+### 阶段 5：发布与清洁环境验证
 
-- GitHub Actions `windows-latest` 执行 restore、build、test、package。
+- GitHub Actions `windows-latest` 在每次推送执行 restore、build、portable tests、package。
 - 用 MSIX 输出 x64 包；完成受信任代码签名后再公开发布。
 - 评估 Microsoft Store 与 GitHub Releases + `.appinstaller`。MSIX 是推荐的单包发布路径；未打包 WinUI 3 不会生成单文件 EXE，且需要处理 Windows App SDK 运行时。[Windows 发布指南](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/publish-first-app)
 

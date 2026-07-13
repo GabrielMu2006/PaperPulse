@@ -1,16 +1,19 @@
-# PaperPulse Windows 主开发机交接文档
+# PaperPulse Mac-First Windows 运行时交接文档
 
-更新日期：2026-07-12
+更新日期：2026-07-13
 
-本文用于一种新的工作方式：**Windows 版本的主要开发、构建、运行、调试和打包都在 Windows 电脑上进行**。Mac 这边只保留现有 iOS/macOS/Swift 基线、Git 历史、迁移文档和必要的交接上下文。
+本文定义当前工作方式：Mac 负责日常 Windows 迁移代码与提交；GitHub Actions 负责 Windows 编译、测试与 MSIX 打包；Windows 11 仅负责 CI 无法证明的运行时验证。
 
 ## 一句话结论
 
-后续 Windows 迁移应把 Windows 电脑当作主开发环境：
+后续 Windows 迁移不在两台设备间轮流开发：
 
-- 在 Windows 上运行 Codex、Visual Studio、WinUI 3、Windows App SDK、WebView2、MSIX 打包和 Windows 专属测试。
-- 在 Mac 上只做不依赖 Windows 的文档、Swift 基线测试、代码审阅和必要的 Git 同步。
-- 所有阶段成果都必须通过 Git 提交保存；不要依赖 Codex 聊天本身作为唯一上下文。
+- Mac 编写 portable Contracts、Engine、Storage、PDF abstractions、测试与文档，并推送迁移分支。
+- GitHub Actions 对每次推送执行 Windows build、portable tests、unsigned MSIX package 和 artifact upload。
+- Windows 11 只在同一 commit CI 变绿后执行 F5、本地 MSIX 安装与命名 runtime gate。
+- 所有状态通过 Git 与 validation record 保存；不要依赖聊天或手工文件传递。
+
+本文件后续保留的“Windows 主开发机”描述是旧工作方式的历史背景；如与上述规则冲突，以上述规则为准。
 
 ## 当前仓库状态
 

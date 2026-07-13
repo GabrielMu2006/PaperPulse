@@ -148,31 +148,17 @@ Do not copy only `Apps/PaperPulseWindows` by hand unless GitHub is unavailable. 
 
 ## Windows Validation Procedure
 
-From the Windows checkout:
+Do not start a Windows runtime check until GitHub Actions is green for the current commit. Then, from the Windows checkout:
 
 ```powershell
-cd Apps\PaperPulseWindows
-dotnet --info
-pwsh -NoLogo -NoProfile -File .\scripts\build.ps1 -Configuration Debug
-pwsh -NoLogo -NoProfile -File .\scripts\test.ps1 -Configuration Debug
-pwsh -NoLogo -NoProfile -File .\scripts\package.ps1
+git fetch origin --prune
+git switch codex/paperpulse-windows-migration
+git pull --ff-only
+Set-Location Apps\PaperPulseWindows
+.\scripts\verify-windows-gate.ps1 -Stage Phase0 -F5Verified -MsixInstalled
 ```
 
-If `pwsh` is unavailable, use Windows PowerShell:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1 -Configuration Debug
-powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -Configuration Debug
-powershell -ExecutionPolicy Bypass -File .\scripts\package.ps1
-```
-
-Expected Phase 0 result:
-
-- Restore succeeds.
-- Build succeeds for x64 Debug.
-- Tests run for the project skeleton.
-- Package script produces an unsigned local MSIX/sideload artifact.
-- F5 in Visual Studio launches a blank `PaperPulse Windows` shell window.
+Expected Phase 0 result: the script reruns build, portable core tests, and unsigned MSIX packaging, then writes `docs/development/windows-validation/Phase0-<commit>.md`. F5 and local MSIX installation must be completed before their evidence switches are supplied.
 
 If a command fails, record:
 
@@ -196,7 +182,7 @@ Start a new Codex task on Windows from the repository root and give it this prom
 
 当前目标：只验证 Phase 0 的 Windows 原生工程空壳。请不要迁移检索、下载、LLM、SwiftData、Keychain 或 PDF 文本抽取业务逻辑；不要修改现有 iOS、macOS 和 Swift PaperCore 行为；不要推送 GitHub。
 
-请先检查 git status、当前分支、dotnet --info、Visual Studio/WinUI workload 是否满足要求。然后运行 Apps/PaperPulseWindows/scripts/build.ps1、test.ps1、package.ps1。若失败，请记录阻塞项和修复建议；若通过，请创建本地 Git 提交记录验证结果，等待我确认是否进入 Phase 1。
+请先检查 git status、当前分支、dotnet --info、Visual Studio/WinUI workload 是否满足要求，并确认当前 commit 的 GitHub Windows validation 已成功。然后执行 Apps/PaperPulseWindows/scripts/verify-windows-gate.ps1 的对应阶段 gate。若失败，请记录阻塞项和修复建议；若通过，只提交生成的 validation record，等待我确认是否进入 Phase 1。
 ```
 
 Recommended Codex working directory:

@@ -12,7 +12,7 @@ Phase 0 creates the native Windows client shell for PaperPulse. It is intentiona
 
 ## Required Windows Toolchain
 
-- Windows 10 version 1809 or later; Windows 11 x64 is the first supported target.
+- Windows 11 x64 is the first supported runtime and release-validation target.
 - Developer Mode enabled.
 - Visual Studio 2026 with the `WinUI application development` workload.
 - .NET 10 SDK, pinned by `global.json` to SDK feature band `10.0.301`.
@@ -42,6 +42,12 @@ The package script creates an unsigned sideload MSIX for local validation only. 
 
 `test.ps1` runs the portable core test suite. WinUI runtime checks require a registered Windows App Runtime and are performed through the Windows validation gate after CI succeeds.
 
+## Build Ownership
+
+- macOS develops and validates portable C# modules with `validate-core.sh`.
+- GitHub Actions is the authority for Windows build, portable tests, unsigned MSIX packaging, and validation artifacts.
+- Windows 11 is used only after a green workflow for F5 launch and local MSIX-install checks through `verify-windows-gate.ps1`.
+
 ## macOS Core Validation
 
 The macOS workflow validates only portable C# projects. It does not build WinUI, package MSIX, or validate WebView2 or Credential Locker.
@@ -57,7 +63,7 @@ cd Apps/PaperPulseWindows
 
 ## macOS Status
 
-This repository update was prepared on macOS arm64, where `dotnet` and `pwsh` are not installed. Windows build, test, package, and F5 launch must be verified on a Windows machine with the toolchain above.
+macOS validates portable C# code only. It does not build WinUI, package MSIX, or validate F5, WebView2, PasswordVault, or local MSIX installation.
 
 ## Phase 0 Boundary
 
