@@ -33,7 +33,7 @@ jobs:
 
       - name: Test
         working-directory: Apps/PaperPulseWindows
-        run: ./scripts/test.ps1 -Configuration Debug -Platform x64
+        run: ./scripts/test.ps1 -Configuration Debug -Platform x64 -SkipBuild
 
       - name: Package unsigned MSIX
         working-directory: Apps/PaperPulseWindows

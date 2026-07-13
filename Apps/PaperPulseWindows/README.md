@@ -40,6 +40,8 @@ cd Apps\PaperPulseWindows
 
 The package script creates an unsigned sideload MSIX for local validation only. Public release packages must be code signed before distribution.
 
+`test.ps1` runs the portable core test suite. WinUI runtime checks require a registered Windows App Runtime and are performed through the Windows validation gate after CI succeeds.
+
 ## macOS Core Validation
 
 The macOS workflow validates only portable C# projects. It does not build WinUI, package MSIX, or validate WebView2 or Credential Locker.
