@@ -56,8 +56,17 @@ $WebView2Runtime = @(
     "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
 ) | ForEach-Object {
     Get-ItemProperty -Path $_ -ErrorAction SilentlyContinue |
-        Where-Object { $_.DisplayName -like "*WebView2*" } |
-        Select-Object -First 1 DisplayName, DisplayVersion
+        ForEach-Object {
+            $DisplayNameProperty = $_.PSObject.Properties["DisplayName"]
+            if ($null -ne $DisplayNameProperty -and $DisplayNameProperty.Value -like "*WebView2*") {
+                $DisplayVersionProperty = $_.PSObject.Properties["DisplayVersion"]
+                [PSCustomObject]@{
+                    DisplayName = $DisplayNameProperty.Value
+                    DisplayVersion = if ($null -eq $DisplayVersionProperty) { $null } else { $DisplayVersionProperty.Value }
+                }
+            }
+        } |
+        Select-Object -First 1
 } | Select-Object -First 1
 
 & (Join-Path $PSScriptRoot "build.ps1") -Configuration Debug -Platform x64
