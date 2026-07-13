@@ -38,7 +38,14 @@ cd Apps\PaperPulseWindows
 .\scripts\package.ps1
 ```
 
-The package script creates an unsigned sideload MSIX for local validation only. Public release packages must be code signed before distribution.
+The package script creates an unsigned MSIX for CI artifact validation. Windows 11 rejects direct installation of this package even with `Add-AppxPackage -AllowUnsigned`, so local installation validation uses a developer-signed copy:
+
+```powershell
+# Run once from an elevated PowerShell window to trust the local development certificate.
+.\scripts\install-local-dev-msix.ps1
+```
+
+The helper creates or reuses a self-signed certificate in the current user's certificate store, trusts only its public certificate on the local machine, signs a copy of the MSIX, and installs it. Certificates and private keys remain outside the repository. Public release packages must use a trusted code-signing certificate.
 
 `test.ps1` runs the portable core test suite. WinUI runtime checks require a registered Windows App Runtime and are performed through the Windows validation gate after CI succeeds.
 

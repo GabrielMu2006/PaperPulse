@@ -87,7 +87,7 @@ $WebView2Description = if ($null -eq $WebView2Runtime) { "Not detected" } else {
 - Developer Mode enabled: $DeveloperMode
 - WebView2 Runtime: $WebView2Description
 - F5 verified: $($Evidence.F5Verified)
-- Local unsigned MSIX installed: $($Evidence.MsixInstalled)
+- Local developer-signed MSIX installed: $($Evidence.MsixInstalled)
 - PasswordVault verified: $($Evidence.PasswordVaultVerified)
 - WebView2 verified: $($Evidence.WebView2Verified)
 - Clean VM verified: $($Evidence.CleanVmVerified)

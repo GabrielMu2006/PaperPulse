@@ -5,7 +5,7 @@ GitHub Actions is the authority for Windows restore, build, portable core tests,
 Windows 11 is reserved for checks CI cannot prove:
 
 - F5 launches the native WinUI shell.
-- The unsigned MSIX installs and starts locally.
+- A local developer-signed copy of the CI's unsigned MSIX installs and starts locally.
 - PasswordVault works when Phase 2 reaches credential storage.
 - WebView2 works when Phase 4 reaches PDF viewing.
 - A clean Windows VM passes installation checks before Phase 5 distribution.
@@ -16,7 +16,7 @@ From Apps\PaperPulseWindows on Windows 11:
 .\scripts\verify-windows-gate.ps1 -Stage Phase0 -F5Verified -MsixInstalled
 ```
 
-The script requires Windows 11 build 22000 or later, verifies the supplied evidence before it runs any build command, then runs Debug build, portable core tests, and Release unsigned MSIX packaging. It writes a report only if all commands succeed:
+The script requires Windows 11 build 22000 or later, verifies the supplied evidence before it runs any build command, then runs Debug build, portable core tests, and Release unsigned MSIX packaging. It writes a report only if all commands succeed. Before supplying `MsixInstalled`, run `scripts\install-local-dev-msix.ps1` from an elevated PowerShell window once and start the installed app:
 
 ```text
 docs/development/windows-validation/Phase0-<commit>.md

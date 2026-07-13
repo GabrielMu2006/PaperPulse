@@ -158,7 +158,7 @@ Set-Location Apps\PaperPulseWindows
 .\scripts\verify-windows-gate.ps1 -Stage Phase0 -F5Verified -MsixInstalled
 ```
 
-Expected Phase 0 result: the script reruns build, portable core tests, and unsigned MSIX packaging, then writes `docs/development/windows-validation/Phase0-<commit>.md`. F5 and local MSIX installation must be completed before their evidence switches are supplied.
+Expected Phase 0 result: the script reruns build, portable core tests, and unsigned MSIX packaging, then writes `docs/development/windows-validation/Phase0-<commit>.md`. F5 and local MSIX installation must be completed before their evidence switches are supplied. Windows 11 rejects direct installation of the unsigned artifact, so run `scripts\install-local-dev-msix.ps1` once from an elevated PowerShell window; it signs only a local copy with a self-signed certificate that is never committed or used for release.
 
 If a command fails, record:
 

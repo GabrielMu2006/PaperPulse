@@ -189,7 +189,7 @@ WinUI 3 内嵌 `WebView2`，导航到 `file:///` PDF 路径。微软文档说明
 - 选择 Windows App SDK 的稳定版本并写入集中包版本管理。
 - 写 `README` 或 Windows 开发说明，明确 Windows 数据不会读取 macOS 本地库。
 
-验收：macOS `validate-core.sh`、Swift 基线测试和同一 commit 的 GitHub Windows workflow 通过；Windows 11 在 F5 与本地未签名 MSIX 安装后生成 Phase0 gate 记录。
+验收：macOS `validate-core.sh`、Swift 基线测试和同一 commit 的 GitHub Windows workflow 通过；Windows 11 在 F5 与本地 MSIX 安装后生成 Phase0 gate 记录。CI artifact 保持未签名；由于 Windows 11 不接受直接安装该 artifact，本地验证可用仅存于本机证书库的自签名开发证书对副本签名，不能将其用于公开发布。
 
 ### 阶段 1：模型契约与检索核心
 
