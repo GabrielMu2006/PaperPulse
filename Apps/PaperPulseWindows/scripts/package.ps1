@@ -25,18 +25,25 @@ if (Test-Path $ArtifactDirectory) {
 
 New-Item -ItemType Directory -Force $ArtifactDirectory | Out-Null
 
-if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
-    throw "The .NET SDK is required. Install .NET 10 SDK and the Visual Studio WinUI application development workload."
-}
+$MSBuildPath = & (Join-Path $PSScriptRoot "Get-MSBuildPath.ps1")
+$MSBuildArguments = @(
+    $Project
+    "/restore"
+    "/t:Build"
+    "/p:Configuration=$Configuration"
+    "/p:Platform=$Platform"
+    "/p:AppxPackageDir=$ArtifactDirectory\"
+    "/p:GenerateAppxPackageOnBuild=true"
+    "/p:AppxBundle=Never"
+    "/p:UapAppxPackageBuildMode=SideloadOnly"
+    "/p:AppxPackageSigningEnabled=false"
+)
 
-dotnet restore $Project
-dotnet build $Project --configuration $Configuration --no-restore `
-    -p:Platform=$Platform `
-    -p:AppxPackageDir="$ArtifactDirectory\" `
-    -p:GenerateAppxPackageOnBuild=true `
-    -p:AppxBundle=Never `
-    -p:UapAppxPackageBuildMode=SideloadOnly `
-    -p:AppxPackageSigningEnabled=false
+& $MSBuildPath @MSBuildArguments
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Visual Studio MSBuild packaging failed with exit code $LASTEXITCODE."
+}
 
 $Packages = Get-ChildItem -Path $ArtifactDirectory -Recurse -File -Filter "*.msix"
 

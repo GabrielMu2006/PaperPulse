@@ -15,7 +15,6 @@
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.Web.WebView2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="System.Security.Permissions" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PaperPulse.Contracts\PaperPulse.Contracts.csproj" />

@@ -12,9 +12,10 @@ $ErrorActionPreference = "Stop"
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
 $Solution = Join-Path $Root "PaperPulse.Windows.sln"
 
-if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
-    throw "The .NET SDK is required. Install .NET 10 SDK and the Visual Studio WinUI application development workload."
-}
+$MSBuildPath = & (Join-Path $PSScriptRoot "Get-MSBuildPath.ps1")
 
-dotnet restore $Solution
-dotnet build $Solution --configuration $Configuration --no-restore -p:Platform=$Platform
+& $MSBuildPath $Solution /restore /t:Build "/p:Configuration=$Configuration" "/p:Platform=$Platform"
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Visual Studio MSBuild failed with exit code $LASTEXITCODE."
+}
