@@ -16,13 +16,14 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private string searchText = string.Empty;
     private string status = "Ready";
     private bool isRefreshing;
+    private bool favoritesOnly;
 
     public FeedConfig? SelectedFeed
     {
         get => selectedFeed;
         set
         {
-            if (SetProperty(ref selectedFeed, value)) RefreshVisiblePapers();
+            if (SetProperty(ref selectedFeed, value)) RefreshLibraryGroups(focusSelectedFeed: true);
         }
     }
 
@@ -37,7 +38,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         get => searchText;
         set
         {
-            if (SetProperty(ref searchText, value)) RefreshVisiblePapers();
+            if (SetProperty(ref searchText, value)) RefreshLibraryGroups(focusSelectedFeed: false);
         }
     }
 
@@ -53,9 +54,18 @@ public sealed partial class MainWindowViewModel : ObservableObject
         set => SetProperty(ref isRefreshing, value);
     }
 
+    public bool FavoritesOnly
+    {
+        get => favoritesOnly;
+        set
+        {
+            if (SetProperty(ref favoritesOnly, value)) RefreshLibraryGroups(focusSelectedFeed: false);
+        }
+    }
+
     public ObservableCollection<FeedConfig> Feeds { get; } = [];
     public ObservableCollection<StoredPaper> Papers { get; } = [];
-    public ObservableCollection<StoredPaper> VisiblePapers { get; } = [];
+    public ObservableCollection<PaperLibraryGroup> LibraryGroups { get; } = [];
 
     public MainWindowViewModel()
     {
@@ -96,21 +106,70 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Load();
     }
 
+    public void ToggleFavoritesFilter() => FavoritesOnly = !FavoritesOnly;
+
+    public void SaveFeed(FeedConfig feed)
+    {
+        if (string.IsNullOrWhiteSpace(feed.Name))
+        {
+            Status = "A subscription needs a name.";
+            return;
+        }
+
+        repository.SaveFeed(feed);
+        Load();
+        SelectedFeed = Feeds.FirstOrDefault(candidate => candidate.Id == feed.Id);
+        Status = $"Saved {feed.Name}.";
+    }
+
+    public bool DeleteSelectedFeed()
+    {
+        if (SelectedFeed is null) return false;
+        string name = SelectedFeed.Name;
+        repository.DeleteFeed(SelectedFeed.Id);
+        SelectedFeed = null;
+        Load();
+        Status = $"Deleted {name}.";
+        return true;
+    }
+
+    public void SelectPaper(StoredPaper? paper)
+    {
+        if (paper is not null) SelectedPaper = paper;
+    }
+
     private void Load()
     {
         Feeds.Clear(); foreach (FeedConfig feed in repository.LoadFeeds()) Feeds.Add(feed);
         if (Feeds.Count == 0) { FeedConfig feed = new() { Name = "Agent Research", Keywords = ["agent"] }; repository.SaveFeed(feed); Feeds.Add(feed); }
-        SelectedFeed ??= Feeds[0];
+        Guid? selectedFeedId = SelectedFeed?.Id;
+        SelectedFeed = Feeds.FirstOrDefault(feed => feed.Id == selectedFeedId) ?? Feeds[0];
         Papers.Clear(); foreach (StoredPaper paper in repository.LoadPapers()) Papers.Add(paper);
-        RefreshVisiblePapers();
+        RefreshLibraryGroups(focusSelectedFeed: true);
     }
 
-    private void RefreshVisiblePapers()
+    private void RefreshLibraryGroups(bool focusSelectedFeed)
     {
-        IEnumerable<StoredPaper> papers = Papers;
-        if (SelectedFeed is not null) { IReadOnlySet<string> ids = repository.PaperIdsForFeed(SelectedFeed.Id); papers = papers.Where(paper => ids.Contains(paper.Candidate.StableId)); }
-        if (!string.IsNullOrWhiteSpace(SearchText)) papers = papers.Where(paper => $"{paper.Candidate.Title} {paper.Candidate.Summary} {string.Join(' ', paper.Candidate.Authors)}".Contains(SearchText, StringComparison.OrdinalIgnoreCase));
-        VisiblePapers.Clear(); foreach (StoredPaper paper in papers) VisiblePapers.Add(paper);
-        if (SelectedPaper is not null && !VisiblePapers.Any(paper => paper.Candidate.StableId == SelectedPaper.Candidate.StableId)) SelectedPaper = null;
+        Dictionary<string, bool> expanded = LibraryGroups.ToDictionary(group => group.Key, group => group.IsExpanded);
+        IReadOnlyList<PaperLibraryGroupDefinition> definitions = PaperLibraryGrouping.Create(
+            Feeds,
+            Papers,
+            repository.PaperIdsForFeed,
+            repository.UnclassifiedPaperIds(),
+            SearchText,
+            FavoritesOnly);
+
+        LibraryGroups.Clear();
+        foreach (PaperLibraryGroupDefinition definition in definitions)
+        {
+            bool isExpanded = PaperLibraryGrouping.IsExpanded(
+                definition,
+                SelectedFeed?.Id,
+                focusSelectedFeed,
+                expanded);
+            LibraryGroups.Add(new PaperLibraryGroup(definition, isExpanded));
+        }
+
+        if (SelectedPaper is not null && !LibraryGroups.SelectMany(group => group.Papers).Any(paper => paper.Candidate.StableId == SelectedPaper.Candidate.StableId)) SelectedPaper = null;
     }
 }
