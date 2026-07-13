@@ -19,11 +19,15 @@ public static class PaperLibraryGrouping
             .ToList();
 
         List<PaperLibraryGroupDefinition> groups = feeds
-            .Select(feed => new PaperLibraryGroupDefinition(
-                feed.Id.ToString("D"),
-                feed.Name,
-                false,
-                visiblePapers.Where(paper => paperIdsForFeed(feed.Id).Contains(paper.Candidate.StableId)).ToList()))
+            .Select(feed =>
+            {
+                IReadOnlySet<string> feedPaperIds = paperIdsForFeed(feed.Id);
+                return new PaperLibraryGroupDefinition(
+                    feed.Id.ToString("D"),
+                    feed.Name,
+                    false,
+                    visiblePapers.Where(paper => feedPaperIds.Contains(paper.Candidate.StableId)).ToList());
+            })
             .ToList();
 
         groups.Add(new PaperLibraryGroupDefinition(

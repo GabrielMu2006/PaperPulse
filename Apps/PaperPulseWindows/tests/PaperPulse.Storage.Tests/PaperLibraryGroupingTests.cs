@@ -20,11 +20,16 @@ public sealed class PaperLibraryGroupingTests
             [agents.Id] = new HashSet<string> { shared.Candidate.StableId, onlyAgents.Candidate.StableId },
             [vision.Id] = new HashSet<string> { shared.Candidate.StableId }
         };
+        int membershipLookups = 0;
 
         IReadOnlyList<PaperLibraryGroupDefinition> groups = PaperLibraryGrouping.Create(
             [agents, vision],
             [shared, onlyAgents, unclassified],
-            feedId => memberships[feedId],
+            feedId =>
+            {
+                membershipLookups++;
+                return memberships[feedId];
+            },
             new HashSet<string> { unclassified.Candidate.StableId },
             searchText: null,
             favoritesOnly: false);
@@ -37,6 +42,7 @@ public sealed class PaperLibraryGroupingTests
                 Assert.True(group.IsUnclassified);
                 Assert.Equal([unclassified.Candidate.StableId], group.Papers.Select(paper => paper.Candidate.StableId));
             });
+        Assert.Equal(2, membershipLookups);
     }
 
     [Fact]

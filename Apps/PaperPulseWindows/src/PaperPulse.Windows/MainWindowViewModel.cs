@@ -8,15 +8,20 @@ namespace PaperPulse.Windows;
 
 public sealed partial class MainWindowViewModel : ObservableObject
 {
+    private static readonly IReadOnlySet<string> EmptyPaperIds = new HashSet<string>();
+
     private readonly SqlitePaperPulseRepository repository;
     private readonly PaperDiscoveryService discovery;
 
     private FeedConfig? selectedFeed;
     private StoredPaper? selectedPaper;
     private string searchText = string.Empty;
-    private string status = "Ready";
+    private string status = "Starting PaperPulse...";
     private bool isRefreshing;
     private bool favoritesOnly;
+    private bool isInitialized;
+    private IReadOnlyDictionary<Guid, IReadOnlySet<string>> paperIdsByFeed = new Dictionary<Guid, IReadOnlySet<string>>();
+    private IReadOnlySet<string> unclassifiedPaperIds = EmptyPaperIds;
 
     public FeedConfig? SelectedFeed
     {
@@ -74,41 +79,51 @@ public sealed partial class MainWindowViewModel : ObservableObject
         HttpClient client = new() { Timeout = TimeSpan.FromSeconds(30) };
         IHttpTransport transport = new RetryingHttpTransport(new HttpClientTransport(client));
         discovery = new PaperDiscoveryService([new ArxivSource(transport), new OpenAlexSource(transport), new CrossrefSource(transport)]);
-        Load();
+    }
+
+    public async Task InitializeAsync()
+    {
+        if (isInitialized) return;
+        isInitialized = true;
+        await ReloadAsync();
     }
 
     public async Task RefreshSelectedFeedAsync()
     {
         if (SelectedFeed is null || IsRefreshing) return;
+        FeedConfig feed = SelectedFeed;
         IsRefreshing = true; Status = $"Searching {SelectedFeed.Name}...";
         try
         {
-            DiscoveryResult result = await discovery.DiscoverAsync(SelectedFeed);
+            DiscoveryResult result = await discovery.DiscoverAsync(feed);
             Dictionary<string, StoredPaper> existing = Papers.ToDictionary(paper => paper.Candidate.StableId);
-            foreach (PaperCandidate candidate in result.Candidates)
-            {
-                StoredPaper stored = existing.TryGetValue(candidate.StableId, out StoredPaper? current)
+            List<StoredPaper> papersToSave = result.Candidates
+                .Select(candidate => existing.TryGetValue(candidate.StableId, out StoredPaper? current)
                     ? current with { Candidate = candidate }
-                    : new StoredPaper(candidate, null, null, DateTimeOffset.UtcNow, false);
-                repository.SavePaper(stored, SelectedFeed.Id);
-            }
-            Load();
+                    : new StoredPaper(candidate, null, null, DateTimeOffset.UtcNow, false))
+                .ToList();
+            await Task.Run(() =>
+            {
+                foreach (StoredPaper paper in papersToSave) repository.SavePaper(paper, feed.Id);
+            });
+            await ReloadAsync(feed.Id);
             Status = result.Failures.Count == 0 ? $"Found {result.Candidates.Count} papers." : $"Found {result.Candidates.Count}; {result.Failures.Count} sources unavailable.";
         }
         catch (Exception error) { Status = error.Message; }
         finally { IsRefreshing = false; }
     }
 
-    public void ToggleFavorite()
+    public async Task ToggleFavoriteAsync()
     {
         if (SelectedPaper is null) return;
-        repository.SetFavorite(SelectedPaper.Candidate.StableId, !SelectedPaper.IsFavorite);
-        Load();
+        StoredPaper paper = SelectedPaper;
+        await Task.Run(() => repository.SetFavorite(paper.Candidate.StableId, !paper.IsFavorite));
+        await ReloadAsync(SelectedFeed?.Id);
     }
 
     public void ToggleFavoritesFilter() => FavoritesOnly = !FavoritesOnly;
 
-    public void SaveFeed(FeedConfig feed)
+    public async Task SaveFeedAsync(FeedConfig feed)
     {
         if (string.IsNullOrWhiteSpace(feed.Name))
         {
@@ -116,19 +131,19 @@ public sealed partial class MainWindowViewModel : ObservableObject
             return;
         }
 
-        repository.SaveFeed(feed);
-        Load();
-        SelectedFeed = Feeds.FirstOrDefault(candidate => candidate.Id == feed.Id);
+        await Task.Run(() => repository.SaveFeed(feed));
+        await ReloadAsync(feed.Id);
         Status = $"Saved {feed.Name}.";
     }
 
-    public bool DeleteSelectedFeed()
+    public async Task<bool> DeleteSelectedFeedAsync()
     {
         if (SelectedFeed is null) return false;
         string name = SelectedFeed.Name;
-        repository.DeleteFeed(SelectedFeed.Id);
+        Guid id = SelectedFeed.Id;
         SelectedFeed = null;
-        Load();
+        await Task.Run(() => repository.DeleteFeed(id));
+        await ReloadAsync();
         Status = $"Deleted {name}.";
         return true;
     }
@@ -138,13 +153,46 @@ public sealed partial class MainWindowViewModel : ObservableObject
         if (paper is not null) SelectedPaper = paper;
     }
 
-    private void Load()
+    private async Task ReloadAsync(Guid? preferredFeedId = null)
     {
-        Feeds.Clear(); foreach (FeedConfig feed in repository.LoadFeeds()) Feeds.Add(feed);
-        if (Feeds.Count == 0) { FeedConfig feed = new() { Name = "Agent Research", Keywords = ["agent"] }; repository.SaveFeed(feed); Feeds.Add(feed); }
-        Guid? selectedFeedId = SelectedFeed?.Id;
+        Status = "Loading library...";
+        try
+        {
+            LibrarySnapshot snapshot = await Task.Run(ReadLibrarySnapshot);
+            ApplySnapshot(snapshot, preferredFeedId);
+            Status = "Ready";
+        }
+        catch (Exception error)
+        {
+            Status = $"Could not load the library: {error.Message}";
+        }
+    }
+
+    private LibrarySnapshot ReadLibrarySnapshot()
+    {
+        List<FeedConfig> feeds = repository.LoadFeeds().ToList();
+        if (feeds.Count == 0)
+        {
+            FeedConfig feed = new() { Name = "Agent Research", Keywords = ["agent"] };
+            repository.SaveFeed(feed);
+            feeds.Add(feed);
+        }
+
+        List<StoredPaper> papers = repository.LoadPapers().ToList();
+        IReadOnlyDictionary<Guid, IReadOnlySet<string>> memberships = feeds.ToDictionary(
+            feed => feed.Id,
+            feed => repository.PaperIdsForFeed(feed.Id));
+        return new LibrarySnapshot(feeds, papers, memberships, repository.UnclassifiedPaperIds());
+    }
+
+    private void ApplySnapshot(LibrarySnapshot snapshot, Guid? preferredFeedId)
+    {
+        Guid? selectedFeedId = preferredFeedId ?? SelectedFeed?.Id;
+        Feeds.Clear(); foreach (FeedConfig feed in snapshot.Feeds) Feeds.Add(feed);
+        Papers.Clear(); foreach (StoredPaper paper in snapshot.Papers) Papers.Add(paper);
+        paperIdsByFeed = snapshot.PaperIdsByFeed;
+        unclassifiedPaperIds = snapshot.UnclassifiedPaperIds;
         SelectedFeed = Feeds.FirstOrDefault(feed => feed.Id == selectedFeedId) ?? Feeds[0];
-        Papers.Clear(); foreach (StoredPaper paper in repository.LoadPapers()) Papers.Add(paper);
         RefreshLibraryGroups(focusSelectedFeed: true);
     }
 
@@ -154,8 +202,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         IReadOnlyList<PaperLibraryGroupDefinition> definitions = PaperLibraryGrouping.Create(
             Feeds,
             Papers,
-            repository.PaperIdsForFeed,
-            repository.UnclassifiedPaperIds(),
+            feedId => paperIdsByFeed.TryGetValue(feedId, out IReadOnlySet<string>? ids) ? ids : EmptyPaperIds,
+            unclassifiedPaperIds,
             SearchText,
             FavoritesOnly);
 
@@ -172,4 +220,10 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         if (SelectedPaper is not null && !LibraryGroups.SelectMany(group => group.Papers).Any(paper => paper.Candidate.StableId == SelectedPaper.Candidate.StableId)) SelectedPaper = null;
     }
+
+    private sealed record LibrarySnapshot(
+        IReadOnlyList<FeedConfig> Feeds,
+        IReadOnlyList<StoredPaper> Papers,
+        IReadOnlyDictionary<Guid, IReadOnlySet<string>> PaperIdsByFeed,
+        IReadOnlySet<string> UnclassifiedPaperIds);
 }

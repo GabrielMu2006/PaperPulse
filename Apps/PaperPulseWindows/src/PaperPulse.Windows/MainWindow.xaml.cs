@@ -13,11 +13,12 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         ((FrameworkElement)Content).DataContext = ViewModel;
+        DispatcherQueue.TryEnqueue(async () => await ViewModel.InitializeAsync());
     }
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await ViewModel.RefreshSelectedFeedAsync();
 
-    private void Favorite_Click(object sender, RoutedEventArgs e) => ViewModel.ToggleFavorite();
+    private async void Favorite_Click(object sender, RoutedEventArgs e) => await ViewModel.ToggleFavoriteAsync();
 
     private void FavoritesFilter_Click(object sender, RoutedEventArgs e) => ViewModel.ToggleFavoritesFilter();
 
@@ -39,7 +40,7 @@ public sealed partial class MainWindow : Window
             DefaultButton = ContentDialogButton.Close
         };
 
-        if (await confirmation.ShowAsync() == ContentDialogResult.Primary) ViewModel.DeleteSelectedFeed();
+        if (await confirmation.ShowAsync() == ContentDialogResult.Primary) await ViewModel.DeleteSelectedFeedAsync();
     }
 
     private void PaperList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -75,6 +76,6 @@ public sealed partial class MainWindow : Window
                 .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
                 .ToList()
         };
-        ViewModel.SaveFeed(feed);
+        await ViewModel.SaveFeedAsync(feed);
     }
 }
