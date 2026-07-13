@@ -11,11 +11,47 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private readonly SqlitePaperPulseRepository repository;
     private readonly PaperDiscoveryService discovery;
 
-    [ObservableProperty] private FeedConfig? selectedFeed;
-    [ObservableProperty] private StoredPaper? selectedPaper;
-    [ObservableProperty] private string searchText = string.Empty;
-    [ObservableProperty] private string status = "Ready";
-    [ObservableProperty] private bool isRefreshing;
+    private FeedConfig? selectedFeed;
+    private StoredPaper? selectedPaper;
+    private string searchText = string.Empty;
+    private string status = "Ready";
+    private bool isRefreshing;
+
+    public FeedConfig? SelectedFeed
+    {
+        get => selectedFeed;
+        set
+        {
+            if (SetProperty(ref selectedFeed, value)) RefreshVisiblePapers();
+        }
+    }
+
+    public StoredPaper? SelectedPaper
+    {
+        get => selectedPaper;
+        set => SetProperty(ref selectedPaper, value);
+    }
+
+    public string SearchText
+    {
+        get => searchText;
+        set
+        {
+            if (SetProperty(ref searchText, value)) RefreshVisiblePapers();
+        }
+    }
+
+    public string Status
+    {
+        get => status;
+        set => SetProperty(ref status, value);
+    }
+
+    public bool IsRefreshing
+    {
+        get => isRefreshing;
+        set => SetProperty(ref isRefreshing, value);
+    }
 
     public ObservableCollection<FeedConfig> Feeds { get; } = [];
     public ObservableCollection<StoredPaper> Papers { get; } = [];
@@ -59,9 +95,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         repository.SetFavorite(SelectedPaper.Candidate.StableId, !SelectedPaper.IsFavorite);
         Load();
     }
-
-    partial void OnSelectedFeedChanged(FeedConfig? value) => RefreshVisiblePapers();
-    partial void OnSearchTextChanged(string value) => RefreshVisiblePapers();
 
     private void Load()
     {
