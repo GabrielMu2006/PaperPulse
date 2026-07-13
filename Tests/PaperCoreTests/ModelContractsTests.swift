@@ -225,4 +225,31 @@ final class ModelContractsTests: XCTestCase {
         XCTAssertEqual(localFile.sha256, "")
         XCTAssertEqual(summary.anchors, [])
     }
+
+    func testSharedPhaseOneFixturePreservesFeedMigrationAndPaperIdentity() throws {
+        struct Fixture: Decodable {
+            let feed: FeedConfig
+            let candidate: PaperCandidate
+        }
+
+        guard let url = Bundle.module.url(forResource: "phase1_core_contract", withExtension: "json") else {
+            XCTFail("Missing shared Phase 1 contract fixture.")
+            return
+        }
+
+        let fixture = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url))
+
+        XCTAssertEqual(fixture.feed.enabledSources, [.arxiv, .openAlex])
+        XCTAssertEqual(fixture.feed.lookbackDays, 7)
+        XCTAssertEqual(fixture.candidate.title, "Agent Paper")
+        XCTAssertEqual(fixture.candidate.summary, "A reliable summary.")
+        XCTAssertEqual(fixture.candidate.authors, ["Ada Lovelace", "Grace Hopper"])
+        XCTAssertEqual(fixture.candidate.stableID, "doi:10.1000/example")
+        XCTAssertEqual(fixture.candidate.publishedAt?.timeIntervalSinceReferenceDate, 0)
+        XCTAssertEqual(fixture.candidate.provenance.first?.retrievedAt?.timeIntervalSinceReferenceDate, 1.5)
+        XCTAssertEqual(fixture.candidate.openAccessEvidence?.status, .verified)
+        XCTAssertEqual(fixture.candidate.openAccessEvidence?.source, .unpaywall)
+        XCTAssertEqual(fixture.candidate.openAccessEvidence?.url, URL(string: "https://repository.example/paper.pdf"))
+        XCTAssertEqual(fixture.candidate.openAccessEvidence?.verifiedAt?.timeIntervalSinceReferenceDate, 2)
+    }
 }

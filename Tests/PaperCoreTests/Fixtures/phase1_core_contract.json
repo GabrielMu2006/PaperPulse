@@ -1,0 +1,32 @@
+{
+  "feed": {
+    "id": "11111111-1111-1111-1111-111111111111",
+    "name": "Agents",
+    "enabledSources": ["arxiv", "semanticScholar", "openAlex"]
+  },
+  "candidate": {
+    "source": "arxiv",
+    "sourceID": "2607.00003v1",
+    "baseID": "2607.00003",
+    "doi": "10.1000/EXAMPLE",
+    "title": "  Agent\n\tPaper  ",
+    "summary": "  A  reliable \n summary. ",
+    "authors": [" Ada  Lovelace ", " ", "\tGrace Hopper"],
+    "publishedAt": 0,
+    "provenance": [
+      {
+        "source": "openAlex",
+        "sourceID": "W123",
+        "sourceURL": "https://openalex.org/W123",
+        "retrievedAt": 1.5
+      }
+    ],
+    "openAccessEvidence": {
+      "status": "verified",
+      "source": "unpaywall",
+      "url": "https://repository.example/paper.pdf",
+      "license": "CC-BY-4.0",
+      "verifiedAt": 2
+    }
+  }
+}
