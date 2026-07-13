@@ -2,7 +2,8 @@
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  IgnorableNamespaces="uap">
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap rescap">
   <Identity Name="PaperPulse.Windows" Publisher="CN=PaperPulse Development" Version="0.1.0.0" ProcessorArchitecture="x64" />
   <Properties>
     <DisplayName>PaperPulse</DisplayName>
@@ -15,6 +16,9 @@
   <Resources>
     <Resource Language="x-generate" />
   </Resources>
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
       <uap:VisualElements
