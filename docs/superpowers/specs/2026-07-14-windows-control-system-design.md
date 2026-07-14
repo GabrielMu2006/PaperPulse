@@ -48,6 +48,18 @@ The icon is immediately left of the title block, vertically centered with it, an
 
 All existing TextBox, ComboBox, NumberBox, PasswordBox, CheckBox, and action controls in these dialogs consume the new shared styles. Inputs must visually read as PaperPulse controls, not as gray native rectangles embedded in a custom modal.
 
+### Post-CI Dialog Refinement
+
+The modal frame may remain centered while its content still reads as left-weighted. Feed Editor and Settings therefore use a fixed-width content column with `HorizontalAlignment="Center"`; their header, form sections, and footer actions share this visual axis. The scroll rail stays at the dialog edge and must not define the content alignment.
+
+`ComboBox` receives a full PaperPulse template built from the WinUI named-part contract. Its popup is a dark glass surface aligned to the input width, with a 1 px glass stroke, restrained shadow, compact option rows, low-contrast hover, and a blue selection rail. It keeps the standard popup, keyboard navigation, focus, and `ComboBoxItem` selection semantics. Styling only ComboBoxItem rows is insufficient because it leaves the system popup chrome visible.
+
+The academic-source checkboxes use an explicit two-column template: a fixed 20 px indicator column followed by a content column. The source group uses a wrapping layout, so arXiv, OpenAlex, and Crossref cannot overlap or compress into one another at any supported dialog width.
+
+## Sidebar Text Constraints
+
+Each paper-row metadata line has two explicit columns: a shrinkable author column and an auto-sized date column. The author field is limited to one ellipsized line within the remaining width; the date may never overlay it. Title and brief keep their existing two-line limits. This is presentation-only and does not alter paper metadata or grouping.
+
 ## Workspace Splitter
 
 The reading workspace keeps an 8 px divider column and a centered 2 px x 48 px visual grip. A dedicated transparent drag surface fills the entire divider column from the workspace top to bottom; it owns pointer capture and resize calculations. The grip is only a visual affordance.
@@ -87,9 +99,10 @@ GitHub Windows CI must build, test, package, and upload the unsigned MSIX for th
 
 1. Drag the detail/PDF divider from its upper, middle, and lower thirds in normal and maximized windows.
 2. Select each feed with mouse and keyboard; only the selected row shows edit and delete, while every row retains its paper-plane action.
-3. Open New Subscription, Edit Subscription, and Settings; verify the icon-title header is left-aligned and every text, choice, numeric, secure, and checkbox control follows the PaperPulse control system.
-4. Verify text entry, selection, focus traversal, Save, Cancel, validation, and destructive confirmation still operate normally.
-5. Reconfirm favorite fill, English keyword library, and language save/restart acknowledgement.
+3. Open New Subscription, Edit Subscription, and Settings; verify the icon-title header, form column, and footer share a centered axis; every text, choice, numeric, secure, and checkbox control follows the PaperPulse control system.
+4. Open each language ComboBox and verify its popup is PaperPulse dark glass, not system gray. Verify source checkboxes remain separately readable and paper-row author/date text never overlaps.
+5. Verify text entry, selection, focus traversal, Save, Cancel, validation, and destructive confirmation still operate normally.
+6. Reconfirm favorite fill, English keyword library, and language save/restart acknowledgement.
 
 ## Non-goals
 
