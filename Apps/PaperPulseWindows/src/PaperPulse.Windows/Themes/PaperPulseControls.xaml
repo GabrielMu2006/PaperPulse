@@ -139,46 +139,6 @@
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
                     <Grid>
-                        <Grid.Resources>
-                            <Style x:Name="ClearButtonStyle" TargetType="Button">
-                                <Setter Property="MinWidth" Value="32" />
-                                <Setter Property="Padding" Value="0" />
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border
-                                                x:Name="ClearButtonSurface"
-                                                Background="{StaticResource GlassFillBrush}"
-                                                BorderBrush="{StaticResource GlassStrokeBrush}"
-                                                BorderThickness="{StaticResource OnePixelThickness}"
-                                                CornerRadius="{StaticResource SmallCornerRadius}">
-                                                <SymbolIcon
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{StaticResource ShellSecondaryTextBrush}"
-                                                    Symbol="Clear" />
-                                            </Border>
-                                            <VisualStateManager.VisualStateGroups>
-                                                <VisualStateGroup x:Name="ClearButtonStates">
-                                                    <VisualState x:Name="Normal" />
-                                                    <VisualState x:Name="PointerOver">
-                                                        <VisualState.Setters>
-                                                            <Setter Target="ClearButtonSurface.BorderBrush" Value="{StaticResource GlassStrokeStrongBrush}" />
-                                                        </VisualState.Setters>
-                                                    </VisualState>
-                                                    <VisualState x:Name="Pressed">
-                                                        <VisualState.Setters>
-                                                            <Setter Target="ClearButtonSurface.Opacity" Value="0.78" />
-                                                        </VisualState.Setters>
-                                                    </VisualState>
-                                                    <VisualState x:Name="Disabled" />
-                                                </VisualStateGroup>
-                                            </VisualStateManager.VisualStateGroups>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="TextBoxCommonStates">
                                 <VisualState x:Name="Normal" />
@@ -271,13 +231,15 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             Margin="4"
-                            Style="{StaticResource ClearButtonStyle}"
+                            Style="{StaticResource PaperPulseIconButtonStyle}"
                             Visibility="Collapsed"
                             AutomationProperties.AccessibilityView="Raw"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             FontSize="{TemplateBinding FontSize}"
-                            IsTabStop="False" />
+                            IsTabStop="False">
+                            <SymbolIcon Symbol="Clear" />
+                        </Button>
                         <ContentPresenter
                             x:Name="DescriptionPresenter"
                             Grid.Row="2"
