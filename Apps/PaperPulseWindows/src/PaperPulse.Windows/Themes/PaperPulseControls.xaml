@@ -122,17 +122,190 @@
     <Style TargetType="ToggleButton" BasedOn="{StaticResource PaperPulseToggleButtonStyle}" />
 
     <Style x:Key="PaperPulseInputStyle" TargetType="TextBox">
-        <Setter Property="Background" Value="#1AFFFFFF" />
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="Background" Value="{StaticResource InputSurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource GlassStrokeBrush}" />
         <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
         <Setter Property="CornerRadius" Value="{StaticResource InputCornerRadius}" />
         <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
         <Setter Property="PlaceholderForeground" Value="{StaticResource ShellSecondaryTextBrush}" />
         <Setter Property="SelectionHighlightColor" Value="#806B2BEB" />
+        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <Grid.Resources>
+                            <Style x:Name="ClearButtonStyle" TargetType="Button">
+                                <Setter Property="MinWidth" Value="32" />
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border
+                                                x:Name="ClearButtonSurface"
+                                                Background="{StaticResource GlassFillBrush}"
+                                                BorderBrush="{StaticResource GlassStrokeBrush}"
+                                                BorderThickness="{StaticResource OnePixelThickness}"
+                                                CornerRadius="{StaticResource SmallCornerRadius}">
+                                                <SymbolIcon
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{StaticResource ShellSecondaryTextBrush}"
+                                                    Symbol="Clear" />
+                                            </Border>
+                                            <VisualStateManager.VisualStateGroups>
+                                                <VisualStateGroup x:Name="ClearButtonStates">
+                                                    <VisualState x:Name="Normal" />
+                                                    <VisualState x:Name="PointerOver">
+                                                        <VisualState.Setters>
+                                                            <Setter Target="ClearButtonSurface.BorderBrush" Value="{StaticResource GlassStrokeStrongBrush}" />
+                                                        </VisualState.Setters>
+                                                    </VisualState>
+                                                    <VisualState x:Name="Pressed">
+                                                        <VisualState.Setters>
+                                                            <Setter Target="ClearButtonSurface.Opacity" Value="0.78" />
+                                                        </VisualState.Setters>
+                                                    </VisualState>
+                                                    <VisualState x:Name="Disabled" />
+                                                </VisualStateGroup>
+                                            </VisualStateManager.VisualStateGroups>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Grid.Resources>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="TextBoxCommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="BorderElement.Background" Value="{StaticResource InputSurfacePointerOverBrush}" />
+                                        <Setter Target="BorderElement.BorderBrush" Value="{StaticResource GlassStrokeStrongBrush}" />
+                                        <Setter Target="ContentElement.Foreground" Value="{StaticResource ShellTextBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Focused">
+                                    <VisualState.Setters>
+                                        <Setter Target="BorderElement.Background" Value="{StaticResource InputSurfaceFocusedBrush}" />
+                                        <Setter Target="BorderElement.BorderBrush" Value="{StaticResource InputBorderFocusedBrush}" />
+                                        <Setter Target="BorderElement.BorderThickness" Value="2" />
+                                        <Setter Target="ContentElement.Foreground" Value="{StaticResource ShellTextBrush}" />
+                                        <Setter Target="PlaceholderTextContentPresenter.Foreground" Value="{StaticResource ShellTextBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="BorderElement.Background" Value="{StaticResource InputDisabledBrush}" />
+                                        <Setter Target="BorderElement.Opacity" Value="0.55" />
+                                        <Setter Target="ContentElement.Foreground" Value="{StaticResource ShellDisabledTextBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="TextBoxButtonStates">
+                                <VisualState x:Name="ButtonCollapsed" />
+                                <VisualState x:Name="ButtonVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="DeleteButton.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ContentPresenter
+                            x:Name="HeaderContentPresenter"
+                            Grid.ColumnSpan="2"
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}"
+                            Foreground="{StaticResource ShellSecondaryTextBrush}"
+                            TextWrapping="Wrap"
+                            Visibility="Collapsed" />
+                        <Border
+                            x:Name="BorderElement"
+                            Grid.Row="1"
+                            Grid.ColumnSpan="2"
+                            MinHeight="{TemplateBinding MinHeight}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Control.IsTemplateFocusTarget="True" />
+                        <ScrollViewer
+                            x:Name="ContentElement"
+                            Grid.Row="1"
+                            Margin="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Foreground="{TemplateBinding Foreground}"
+                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                            IsTabStop="False"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                            VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                            ZoomMode="Disabled" />
+                        <TextBlock
+                            x:Name="PlaceholderTextContentPresenter"
+                            Grid.Row="1"
+                            Grid.ColumnSpan="2"
+                            Margin="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            Foreground="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={StaticResource ShellSecondaryTextBrush}}"
+                            IsHitTestVisible="False"
+                            Text="{TemplateBinding PlaceholderText}"
+                            TextAlignment="{TemplateBinding TextAlignment}"
+                            TextWrapping="{TemplateBinding TextWrapping}" />
+                        <Button
+                            x:Name="DeleteButton"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="4"
+                            Style="{StaticResource ClearButtonStyle}"
+                            Visibility="Collapsed"
+                            AutomationProperties.AccessibilityView="Raw"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            FontSize="{TemplateBinding FontSize}"
+                            IsTabStop="False" />
+                        <ContentPresenter
+                            x:Name="DescriptionPresenter"
+                            Grid.Row="2"
+                            Grid.ColumnSpan="2"
+                            Content="{TemplateBinding Description}"
+                            Foreground="{StaticResource ShellSecondaryTextBrush}"
+                            AutomationProperties.AccessibilityView="Raw"
+                            x:Load="False" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PaperPulsePasswordBoxStyle" TargetType="PasswordBox">
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="Background" Value="{StaticResource InputSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource GlassStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
+        <Setter Property="CornerRadius" Value="{StaticResource InputCornerRadius}" />
+        <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
+        <Setter Property="PlaceholderForeground" Value="{StaticResource ShellSecondaryTextBrush}" />
     </Style>
 
     <Style x:Key="PaperPulseComboBoxStyle" TargetType="ComboBox">
-        <Setter Property="Background" Value="#1AFFFFFF" />
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="Background" Value="{StaticResource InputSurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource GlassStrokeBrush}" />
         <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
         <Setter Property="CornerRadius" Value="{StaticResource InputCornerRadius}" />
@@ -141,12 +314,87 @@
     </Style>
 
     <Style x:Key="PaperPulseNumberBoxStyle" TargetType="NumberBox">
-        <Setter Property="Background" Value="#1AFFFFFF" />
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="Background" Value="{StaticResource InputSurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource GlassStrokeBrush}" />
         <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
         <Setter Property="CornerRadius" Value="{StaticResource InputCornerRadius}" />
         <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
     </Style>
+
+    <Style x:Key="PaperPulseCheckBoxStyle" TargetType="CheckBox">
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid ColumnSpacing="8">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CheckBoxCommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="CheckSurface.BorderBrush" Value="{StaticResource GlassStrokeStrongBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Opacity" Value="0.5" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="CheckBoxStates">
+                                <VisualState x:Name="Unchecked" />
+                                <VisualState x:Name="Checked">
+                                    <VisualState.Setters>
+                                        <Setter Target="CheckSurface.Background" Value="{StaticResource PulseAccentBrush}" />
+                                        <Setter Target="CheckSurface.BorderBrush" Value="{StaticResource PulseMagentaBrush}" />
+                                        <Setter Target="CheckGlyph.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Indeterminate">
+                                    <VisualState.Setters>
+                                        <Setter Target="CheckSurface.Background" Value="{StaticResource PulseAccentBrush}" />
+                                        <Setter Target="IndeterminateGlyph.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="CheckBoxFocusStates">
+                                <VisualState x:Name="Focused">
+                                    <VisualState.Setters>
+                                        <Setter Target="CheckSurface.BorderBrush" Value="{StaticResource InputBorderFocusedBrush}" />
+                                        <Setter Target="CheckSurface.BorderThickness" Value="2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Unfocused" />
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Border
+                            x:Name="CheckSurface"
+                            Width="20"
+                            Height="20"
+                            Background="{StaticResource InputSurfaceBrush}"
+                            BorderBrush="{StaticResource GlassStrokeBrush}"
+                            BorderThickness="{StaticResource OnePixelThickness}"
+                            CornerRadius="{StaticResource SmallCornerRadius}">
+                            <Grid>
+                                <SymbolIcon x:Name="CheckGlyph" Symbol="Accept" Foreground="White" Visibility="Collapsed" />
+                                <SymbolIcon x:Name="IndeterminateGlyph" Symbol="Remove" Foreground="White" Visibility="Collapsed" />
+                            </Grid>
+                        </Border>
+                        <ContentPresenter
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Foreground="{TemplateBinding Foreground}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="CheckBox" BasedOn="{StaticResource PaperPulseCheckBoxStyle}" />
 
     <Style x:Key="PaperPulseFormSectionStyle" TargetType="Border">
         <Setter Property="Background" Value="#0FFFFFFF" />

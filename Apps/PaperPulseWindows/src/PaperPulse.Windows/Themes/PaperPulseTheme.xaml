@@ -24,6 +24,21 @@
             <SolidColorBrush x:Key="ListViewItemForegroundSelectedPointerOver" Color="#FFF9FC" />
             <SolidColorBrush x:Key="ListViewItemForegroundSelectedPressed" Color="#FFF9FC" />
             <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#EB1FA3" />
+            <SolidColorBrush x:Key="TextControlBackground" Color="#171923" />
+            <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#202332" />
+            <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#252035" />
+            <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="#0CFFFFFF" />
+            <SolidColorBrush x:Key="TextControlBorderBrush" Color="#29FFFFFF" />
+            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#4DFFFFFF" />
+            <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="#14FFFFFF" />
+            <SolidColorBrush x:Key="TextControlForeground" Color="#FFF9FC" />
+            <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#FFF9FC" />
+            <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FFF9FC" />
+            <SolidColorBrush x:Key="TextControlForegroundDisabled" Color="#7A7281" />
+            <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#C7C0CB" />
+            <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#C7C0CB" />
+            <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#FFF9FC" />
+            <SolidColorBrush x:Key="TextControlPlaceholderForegroundDisabled" Color="#7A7281" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -56,6 +71,11 @@
     <SolidColorBrush x:Key="ShellSecondaryTextBrush" Color="#C7C0CB" />
     <SolidColorBrush x:Key="ShellDisabledTextBrush" Color="#7A7281" />
     <SolidColorBrush x:Key="DangerBrush" Color="#FF6B72" />
+    <SolidColorBrush x:Key="InputSurfaceBrush" Color="#171923" />
+    <SolidColorBrush x:Key="InputSurfacePointerOverBrush" Color="#202332" />
+    <SolidColorBrush x:Key="InputSurfaceFocusedBrush" Color="#252035" />
+    <SolidColorBrush x:Key="InputBorderFocusedBrush" Color="#EB1FA3" />
+    <SolidColorBrush x:Key="InputDisabledBrush" Color="#0CFFFFFF" />
 
     <LinearGradientBrush x:Key="ShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
         <GradientStop Offset="0" Color="#05030F" />
