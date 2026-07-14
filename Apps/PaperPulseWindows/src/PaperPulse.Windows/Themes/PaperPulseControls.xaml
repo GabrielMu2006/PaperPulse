@@ -280,7 +280,85 @@
     <Style x:Key="PaperPulseComboBoxItemStyle" TargetType="ComboBoxItem">
         <Setter Property="MinHeight" Value="36" />
         <Setter Property="Padding" Value="10,7" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBoxItem">
+                    <Border
+                        x:Name="ItemRoot"
+                        Margin="2,1"
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{StaticResource SmallCornerRadius}">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="ItemRoot.Background" Value="{ThemeResource ComboBoxItemBackgroundPointerOver}" />
+                                        <Setter Target="ItemRoot.BorderBrush" Value="{ThemeResource ComboBoxItemBorderBrushPointerOver}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="ItemRoot.Background" Value="{ThemeResource ComboBoxItemBackgroundDisabled}" />
+                                        <Setter Target="ItemRoot.BorderBrush" Value="{ThemeResource ComboBoxItemBorderBrushDisabled}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="ItemRoot.Background" Value="{ThemeResource ComboBoxItemBackgroundPressed}" />
+                                        <Setter Target="ItemRoot.BorderBrush" Value="{ThemeResource ComboBoxItemBorderBrushPressed}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter Target="ItemRoot.Background" Value="{ThemeResource ComboBoxItemBackgroundSelected}" />
+                                        <Setter Target="ItemRoot.BorderBrush" Value="{ThemeResource ComboBoxItemBorderBrushSelected}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="SelectedUnfocused">
+                                    <VisualState.Setters>
+                                        <Setter Target="ItemRoot.Background" Value="{ThemeResource ComboBoxItemBackgroundSelectedUnfocused}" />
+                                        <Setter Target="ItemRoot.BorderBrush" Value="{ThemeResource ComboBoxItemBorderBrushSelectedUnfocused}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="SelectedDisabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="ItemRoot.Background" Value="{ThemeResource ComboBoxItemBackgroundDisabled}" />
+                                        <Setter Target="ItemRoot.BorderBrush" Value="{ThemeResource ComboBoxItemBorderBrushDisabled}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="SelectedPointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="ItemRoot.Background" Value="{ThemeResource ComboBoxItemBackgroundSelectedPointerOver}" />
+                                        <Setter Target="ItemRoot.BorderBrush" Value="{ThemeResource ComboBoxItemBorderBrushSelectedPointerOver}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="SelectedPressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="ItemRoot.Background" Value="{ThemeResource ComboBoxItemBackgroundSelectedPressed}" />
+                                        <Setter Target="ItemRoot.BorderBrush" Value="{ThemeResource ComboBoxItemBorderBrushSelectedPressed}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <ContentPresenter
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Foreground="{TemplateBinding Foreground}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="PaperPulseNumberBoxStyle" TargetType="NumberBox">

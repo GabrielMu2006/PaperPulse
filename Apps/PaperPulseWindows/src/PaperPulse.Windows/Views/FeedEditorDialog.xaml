@@ -11,7 +11,7 @@
     PrimaryButtonText="Save subscription"
     Style="{StaticResource PaperPulseDialogStyle}">
     <ScrollViewer MaxHeight="620" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Width="620" Margin="24" HorizontalAlignment="Center" Spacing="16">
+        <StackPanel Width="620" Margin="24" Spacing="16">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="38" />
@@ -88,7 +88,11 @@
                     </StackPanel>
                     <StackPanel Grid.Column="1" Spacing="8">
                         <TextBlock x:Uid="FeedEditorLookback" Text="Lookback days" FontWeight="SemiBold" />
-                        <NumberBox x:Name="LookbackDaysBox" Minimum="1" Maximum="365" SpinButtonPlacementMode="Compact" Style="{StaticResource PaperPulseNumberBoxStyle}" />
+                        <TextBox
+                            x:Name="LookbackDaysBox"
+                            BeforeTextChanging="LookbackDaysBox_BeforeTextChanging"
+                            PlaceholderText="7"
+                            Style="{StaticResource PaperPulseInputStyle}" />
                     </StackPanel>
                 </Grid>
             </Border>

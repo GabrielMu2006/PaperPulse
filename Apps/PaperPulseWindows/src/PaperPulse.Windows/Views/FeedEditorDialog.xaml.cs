@@ -31,7 +31,7 @@ public sealed partial class FeedEditorDialog : ContentDialog
         OpenAlexCheckBox.IsChecked = Enabled(feed, PaperSourceKind.OpenAlex);
         CrossrefCheckBox.IsChecked = Enabled(feed, PaperSourceKind.Crossref);
         DailyLimitBox.Value = Clamp(feed?.AuthorityPolicy.DailyLimit ?? 8, 1, 10);
-        LookbackDaysBox.Value = Clamp(feed?.LookbackDays ?? 7, 1, 365);
+        LookbackDaysBox.Text = Clamp(feed?.LookbackDays ?? 7, 1, 365).ToString();
     }
 
     private void Save_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -65,8 +65,13 @@ public sealed partial class FeedEditorDialog : ContentDialog
             RequiredVenues = Split(VenuesBox.Text),
             EnabledSources = sources,
             AuthorityPolicy = authority,
-            LookbackDays = Clamp(LookbackDaysBox.Value, 1, 365)
+            LookbackDays = Clamp(LookbackDaysBox.Text, 1, 365)
         };
+    }
+
+    private void LookbackDaysBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+    {
+        args.Cancel = args.NewText.Any(character => !char.IsAsciiDigit(character));
     }
 
     private static bool Enabled(FeedConfig? feed, PaperSourceKind source) => feed?.EnabledSources.Contains(source) ?? true;
@@ -80,4 +85,8 @@ public sealed partial class FeedEditorDialog : ContentDialog
     private static int Clamp(double value, int minimum, int maximum) => double.IsNaN(value)
         ? minimum
         : Math.Clamp((int)Math.Round(value), minimum, maximum);
+
+    private static int Clamp(string value, int minimum, int maximum) => int.TryParse(value, out int parsed)
+        ? Math.Clamp(parsed, minimum, maximum)
+        : minimum;
 }
