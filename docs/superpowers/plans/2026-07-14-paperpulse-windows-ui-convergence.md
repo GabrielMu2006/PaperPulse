@@ -241,9 +241,9 @@ Expected: portable tests pass; Windows presentation tests are deferred to GitHub
 - [x] Include name, arXiv categories, OR keywords, exclusions, institutions, venues, arXiv/OpenAlex/Crossref toggles, daily limit clamped to `1...10`, and lookback days.
 - [x] State that empty institution/venue means any while authority evaluation still runs.
 - [x] Build the settings shell with language, keyword library, status, and storage. Task 7 inserts the complete model-configuration section between keyword library and status; do not show an inert model panel before then.
-- [ ] Localize all user-facing Windows strings; retain source, model, and protocol proper names.
+- [x] Localize all user-facing Windows strings; retain source, model, and protocol proper names.
 - [ ] Verify long Chinese and English labels wrap without resizing stable toolbar controls.
-- [ ] Commit this task as `feat: complete windows editors and localization`.
+- [x] Commit this task as `feat: complete windows editors and localization`.
 
 **Acceptance:** Feed editing no longer loses contract fields, UI and summary languages are independent, the shell has no obvious mixed-language fixed strings, and no API key leaves PasswordVault.
 
