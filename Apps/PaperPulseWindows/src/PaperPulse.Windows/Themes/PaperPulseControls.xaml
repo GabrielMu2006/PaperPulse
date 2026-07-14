@@ -271,7 +271,16 @@
         <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
         <Setter Property="CornerRadius" Value="{StaticResource InputCornerRadius}" />
         <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
-        <Setter Property="Padding" Value="10,5" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="MaxDropDownHeight" Value="320" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+
+    <Style x:Key="PaperPulseComboBoxItemStyle" TargetType="ComboBoxItem">
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Padding" Value="10,7" />
+        <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
     </Style>
 
     <Style x:Key="PaperPulseNumberBoxStyle" TargetType="NumberBox">
@@ -290,6 +299,10 @@
             <Setter.Value>
                 <ControlTemplate TargetType="CheckBox">
                     <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CheckBoxCommonStates">
                                 <VisualState x:Name="Normal" />

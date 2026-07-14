@@ -10,7 +10,7 @@
     PrimaryButtonStyle="{StaticResource PaperPulseProminentButtonStyle}"
     Style="{StaticResource PaperPulseDialogStyle}">
     <ScrollViewer MaxHeight="620" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Width="560" Margin="24" Spacing="16">
+        <StackPanel Width="560" Margin="24" HorizontalAlignment="Center" Spacing="16">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="38" />
@@ -37,12 +37,12 @@
                 <StackPanel Spacing="8">
                     <TextBlock x:Uid="SettingsLanguageHeading" Text="Language" FontSize="20" FontWeight="SemiBold" />
                     <TextBlock x:Uid="SettingsInterfaceLanguage" Text="Interface language" FontWeight="SemiBold" />
-                    <ComboBox x:Name="UiLanguageBox" SelectedIndex="0" Style="{StaticResource PaperPulseComboBoxStyle}">
+                    <ComboBox x:Name="UiLanguageBox" ItemContainerStyle="{StaticResource PaperPulseComboBoxItemStyle}" SelectedIndex="0" Style="{StaticResource PaperPulseComboBoxStyle}">
                         <ComboBoxItem x:Uid="SettingsEnglish" Content="English" Tag="en-US" />
                         <ComboBoxItem x:Uid="SettingsChinese" Content="Chinese" Tag="zh-CN" />
                     </ComboBox>
                     <TextBlock x:Uid="SettingsBriefLanguage" Text="Brief language" FontWeight="SemiBold" />
-                    <ComboBox x:Name="SummaryLanguageBox" SelectedIndex="0" Style="{StaticResource PaperPulseComboBoxStyle}">
+                    <ComboBox x:Name="SummaryLanguageBox" ItemContainerStyle="{StaticResource PaperPulseComboBoxItemStyle}" SelectedIndex="0" Style="{StaticResource PaperPulseComboBoxStyle}">
                         <ComboBoxItem x:Uid="SettingsBriefEnglish" Content="English" Tag="en-US" />
                         <ComboBoxItem x:Uid="SettingsBriefChinese" Content="Chinese" Tag="zh-CN" />
                     </ComboBox>

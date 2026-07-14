@@ -39,6 +39,34 @@
             <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#C7C0CB" />
             <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#FFF9FC" />
             <SolidColorBrush x:Key="TextControlPlaceholderForegroundDisabled" Color="#7A7281" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#171923" />
+            <SolidColorBrush x:Key="ComboBoxDropDownForeground" Color="#FFF9FC" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#4DFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxItemBackground" Color="#00171923" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#1FFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundPressed" Color="#332D7FF9" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#263AAFEA" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedUnfocused" Color="#1C3AAFEA" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPressed" Color="#403AAFEA" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#333AAFEA" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundDisabled" Color="#0CFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxItemBorderBrush" Color="#00000000" />
+            <SolidColorBrush x:Key="ComboBoxItemBorderBrushPointerOver" Color="#00000000" />
+            <SolidColorBrush x:Key="ComboBoxItemBorderBrushPressed" Color="#00000000" />
+            <SolidColorBrush x:Key="ComboBoxItemBorderBrushSelected" Color="#3A3AAFEA" />
+            <SolidColorBrush x:Key="ComboBoxItemBorderBrushSelectedUnfocused" Color="#2A3AAFEA" />
+            <SolidColorBrush x:Key="ComboBoxItemBorderBrushSelectedPressed" Color="#4A3AAFEA" />
+            <SolidColorBrush x:Key="ComboBoxItemBorderBrushSelectedPointerOver" Color="#4A3AAFEA" />
+            <SolidColorBrush x:Key="ComboBoxItemBorderBrushDisabled" Color="#00000000" />
+            <SolidColorBrush x:Key="ComboBoxItemForeground" Color="#FFF9FC" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundPointerOver" Color="#FFF9FC" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundPressed" Color="#FFF9FC" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#FFF9FC" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedUnfocused" Color="#FFF9FC" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPressed" Color="#FFF9FC" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPointerOver" Color="#FFF9FC" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedDisabled" Color="#7A7281" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundDisabled" Color="#7A7281" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
