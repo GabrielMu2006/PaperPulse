@@ -18,5 +18,14 @@
             <ComboBoxItem Content="English" Tag="en-US" />
             <ComboBoxItem Content="Chinese" Tag="zh-CN" />
         </ComboBox>
+        <TextBlock Text="Keyword library" FontWeight="SemiBold" />
+        <TextBox x:Name="KeywordLibraryBox" AcceptsReturn="True" MinHeight="84" PlaceholderText="agent, retrieval, multimodal" TextWrapping="Wrap" />
+        <TextBlock Text="Storage" FontSize="20" FontWeight="SemiBold" />
+        <Button Click="ClearUnclassified_Click" HorizontalAlignment="Left" Style="{StaticResource PaperPulseDestructiveButtonStyle}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <SymbolIcon Symbol="Delete" />
+                <TextBlock Text="Clear unclassified papers" />
+            </StackPanel>
+        </Button>
     </StackPanel>
 </ContentDialog>

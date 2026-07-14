@@ -28,6 +28,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private bool isInitialized;
     private string uiLanguage = "en-US";
     private string summaryLanguage = "en-US";
+    private string keywordLibraryText = string.Empty;
     private double workspaceSplitRatio = WorkspaceSplitState.DefaultRatio;
     private IReadOnlyDictionary<Guid, IReadOnlySet<string>> paperIdsByFeed = new Dictionary<Guid, IReadOnlySet<string>>();
     private IReadOnlySet<string> unclassifiedPaperIds = EmptyPaperIds;
@@ -123,6 +124,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
         set => SetProperty(ref summaryLanguage, value);
     }
 
+    public string KeywordLibraryText
+    {
+        get => keywordLibraryText;
+        set => SetProperty(ref keywordLibraryText, value);
+    }
+
     public double WorkspaceSplitRatio
     {
         get => workspaceSplitRatio;
@@ -151,19 +158,41 @@ public sealed partial class MainWindowViewModel : ObservableObject
         WorkspaceSplitRatio = await Task.Run(() => WorkspaceSplitState.Parse(repository.GetSetting("splitRatio")));
         UiLanguage = await Task.Run(() => repository.GetSetting("uiLanguage") ?? "en-US");
         SummaryLanguage = await Task.Run(() => repository.GetSetting("summaryLanguage") ?? "en-US");
+        KeywordLibraryText = await Task.Run(() => repository.GetSetting("keywordLibrary") ?? string.Empty);
         await ReloadAsync();
     }
 
-    public async Task SaveLanguageSettingsAsync(string uiLanguage, string summaryLanguage)
+    public async Task SaveSettingsAsync(string uiLanguage, string summaryLanguage, string keywordLibrary)
     {
         UiLanguage = uiLanguage;
         SummaryLanguage = summaryLanguage;
+        KeywordLibraryText = keywordLibrary;
         await Task.Run(() =>
         {
             repository.SetSetting("uiLanguage", UiLanguage);
             repository.SetSetting("summaryLanguage", SummaryLanguage);
+            repository.SetSetting("keywordLibrary", KeywordLibraryText);
         });
         Status = "Saved settings.";
+    }
+
+    public async Task<int> ClearUnclassifiedPapersAsync()
+    {
+        ClearedUnclassifiedPapers cleared = await Task.Run(repository.ClearUnclassifiedPapers);
+        await Task.Run(() =>
+        {
+            foreach (StoredPaper paper in cleared.Papers)
+            {
+                if (paper.PdfRelativePath is { Length: > 0 } path) fileStore.DeleteRelativeFile(path);
+            }
+            foreach (StoredSummary summary in cleared.Summaries)
+            {
+                if (summary.MarkdownRelativePath is { Length: > 0 } path) fileStore.DeleteRelativeFile(path);
+            }
+        });
+        await ReloadAsync();
+        Status = cleared.Papers.Count == 0 ? "No unclassified papers to clear." : $"Cleared {cleared.Papers.Count} unclassified papers.";
+        return cleared.Papers.Count;
     }
 
     public async Task SaveWorkspaceSplitRatioAsync(double ratio)

@@ -7,6 +7,7 @@ namespace PaperPulse.Storage;
 public sealed record class StoredPaper(PaperCandidate Candidate, string? PdfRelativePath, string? PdfSha256, DateTimeOffset CreatedAt, bool IsFavorite);
 public sealed record class StoredSummary(Guid Id, string PaperId, string Kind, string MetadataJson, string? MarkdownRelativePath);
 public sealed record class StoredProfileConfiguration(Guid Id, string ConfigurationJson);
+public sealed record class ClearedUnclassifiedPapers(IReadOnlyList<StoredPaper> Papers, IReadOnlyList<StoredSummary> Summaries);
 
 public sealed class SqlitePaperPulseRepository
 {
@@ -109,11 +110,40 @@ public sealed class SqlitePaperPulseRepository
         Execute(connection, "DELETE FROM feeds WHERE id=$id;", "$id", feedId.ToString("D"), transaction: transaction); transaction.Commit();
     }
 
-    public int ClearUnclassifiedPapers()
+    public ClearedUnclassifiedPapers ClearUnclassifiedPapers()
     {
-        Initialize(); using SqliteConnection connection = Open(); connection.Open();
-        using SqliteCommand command = connection.CreateCommand(); command.CommandText = "DELETE FROM papers WHERE NOT EXISTS (SELECT 1 FROM feed_papers fp INNER JOIN feeds f ON f.id=fp.feed_id WHERE fp.paper_id=papers.id);";
-        return command.ExecuteNonQuery();
+        Initialize(); using SqliteConnection connection = Open(); connection.Open(); using SqliteTransaction transaction = connection.BeginTransaction();
+        const string unclassified = "SELECT id,candidate_json,pdf_relative_path,pdf_sha256,created_at,is_favorite FROM papers WHERE NOT EXISTS (SELECT 1 FROM feed_papers fp INNER JOIN feeds f ON f.id=fp.feed_id WHERE fp.paper_id=papers.id);";
+        List<StoredPaper> papers = [];
+        List<string> paperIds = [];
+        using (SqliteCommand command = connection.CreateCommand())
+        {
+            command.Transaction = transaction; command.CommandText = unclassified;
+            using SqliteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                PaperCandidate candidate = System.Text.Json.JsonSerializer.Deserialize<PaperCandidate>(reader.GetString(1), PaperPulseJson.Options)!;
+                papers.Add(new StoredPaper(candidate, reader.IsDBNull(2) ? null : reader.GetString(2), reader.IsDBNull(3) ? null : reader.GetString(3), DateTimeOffset.Parse(reader.GetString(4), CultureInfo.InvariantCulture), reader.GetInt64(5) != 0));
+                paperIds.Add(reader.GetString(0));
+            }
+        }
+
+        List<StoredSummary> summaries = [];
+        foreach (string paperId in paperIds)
+        {
+            using SqliteCommand command = connection.CreateCommand();
+            command.Transaction = transaction; command.CommandText = "SELECT id,paper_id,metadata_json,markdown_relative_path FROM summaries WHERE paper_id=$paper;"; command.Parameters.AddWithValue("$paper", paperId);
+            using SqliteDataReader reader = command.ExecuteReader();
+            while (reader.Read()) summaries.Add(new StoredSummary(Guid.Parse(reader.GetString(0)), reader.GetString(1), "", reader.GetString(2), reader.IsDBNull(3) ? null : reader.GetString(3)));
+        }
+
+        foreach (string paperId in paperIds)
+        {
+            Execute(connection, "DELETE FROM summaries WHERE paper_id=$paper;", "$paper", paperId, transaction: transaction);
+            Execute(connection, "DELETE FROM papers WHERE id=$paper;", "$paper", paperId, transaction: transaction);
+        }
+        transaction.Commit();
+        return new ClearedUnclassifiedPapers(papers, summaries);
     }
 
     public void SaveSummary(StoredSummary summary)

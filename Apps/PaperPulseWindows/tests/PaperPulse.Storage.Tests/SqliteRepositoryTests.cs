@@ -28,7 +28,9 @@ public sealed class SqliteRepositoryTests : IDisposable
         Assert.Empty(repository.UnclassifiedPaperIds());
         repository.DeleteFeed(second.Id);
         Assert.Equal(new[] { candidate.StableId }, repository.UnclassifiedPaperIds());
-        Assert.Equal(1, repository.ClearUnclassifiedPapers());
+        ClearedUnclassifiedPapers cleared = repository.ClearUnclassifiedPapers();
+        Assert.Single(cleared.Papers);
+        Assert.Equal(candidate.StableId, cleared.Papers[0].Candidate.StableId);
         Assert.Empty(repository.LoadPapers());
     }
 

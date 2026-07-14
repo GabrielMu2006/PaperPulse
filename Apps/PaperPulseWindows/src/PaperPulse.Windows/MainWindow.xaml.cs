@@ -40,8 +40,35 @@ public sealed partial class MainWindow : Window
 
     private async void LibrarySidebar_SettingsRequested(object sender, EventArgs e)
     {
-        SettingsDialog dialog = new(ViewModel.UiLanguage, ViewModel.SummaryLanguage) { XamlRoot = ((FrameworkElement)Content).XamlRoot };
-        if (await dialog.ShowAsync() == ContentDialogResult.Primary) await ViewModel.SaveLanguageSettingsAsync(dialog.UiLanguage, dialog.SummaryLanguage);
+        SettingsDialog dialog = new(ViewModel.UiLanguage, ViewModel.SummaryLanguage, ViewModel.KeywordLibraryText)
+        {
+            XamlRoot = ((FrameworkElement)Content).XamlRoot
+        };
+        if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+        {
+            await ViewModel.SaveSettingsAsync(dialog.UiLanguage, dialog.SummaryLanguage, dialog.KeywordLibrary);
+        }
+        else if (dialog.ClearUnclassifiedRequested)
+        {
+            await ConfirmClearUnclassifiedAsync();
+        }
+    }
+
+    private async Task ConfirmClearUnclassifiedAsync()
+    {
+        ContentDialog confirmation = new()
+        {
+            XamlRoot = ((FrameworkElement)Content).XamlRoot,
+            Title = "Clear unclassified papers?",
+            Content = "This deletes unclassified papers, their local PDFs, and their saved interpretations.",
+            PrimaryButtonText = "Clear",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close
+        };
+        if (await confirmation.ShowAsync() == ContentDialogResult.Primary)
+        {
+            await ViewModel.ClearUnclassifiedPapersAsync();
+        }
     }
 
     private async void LibrarySidebar_EditFeedRequested(object sender, FeedRequestEventArgs e) => await EditFeedAsync(e.Feed);
