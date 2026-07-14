@@ -1,7 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using PaperPulse.Contracts;
-using PaperPulse.Storage;
 
 namespace PaperPulse.Windows.Views;
 
@@ -15,7 +14,6 @@ public sealed partial class LibrarySidebar : UserControl
     public event EventHandler? AddFeedRequested;
     public event EventHandler<FeedRequestEventArgs>? EditFeedRequested;
     public event EventHandler<FeedRequestEventArgs>? DeleteFeedRequested;
-    public event EventHandler<PaperSelectionEventArgs>? PaperSelected;
 
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
@@ -55,16 +53,10 @@ public sealed partial class LibrarySidebar : UserControl
     {
         if (sender is not ListView { SelectedItem: PaperLibraryItem item }) return;
         ViewModel?.SelectPaper(item.Paper);
-        PaperSelected?.Invoke(this, new PaperSelectionEventArgs(item.Paper));
     }
 }
 
 public sealed class FeedRequestEventArgs(FeedConfig feed) : EventArgs
 {
     public FeedConfig Feed { get; } = feed;
-}
-
-public sealed class PaperSelectionEventArgs(StoredPaper paper) : EventArgs
-{
-    public StoredPaper Paper { get; } = paper;
 }

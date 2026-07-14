@@ -2,9 +2,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using PaperPulse.Contracts;
-using PaperPulse.Storage;
 using PaperPulse.Windows.Presentation;
 using PaperPulse.Windows.Views;
+using Windows.System;
 
 namespace PaperPulse.Windows;
 
@@ -28,9 +28,13 @@ public sealed partial class MainWindow : Window
         });
     }
 
-    private async void Favorite_Click(object sender, RoutedEventArgs e) => await ViewModel.ToggleFavoriteAsync();
+    private async void PaperDetailPane_FavoriteRequested(object sender, EventArgs e) => await ViewModel.ToggleFavoriteAsync();
 
-    private async void OpenPdf_Click(object sender, RoutedEventArgs e) => await ShowSelectedPdfAsync();
+    private async void PaperDetailPane_SourceRequested(object sender, EventArgs e)
+    {
+        if (ViewModel.SelectedSourceUri is not { } sourceUri) return;
+        if (!await Launcher.LaunchUriAsync(sourceUri)) ViewModel.Status = "Could not open the source page.";
+    }
 
     private async void LibrarySidebar_AddFeedRequested(object sender, EventArgs e) => await EditFeedAsync(null);
 
@@ -51,11 +55,6 @@ public sealed partial class MainWindow : Window
         };
 
         if (await confirmation.ShowAsync() == ContentDialogResult.Primary) await ViewModel.DeleteSelectedFeedAsync();
-    }
-
-    private async void LibrarySidebar_PaperSelected(object sender, PaperSelectionEventArgs e)
-    {
-        await ShowSelectedPdfAsync();
     }
 
     private void WorkspaceSplitter_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -120,37 +119,6 @@ public sealed partial class MainWindow : Window
                 .ToList()
         };
         await ViewModel.SaveFeedAsync(feed);
-    }
-
-    private async Task ShowSelectedPdfAsync()
-    {
-        if (!ViewModel.HasSelectedPdf || ViewModel.SelectedPdfPath is not { } path)
-        {
-            HidePdfViewer();
-            return;
-        }
-
-        try
-        {
-            await PdfViewer.EnsureCoreWebView2Async();
-            PdfViewer.Source = new Uri(path);
-            PdfViewer.Visibility = Visibility.Visible;
-            PdfEmptyState.Visibility = Visibility.Collapsed;
-        }
-        catch (Exception)
-        {
-            PdfEmptyState.Text = "Could not open the local PDF. Push the subscription again to retry.";
-            PdfEmptyState.Visibility = Visibility.Visible;
-            PdfViewer.Visibility = Visibility.Collapsed;
-        }
-    }
-
-    private void HidePdfViewer()
-    {
-        PdfViewer.Source = null;
-        PdfViewer.Visibility = Visibility.Collapsed;
-        PdfEmptyState.Text = "This paper has no local PDF. Push its subscription again to retry.";
-        PdfEmptyState.Visibility = Visibility.Visible;
     }
 
     private void ApplyWorkspaceSplit(double ratio)

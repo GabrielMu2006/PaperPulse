@@ -205,13 +205,13 @@ Expected: portable tests pass; Windows presentation tests are deferred to GitHub
 - `PdfReaderPane` owns WebView2 initialization and the `NoSelection`, `Ready`, `MissingLegacyFile`, and `Unavailable` visual states. Feed-level download progress and failures remain with the feed row/run status.
 - WebView2 navigates only to the resolved local PDF path after successful storage.
 
-- [ ] Build a warm-paper identity surface with title, authors, source, venue, date, citation count, and a top-right gold favorite action.
+- [x] Build a warm-paper identity surface with title, authors, source, venue, date, citation count, and a top-right gold favorite action.
 - [ ] Build a separate warm-paper brief surface with one prominent full-reading action and explicit generation/error state.
-- [ ] Add a low-emphasis source-page action only when a source URL exists.
-- [ ] Make PDF occupy its full column height. Remove the fixed `Height="420"` viewer and the PDF-inside-detail-scroll layout.
-- [ ] Show one centered glass empty/failure surface when no local PDF exists; never leave the pane blank.
-- [ ] Bind the pane to `PaperPdfPresentation`. A normal stored paper opens its already-local PDF; a legacy metadata-only row explains that its feed must be pushed again and may expose the source-page action, but it does not restore a general download button.
-- [ ] Preserve local PDF display when selecting the same paper, resizing, maximizing, or toggling favorite.
+- [x] Add a low-emphasis source-page action only when a source URL exists.
+- [x] Make PDF occupy its full column height. Remove the fixed `Height="420"` viewer and the PDF-inside-detail-scroll layout.
+- [x] Show one centered glass empty/failure surface when no local PDF exists; never leave the pane blank.
+- [x] Bind the pane to `PaperPdfPresentation`. A normal stored paper opens its already-local PDF; a legacy metadata-only row explains that its feed must be pushed again and may expose the source-page action, but it does not restore a general download button.
+- [x] Preserve local PDF display when selecting the same paper, resizing, maximizing, or toggling favorite.
 - [ ] Commit this task as `feat: build windows paper workspace`.
 
 **Acceptance:** Paper identity and brief are scannable on warm paper surfaces, the PDF is an equal full-height work surface, new library rows already own local PDFs, legacy missing files are explained honestly, and a valid downloaded PDF opens in WebView2 without a separate normal download step.

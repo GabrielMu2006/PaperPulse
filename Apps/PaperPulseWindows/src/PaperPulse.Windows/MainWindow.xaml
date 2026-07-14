@@ -25,8 +25,7 @@
             <views:LibrarySidebar
                 AddFeedRequested="LibrarySidebar_AddFeedRequested"
                 DeleteFeedRequested="LibrarySidebar_DeleteFeedRequested"
-                EditFeedRequested="LibrarySidebar_EditFeedRequested"
-                PaperSelected="LibrarySidebar_PaperSelected" />
+                EditFeedRequested="LibrarySidebar_EditFeedRequested" />
         </Border>
 
         <Grid Grid.Column="1" x:Name="WorkspaceGrid">
@@ -36,53 +35,12 @@
                 <ColumnDefinition x:Name="PdfColumn" Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Margin="0,0,8,0" Style="{StaticResource PaperPulseGlassPanelStyle}">
-                <Grid RowSpacing="12">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid>
-                        <TextBlock
-                            Foreground="{StaticResource ShellTextBrush}"
-                            Text="Details"
-                            FontWeight="SemiBold" />
-                        <Button
-                            AutomationProperties.Name="Toggle favorite for selected paper"
-                            Click="Favorite_Click"
-                            HorizontalAlignment="Right"
-                            IsEnabled="{Binding HasSelectedPaper}"
-                            Style="{StaticResource PaperPulseIconButtonStyle}"
-                            ToolTipService.ToolTip="Toggle favorite for selected paper">
-                            <SymbolIcon Symbol="Favorite" />
-                        </Button>
-                    </Grid>
-                    <Button
-                        Grid.Row="1"
-                        AutomationProperties.Name="Open downloaded PDF"
-                        Click="OpenPdf_Click"
-                        HorizontalAlignment="Left"
-                        IsEnabled="{Binding HasSelectedPdf}"
-                        Style="{StaticResource PaperPulseIconButtonStyle}"
-                        ToolTipService.ToolTip="Open downloaded PDF">
-                        <SymbolIcon Symbol="OpenFile" />
-                    </Button>
-                    <ScrollViewer Grid.Row="2">
-                        <StackPanel Spacing="12">
-                            <TextBlock
-                                Foreground="{StaticResource ShellTextBrush}"
-                                Text="{Binding SelectedPaperTitle}"
-                                FontSize="20"
-                                TextWrapping="Wrap" />
-                            <TextBlock
-                                Foreground="{StaticResource ShellSecondaryTextBrush}"
-                                Text="{Binding SelectedPaperSummary}"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-            </Border>
+            <views:PaperDetailPane
+                Grid.Column="0"
+                Margin="0,0,8,0"
+                FavoriteRequested="PaperDetailPane_FavoriteRequested"
+                Presentation="{Binding SelectedPaperPresentation}"
+                SourceRequested="PaperDetailPane_SourceRequested" />
 
             <presentation:WorkspaceSplitter
                 x:Name="WorkspaceSplitter"
@@ -104,29 +62,10 @@
                     CornerRadius="{StaticResource SmallCornerRadius}" />
             </presentation:WorkspaceSplitter>
 
-            <Border Grid.Column="2" Margin="8,0,0,0" Style="{StaticResource PaperPulseGlassPanelStyle}">
-                <Grid>
-                    <TextBlock
-                        Foreground="{StaticResource ShellTextBrush}"
-                        Text="PDF"
-                        FontWeight="SemiBold" />
-                    <TextBlock
-                        x:Name="PdfEmptyState"
-                        MaxWidth="280"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Foreground="{StaticResource ShellSecondaryTextBrush}"
-                        Text="This paper has no local PDF. Push its subscription again to retry."
-                        TextAlignment="Center"
-                        TextWrapping="Wrap" />
-                    <WebView2
-                        x:Name="PdfViewer"
-                        Margin="0,40,0,0"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        Visibility="Collapsed" />
-                </Grid>
-            </Border>
+            <views:PdfReaderPane
+                Grid.Column="2"
+                Margin="8,0,0,0"
+                Presentation="{Binding SelectedPdfPresentation}" />
         </Grid>
 
         <TextBlock

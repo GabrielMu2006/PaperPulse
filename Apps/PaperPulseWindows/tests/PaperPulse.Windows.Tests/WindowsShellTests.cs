@@ -52,4 +52,23 @@ public sealed class WindowsShellTests
 
         Assert.Equal(1, item.SelectionAccentOpacity);
     }
+
+    [Fact]
+    public void PdfPresentationKeepsNoSelectionAndLegacyFilesDistinct()
+    {
+        StoredPaper paper = new(
+            new PaperCandidate(PaperSourceKind.Arxiv, "2607.00002v1", "PDF state paper", "A short abstract."),
+            null,
+            null,
+            DateTimeOffset.UnixEpoch,
+            false);
+
+        Assert.Equal(PaperPdfState.NoSelection, PaperPdfPresentation.Create(null, null, false).State);
+        Assert.Equal(PaperPdfState.MissingLegacyFile, PaperPdfPresentation.Create(paper, null, false).State);
+
+        PaperPdfPresentation ready = PaperPdfPresentation.Create(paper, "C:\\PaperPulse\\PDFs\\paper.pdf", true);
+
+        Assert.Equal(PaperPdfState.Ready, ready.State);
+        Assert.Equal("C:\\PaperPulse\\PDFs\\paper.pdf", ready.LocalPath);
+    }
 }

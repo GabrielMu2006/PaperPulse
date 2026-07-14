@@ -1,0 +1,112 @@
+<UserControl
+    x:Class="PaperPulse.Windows.Views.PaperDetailPane"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Name="Root">
+    <Grid>
+        <Border
+            x:Name="EmptyState"
+            MaxWidth="300"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Style="{StaticResource PaperPulseGlassPanelStyle}">
+            <StackPanel Spacing="6">
+                <SymbolIcon
+                    HorizontalAlignment="Center"
+                    Foreground="{StaticResource PulseMagentaBrush}"
+                    Symbol="Document" />
+                <TextBlock
+                    Foreground="{StaticResource ShellTextBrush}"
+                    Text="No paper selected"
+                    TextAlignment="Center"
+                    FontWeight="SemiBold" />
+                <TextBlock
+                    Foreground="{StaticResource ShellSecondaryTextBrush}"
+                    Text="Choose a paper from the library to start reading."
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer x:Name="PaperContent" Visibility="Collapsed">
+            <StackPanel Padding="8" Spacing="14">
+                <Border Style="{StaticResource PaperPulsePaperSurfaceStyle}">
+                    <Grid>
+                        <StackPanel Margin="0,0,48,0" Spacing="10">
+                            <TextBlock
+                                Foreground="{StaticResource PaperInkBrush}"
+                                MaxLines="4"
+                                Text="{Binding Title}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap"
+                                FontSize="22"
+                                FontWeight="SemiBold" />
+                            <TextBlock
+                                Foreground="{StaticResource PaperSecondaryBrush}"
+                                MaxLines="2"
+                                Text="{Binding Authors}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Border Style="{StaticResource PaperPulseMetadataPillStyle}">
+                                    <TextBlock Foreground="{StaticResource PaperSecondaryBrush}" Text="{Binding Source}" />
+                                </Border>
+                                <Border Style="{StaticResource PaperPulseMetadataPillStyle}">
+                                    <TextBlock Foreground="{StaticResource PaperSecondaryBrush}" Text="{Binding Date}" />
+                                </Border>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Border Style="{StaticResource PaperPulseMetadataPillStyle}">
+                                    <TextBlock
+                                        Foreground="{StaticResource PaperSecondaryBrush}"
+                                        MaxWidth="180"
+                                        Text="{Binding Venue}"
+                                        TextTrimming="CharacterEllipsis" />
+                                </Border>
+                                <Border Style="{StaticResource PaperPulseMetadataPillStyle}">
+                                    <TextBlock Foreground="{StaticResource PaperSecondaryBrush}" Text="{Binding CitationCount}" />
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+                        <Button
+                            x:Name="FavoriteButton"
+                            AutomationProperties.Name="Toggle favorite for selected paper"
+                            Click="Favorite_Click"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Style="{StaticResource PaperPulseIconButtonStyle}"
+                            ToolTipService.ToolTip="Toggle favorite for selected paper">
+                            <SymbolIcon Foreground="{StaticResource WarmGoldBrush}" Symbol="Favorite" />
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource PaperPulsePaperSurfaceStyle}">
+                    <StackPanel Spacing="10">
+                        <TextBlock
+                            Foreground="{StaticResource PaperInkBrush}"
+                            Text="Brief"
+                            FontWeight="SemiBold" />
+                        <TextBlock
+                            Foreground="{StaticResource PaperInkBrush}"
+                            IsTextSelectionEnabled="True"
+                            Text="{Binding Summary}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Button
+                    x:Name="SourceButton"
+                    AutomationProperties.Name="Open paper source page"
+                    Click="Source_Click"
+                    HorizontalAlignment="Left"
+                    ToolTipService.ToolTip="Open paper source page">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <SymbolIcon Symbol="OpenFile" />
+                        <TextBlock Text="Open source page" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

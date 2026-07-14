@@ -50,6 +50,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
             OnPropertyChanged(nameof(HasSelectedPaper));
             OnPropertyChanged(nameof(SelectedPdfPath));
             OnPropertyChanged(nameof(HasSelectedPdf));
+            OnPropertyChanged(nameof(SelectedPaperPresentation));
+            OnPropertyChanged(nameof(SelectedPdfPresentation));
+            OnPropertyChanged(nameof(SelectedSourceUri));
             UpdatePaperSelection();
         }
     }
@@ -57,6 +60,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public string SelectedPaperTitle => SelectedPaper?.Candidate.Title ?? "Select a paper";
     public string SelectedPaperSummary => SelectedPaper?.Candidate.Summary ?? "Select a paper to view its abstract.";
     public bool HasSelectedPaper => SelectedPaper is not null;
+
+    public PaperDetailPresentation SelectedPaperPresentation => PaperDetailPresentation.Create(SelectedPaper);
+
+    public PaperPdfPresentation SelectedPdfPresentation => PaperPdfPresentation.Create(SelectedPaper, SelectedPdfPath, HasSelectedPdf);
+
+    public Uri? SelectedSourceUri => SelectedPaperPresentation.SourceUri;
 
     public string? SelectedPdfPath
     {
