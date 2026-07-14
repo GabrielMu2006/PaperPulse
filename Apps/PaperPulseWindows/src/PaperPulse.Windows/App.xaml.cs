@@ -1,4 +1,6 @@
 using Microsoft.UI.Xaml;
+using PaperPulse.Storage;
+using Windows.Globalization;
 
 namespace PaperPulse.Windows;
 
@@ -8,6 +10,8 @@ public partial class App : Application
 
     public App()
     {
+        string language = new SqlitePaperPulseRepository(new PaperPulsePaths()).GetSetting("uiLanguage") ?? "en-US";
+        ApplicationLanguages.PrimaryLanguageOverride = language;
         InitializeComponent();
     }
 

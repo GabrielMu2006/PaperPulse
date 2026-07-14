@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="SettingsDialog.Title" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsDialog.CloseButtonText" xml:space="preserve"><value>Cancel</value></data>
+  <data name="SettingsDialog.PrimaryButtonText" xml:space="preserve"><value>Save settings</value></data>
+  <data name="SettingsLanguageHeading.Text" xml:space="preserve"><value>Language</value></data>
+  <data name="SettingsInterfaceLanguage.Text" xml:space="preserve"><value>Interface language</value></data>
+  <data name="SettingsBriefLanguage.Text" xml:space="preserve"><value>Brief language</value></data>
+  <data name="SettingsKeywordLibrary.Text" xml:space="preserve"><value>Keyword library</value></data>
+  <data name="SettingsKeywordLibraryBox.PlaceholderText" xml:space="preserve"><value>agent, retrieval, multimodal</value></data>
+  <data name="SettingsStorageHeading.Text" xml:space="preserve"><value>Storage</value></data>
+  <data name="SettingsClearUnclassified.Text" xml:space="preserve"><value>Clear unclassified papers</value></data>
+</root>

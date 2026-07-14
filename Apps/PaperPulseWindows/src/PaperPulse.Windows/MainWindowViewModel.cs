@@ -6,6 +6,7 @@ using PaperPulse.Contracts;
 using PaperPulse.Engine;
 using PaperPulse.Storage;
 using PaperPulse.Windows.Presentation;
+using Windows.Globalization;
 
 namespace PaperPulse.Windows;
 
@@ -167,13 +168,14 @@ public sealed partial class MainWindowViewModel : ObservableObject
         UiLanguage = uiLanguage;
         SummaryLanguage = summaryLanguage;
         KeywordLibraryText = keywordLibrary;
+        ApplicationLanguages.PrimaryLanguageOverride = UiLanguage;
         await Task.Run(() =>
         {
             repository.SetSetting("uiLanguage", UiLanguage);
             repository.SetSetting("summaryLanguage", SummaryLanguage);
             repository.SetSetting("keywordLibrary", KeywordLibraryText);
         });
-        Status = "Saved settings.";
+        Status = "Saved settings. Restart PaperPulse to apply the interface language.";
     }
 
     public async Task<int> ClearUnclassifiedPapersAsync()

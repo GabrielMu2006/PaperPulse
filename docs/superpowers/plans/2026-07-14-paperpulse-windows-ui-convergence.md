@@ -237,10 +237,10 @@ Expected: portable tests pass; Windows presentation tests are deferred to GitHub
 - Settings stores UI language and summary language independently through existing non-sensitive settings.
 - LLM profile metadata and API-key UI are introduced only with Task 7; API keys remain in PasswordVault.
 
-- [ ] Replace the two-field ad hoc `ContentDialog` with the documented 720 x 700 scrollable editor and fixed footer.
-- [ ] Include name, arXiv categories, OR keywords, exclusions, institutions, venues, arXiv/OpenAlex/Crossref toggles, daily limit clamped to `1...10`, and lookback days.
-- [ ] State that empty institution/venue means any while authority evaluation still runs.
-- [ ] Build the settings shell with language, keyword library, status, and storage. Task 7 inserts the complete model-configuration section between keyword library and status; do not show an inert model panel before then.
+- [x] Replace the two-field ad hoc `ContentDialog` with the documented 720 x 700 scrollable editor and fixed footer.
+- [x] Include name, arXiv categories, OR keywords, exclusions, institutions, venues, arXiv/OpenAlex/Crossref toggles, daily limit clamped to `1...10`, and lookback days.
+- [x] State that empty institution/venue means any while authority evaluation still runs.
+- [x] Build the settings shell with language, keyword library, status, and storage. Task 7 inserts the complete model-configuration section between keyword library and status; do not show an inert model panel before then.
 - [ ] Localize all user-facing Windows strings; retain source, model, and protocol proper names.
 - [ ] Verify long Chinese and English labels wrap without resizing stable toolbar controls.
 - [ ] Commit this task as `feat: complete windows editors and localization`.
