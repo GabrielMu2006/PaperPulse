@@ -1,0 +1,71 @@
+<ContentDialog
+    x:Class="PaperPulse.Windows.Views.FeedEditorDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    PrimaryButtonClick="Save_Click"
+    PrimaryButtonText="Save subscription">
+    <ScrollViewer MaxHeight="620" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Width="620" Spacing="14">
+            <StackPanel Spacing="4">
+                <TextBlock Text="Subscription" FontSize="24" FontWeight="SemiBold" />
+                <TextBlock Text="Configure sources and filters for this manual paper push." TextWrapping="Wrap" />
+            </StackPanel>
+
+            <StackPanel Spacing="8">
+                <TextBlock Text="Name" FontWeight="SemiBold" />
+                <TextBox x:Name="NameBox" PlaceholderText="Subscription name" Style="{StaticResource PaperPulseInputStyle}" />
+                <TextBlock Text="arXiv categories" FontWeight="SemiBold" />
+                <TextBox x:Name="CategoriesBox" PlaceholderText="cs.AI, cs.CL" Style="{StaticResource PaperPulseInputStyle}" />
+            </StackPanel>
+
+            <StackPanel Spacing="8">
+                <TextBlock Text="Keywords (any match)" FontWeight="SemiBold" />
+                <TextBox x:Name="KeywordsBox" PlaceholderText="agent, retrieval" Style="{StaticResource PaperPulseInputStyle}" />
+                <TextBlock Text="Excluded keywords" FontWeight="SemiBold" />
+                <TextBox x:Name="ExcludedKeywordsBox" PlaceholderText="survey, editorial" Style="{StaticResource PaperPulseInputStyle}" />
+            </StackPanel>
+
+            <StackPanel Spacing="8">
+                <TextBlock Text="Authority filters" FontWeight="SemiBold" />
+                <TextBox x:Name="InstitutionsBox" PlaceholderText="Required institutions, separated by commas" Style="{StaticResource PaperPulseInputStyle}" />
+                <TextBox x:Name="VenuesBox" PlaceholderText="Required venues, separated by commas" Style="{StaticResource PaperPulseInputStyle}" />
+                <TextBlock
+                    Foreground="{StaticResource ShellSecondaryTextBrush}"
+                    Text="Leave institutions and venues empty to allow any, while authority evaluation still applies."
+                    TextWrapping="Wrap" />
+            </StackPanel>
+
+            <StackPanel Spacing="8">
+                <TextBlock Text="Academic sources" FontWeight="SemiBold" />
+                <StackPanel Orientation="Horizontal" Spacing="14">
+                    <CheckBox x:Name="ArxivCheckBox" Content="arXiv" />
+                    <CheckBox x:Name="OpenAlexCheckBox" Content="OpenAlex" />
+                    <CheckBox x:Name="CrossrefCheckBox" Content="Crossref" />
+                </StackPanel>
+            </StackPanel>
+
+            <Grid ColumnSpacing="14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Papers per push" FontWeight="SemiBold" />
+                    <NumberBox x:Name="DailyLimitBox" Minimum="1" Maximum="10" SpinButtonPlacementMode="Compact" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="8">
+                    <TextBlock Text="Lookback days" FontWeight="SemiBold" />
+                    <NumberBox x:Name="LookbackDaysBox" Minimum="1" Maximum="365" SpinButtonPlacementMode="Compact" />
+                </StackPanel>
+            </Grid>
+
+            <TextBlock
+                x:Name="ValidationText"
+                Foreground="{StaticResource DangerBrush}"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

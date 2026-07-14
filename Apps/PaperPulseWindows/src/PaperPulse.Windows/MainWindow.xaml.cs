@@ -92,33 +92,12 @@ public sealed partial class MainWindow : Window
 
     private async Task EditFeedAsync(FeedConfig? existing)
     {
-        TextBox nameBox = new() { Text = existing?.Name ?? string.Empty, PlaceholderText = "Subscription name" };
-        TextBox keywordsBox = new()
+        FeedEditorDialog editor = new(existing)
         {
-            Text = existing is null ? string.Empty : string.Join(", ", existing.Keywords),
-            PlaceholderText = "Keywords, separated by commas"
+            XamlRoot = ((FrameworkElement)Content).XamlRoot
         };
 
-        ContentDialog editor = new()
-        {
-            XamlRoot = ((FrameworkElement)Content).XamlRoot,
-            Title = existing is null ? "New subscription" : "Edit subscription",
-            Content = new StackPanel { Spacing = 12, Children = { nameBox, keywordsBox } },
-            PrimaryButtonText = "Save",
-            CloseButtonText = "Cancel",
-            DefaultButton = ContentDialogButton.Primary
-        };
-
-        if (await editor.ShowAsync() != ContentDialogResult.Primary) return;
-
-        FeedConfig feed = (existing ?? new FeedConfig()) with
-        {
-            Name = nameBox.Text.Trim(),
-            Keywords = keywordsBox.Text
-                .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-                .ToList()
-        };
-        await ViewModel.SaveFeedAsync(feed);
+        if (await editor.ShowAsync() == ContentDialogResult.Primary && editor.EditedFeed is { } feed) await ViewModel.SaveFeedAsync(feed);
     }
 
     private void ApplyWorkspaceSplit(double ratio)
