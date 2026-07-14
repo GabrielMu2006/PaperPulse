@@ -262,7 +262,6 @@
         <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
         <Setter Property="CornerRadius" Value="{StaticResource InputCornerRadius}" />
         <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
-        <Setter Property="PlaceholderForeground" Value="{StaticResource ShellSecondaryTextBrush}" />
     </Style>
 
     <Style x:Key="PaperPulseComboBoxStyle" TargetType="ComboBox">
