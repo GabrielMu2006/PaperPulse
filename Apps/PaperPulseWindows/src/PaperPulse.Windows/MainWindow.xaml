@@ -97,12 +97,6 @@
             </Grid>
             <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
                 <Button
-                    Click="DownloadPdf_Click"
-                    IsEnabled="{Binding HasSelectedPaper}"
-                    ToolTipService.ToolTip="Download verified open-access PDF">
-                    <SymbolIcon Symbol="Download" />
-                </Button>
-                <Button
                     Click="OpenPdf_Click"
                     IsEnabled="{Binding HasSelectedPdf}"
                     ToolTipService.ToolTip="Open downloaded PDF">
@@ -113,7 +107,7 @@
                 <StackPanel Spacing="12">
                     <TextBlock FontSize="20" Text="{Binding SelectedPaperTitle}" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding SelectedPaperSummary}" TextWrapping="Wrap" />
-                    <TextBlock x:Name="PdfEmptyState" Opacity="0.7" Text="Download a verified open-access PDF to read it here." TextWrapping="Wrap" />
+                    <TextBlock x:Name="PdfEmptyState" Opacity="0.7" Text="This paper has no local PDF. Push its subscription again to retry." TextWrapping="Wrap" />
                     <WebView2 x:Name="PdfViewer" Height="420" Visibility="Collapsed" />
                 </StackPanel>
             </ScrollViewer>

@@ -23,7 +23,7 @@ public sealed class RetrievalAndRankingTests
             </feed>
             """;
         const string openAlexJson = """
-            {"results":[{"id":"https://openalex.org/W123","doi":"https://doi.org/10.1145/example","display_name":"Open Agent Benchmarks","publication_date":"2026-07-08","cited_by_count":42,"abstract_inverted_index":{"Agents":[0],"coordinate":[1],"tools.":[2]},"authorships":[{"author":{"display_name":"A. Researcher"},"institutions":[{"display_name":"Stanford University"}]}],"open_access":{"oa_url":"https://publisher.example/paper.pdf"},"primary_location":{"source":{"display_name":"ExampleConf"}}}]}
+            {"results":[{"id":"https://openalex.org/W123","doi":"https://doi.org/10.1145/example","display_name":"Open Agent Benchmarks","publication_date":"2026-07-08","cited_by_count":42,"abstract_inverted_index":{"Agents":[0],"coordinate":[1],"tools.":[2]},"authorships":[{"author":{"display_name":"A. Researcher"},"institutions":[{"display_name":"Stanford University"}]}],"open_access":{"oa_url":"https://publisher.example/landing"},"best_oa_location":{"pdf_url":"https://repository.example/open-agent-benchmarks.pdf"},"primary_location":{"source":{"display_name":"ExampleConf"}}},{"id":"https://openalex.org/W124","display_name":"Landing Page Only","publication_date":"2026-07-08","open_access":{"oa_url":"https://publisher.example/landing-only"},"primary_location":{"source":{"display_name":"ExampleConf"}}},{"id":"https://openalex.org/W125","display_name":"Primary PDF Location","publication_date":"2026-07-08","primary_location":{"pdf_url":"https://repository.example/primary-location.pdf","source":{"display_name":"ExampleConf"}}}]}
             """;
         const string crossrefJson = """
             {"message":{"items":[{"DOI":"10.5555/crossref.example","title":["Crossref Agent Evaluation"],"abstract":"<jats:p>A <jats:italic>metadata-rich</jats:italic> agent evaluation paper.</jats:p>","author":[{"given":"Ada","family":"Lovelace"}],"issued":{"date-parts":[[2026,7,7]]},"URL":"https://doi.org/10.5555/crossref.example","container-title":["Journal of Agent Systems"],"link":[{"URL":"https://publisher.example/crossref-agent.pdf","content-type":"application/pdf"}]}]}}
@@ -58,6 +58,9 @@ public sealed class RetrievalAndRankingTests
         Assert.Equal("2607.05174v2", arxiv[0].SourceId);
         Assert.Equal(OpenAccessStatus.Verified, arxiv[0].OpenAccessEvidence!.Status);
         Assert.Equal("10.1145/example", openAlex[0].Doi);
+        Assert.Equal(new Uri("https://repository.example/open-agent-benchmarks.pdf"), openAlex[0].OpenAccessEvidence!.Url);
+        Assert.Null(openAlex[1].OpenAccessEvidence);
+        Assert.Equal(new Uri("https://repository.example/primary-location.pdf"), openAlex[2].OpenAccessEvidence!.Url);
         Assert.Equal("Agents coordinate tools.", openAlex[0].Summary);
         Assert.Equal(["A. Researcher"], openAlex[0].Authors);
         Assert.Equal("10.5555/crossref.example", crossref[0].SourceId);
@@ -160,8 +163,93 @@ public sealed class RetrievalAndRankingTests
         Assert.Empty(ignored.Windows);
     }
 
+    [Theory]
+    [InlineData(-4, 1)]
+    [InlineData(1, 1)]
+    [InlineData(8, 8)]
+    [InlineData(10, 10)]
+    [InlineData(99, 10)]
+    public void FeedPushClampsTheProcessingLimitToTen(int configuredLimit, int expectedLimit)
+    {
+        FeedConfig feed = new() { AuthorityPolicy = new AuthorityPolicy { DailyLimit = configuredLimit } };
+
+        Assert.Equal(expectedLimit, PaperPushService.EffectiveLimit(feed));
+    }
+
+    [Fact]
+    public async Task FeedPushAttemptsAtMostTenPapersAndContinuesAfterPerPaperFailures()
+    {
+        List<PaperCandidate> candidates = Enumerable.Range(1, 10)
+            .Select(index => Candidate($"paper-{index:D2}", index == 3 ? OpenAccessStatus.Unverified : OpenAccessStatus.Verified))
+            .ToList();
+        RecordingSource source = new(PaperSourceKind.Arxiv, candidates);
+        StubTransport transport = new(request => Task.FromResult(PdfResponse(
+            request.RequestUri!,
+            request.RequestUri!.AbsolutePath.Contains("paper-05", StringComparison.Ordinal) ? 403 : 200)));
+        PaperPushService service = new(
+            new PaperDiscoveryService([source]),
+            new PaperRanker(),
+            new PaperPdfDownloader(transport, minimumBytes: 4),
+            () => new DateTimeOffset(2026, 7, 10, 0, 0, 0, TimeSpan.Zero));
+        FeedConfig feed = new() { AuthorityPolicy = new AuthorityPolicy { DailyLimit = 99 } };
+
+        PaperPushResult result = await service.RunAsync(feed, new HashSet<string>(), new HashSet<string>());
+
+        Assert.Equal(10, result.Attempts.Count);
+        Assert.Equal(2, result.Attempts.OfType<PaperPushFailure>().Count());
+        Assert.Equal(8, result.Attempts.OfType<DownloadedPaperPushItem>().Count());
+        Assert.Contains(result.Attempts.OfType<DownloadedPaperPushItem>(), item => item.Candidate.SourceId == "paper-10");
+    }
+
+    [Fact]
+    public async Task FeedPushReusesAStoredPdfAcrossFeedsAndRetriesAnIncompleteLink()
+    {
+        PaperCandidate reused = Candidate("paper-01", OpenAccessStatus.Verified);
+        PaperCandidate incomplete = Candidate("paper-02", OpenAccessStatus.Verified);
+        RecordingSource source = new(PaperSourceKind.Arxiv, [reused, incomplete]);
+        int downloads = 0;
+        StubTransport transport = new(request =>
+        {
+            downloads++;
+            return Task.FromResult(PdfResponse(request.RequestUri!));
+        });
+        PaperPushService service = new(
+            new PaperDiscoveryService([source]),
+            new PaperRanker(),
+            new PaperPdfDownloader(transport, minimumBytes: 4),
+            () => new DateTimeOffset(2026, 7, 10, 0, 0, 0, TimeSpan.Zero));
+        FeedConfig feed = new() { AuthorityPolicy = new AuthorityPolicy { DailyLimit = 10 } };
+
+        PaperPushResult result = await service.RunAsync(
+            feed,
+            new HashSet<string> { incomplete.StableId },
+            new HashSet<string> { reused.StableId });
+
+        Assert.Single(result.Attempts.OfType<ReusedPaperPushItem>());
+        Assert.Single(result.Attempts.OfType<DownloadedPaperPushItem>());
+        Assert.Equal(1, downloads);
+        Assert.Contains(result.Attempts.OfType<DownloadedPaperPushItem>(), item => item.Candidate.StableId == incomplete.StableId);
+    }
+
     private static HttpResponse Response(Uri uri, string payload, int statusCode = 200) =>
         new(System.Text.Encoding.UTF8.GetBytes(payload), statusCode, "application/json", uri);
+
+    private static HttpResponse PdfResponse(Uri uri, int statusCode = 200) =>
+        new("%PDF-1.7 test"u8.ToArray(), statusCode, "application/pdf", uri);
+
+    private static PaperCandidate Candidate(string sourceId, OpenAccessStatus status) => new(
+        PaperSourceKind.Arxiv,
+        sourceId,
+        sourceId,
+        string.Empty,
+        publishedAt: new DateTimeOffset(2026, 7, 9, 0, 0, 0, TimeSpan.Zero),
+        openAccessPdfUrl: new Uri($"https://repository.example/{sourceId}.pdf"),
+        openAccessEvidence: new OpenAccessEvidence
+        {
+            Status = status,
+            Source = PaperSourceKind.Arxiv,
+            Url = new Uri($"https://repository.example/{sourceId}.pdf")
+        });
 
     private static string FixturePath => Path.Combine(AppContext.BaseDirectory, "Fixtures", "phase1_retrieval_contract.json");
 

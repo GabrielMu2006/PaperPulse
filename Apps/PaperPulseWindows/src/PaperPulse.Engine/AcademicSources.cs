@@ -86,7 +86,8 @@ public sealed class OpenAlexSource(IHttpTransport transport) : IPaperSource
             return null;
         }
 
-        Uri? openAccessPdfUrl = Object(work, "open_access") is JsonElement access ? Uri(String(access, "oa_url")) : null;
+        Uri? openAccessPdfUrl = DirectPdfUrl(work, "best_oa_location")
+            ?? DirectPdfUrl(work, "primary_location");
         Uri? absUrl = Uri(id);
         PaperCandidate candidate = new(
             PaperSourceKind.OpenAlex,
@@ -132,6 +133,9 @@ public sealed class OpenAlexSource(IHttpTransport transport) : IPaperSource
             ? institutions.EnumerateArray().Select(institution => String(institution, "display_name")).OfType<string>()
             : [])
         : [];
+
+    private static Uri? DirectPdfUrl(JsonElement work, string locationProperty) =>
+        Object(work, locationProperty) is JsonElement location ? Uri(String(location, "pdf_url")) : null;
 }
 
 public sealed class CrossrefSource(IHttpTransport transport) : IPaperSource

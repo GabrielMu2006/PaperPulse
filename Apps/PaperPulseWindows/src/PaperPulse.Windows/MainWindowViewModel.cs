@@ -15,16 +15,14 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private static readonly Regex Whitespace = new("\\s+", RegexOptions.Compiled);
 
     private readonly SqlitePaperPulseRepository repository;
-    private readonly PaperDiscoveryService discovery;
     private readonly PaperFileStore fileStore;
-    private readonly PaperPdfDownloader pdfDownloader;
+    private readonly PaperPushService paperPush;
 
     private FeedConfig? selectedFeed;
     private StoredPaper? selectedPaper;
     private string searchText = string.Empty;
     private string status = "Starting PaperPulse...";
     private bool isRefreshing;
-    private bool isDownloadingPdf;
     private bool favoritesOnly;
     private bool isInitialized;
     private IReadOnlyDictionary<Guid, IReadOnlySet<string>> paperIdsByFeed = new Dictionary<Guid, IReadOnlySet<string>>();
@@ -90,12 +88,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         set => SetProperty(ref isRefreshing, value);
     }
 
-    public bool IsDownloadingPdf
-    {
-        get => isDownloadingPdf;
-        set => SetProperty(ref isDownloadingPdf, value);
-    }
-
     public bool FavoritesOnly
     {
         get => favoritesOnly;
@@ -116,8 +108,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         fileStore = new PaperFileStore(paths);
         HttpClient client = new() { Timeout = TimeSpan.FromSeconds(30) };
         IHttpTransport transport = new RetryingHttpTransport(new HttpClientTransport(client));
-        discovery = new PaperDiscoveryService([new ArxivSource(transport), new OpenAlexSource(transport), new CrossrefSource(transport)]);
-        pdfDownloader = new PaperPdfDownloader(transport);
+        PaperDiscoveryService discovery = new([new ArxivSource(transport), new OpenAlexSource(transport), new CrossrefSource(transport)]);
+        paperPush = new PaperPushService(discovery, new PaperRanker(), new PaperPdfDownloader(transport));
     }
 
     public async Task InitializeAsync()
@@ -131,24 +123,65 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         if (SelectedFeed is null || IsRefreshing) return;
         FeedConfig feed = SelectedFeed;
-        IsRefreshing = true; Status = $"Searching {SelectedFeed.Name}...";
+        IsRefreshing = true;
+        Status = $"Searching {feed.Name}...";
         try
         {
-            DiscoveryResult result = await discovery.DiscoverAsync(feed);
             Dictionary<string, StoredPaper> existing = Papers.ToDictionary(paper => paper.Candidate.StableId);
-            List<StoredPaper> papersToSave = result.Candidates
-                .Select(candidate => existing.TryGetValue(candidate.StableId, out StoredPaper? current)
-                    ? current with { Candidate = candidate }
-                    : new StoredPaper(candidate, null, null, DateTimeOffset.UtcNow, false))
-                .ToList();
-            await Task.Run(() =>
+            IReadOnlySet<string> alreadyLinked = paperIdsByFeed.TryGetValue(feed.Id, out IReadOnlySet<string>? ids)
+                ? ids
+                : EmptyPaperIds;
+            HashSet<string> reusableLocal = existing.Values
+                .Where(HasStoredPdf)
+                .Select(paper => paper.Candidate.StableId)
+                .ToHashSet(StringComparer.Ordinal);
+            Progress<PaperPushProgress> progress = new(item => Status = $"Processing {item.Current} of {item.Total}...");
+            PaperPushResult result = await paperPush.RunAsync(feed, alreadyLinked, reusableLocal, progress);
+            int saved = 0;
+            int writeFailures = 0;
+
+            foreach (PaperPushAttempt attempt in result.Attempts)
             {
-                foreach (StoredPaper paper in papersToSave) repository.SavePaper(paper, feed.Id);
-            });
+                if (attempt is ReusedPaperPushItem reused && existing.TryGetValue(reused.Candidate.StableId, out StoredPaper? existingPaper))
+                {
+                    StoredPaper linked = existingPaper with { Candidate = reused.Candidate };
+                    await Task.Run(() => repository.SavePaper(linked, feed.Id));
+                    saved++;
+                    continue;
+                }
+
+                if (attempt is not DownloadedPaperPushItem downloaded) continue;
+
+                try
+                {
+                    await using MemoryStream input = new(downloaded.Pdf.Content, writable: false);
+                    StoredFile stored = await fileStore.WritePdfAsync(downloaded.Candidate.StableId, input);
+                    StoredPaper paper = existing.TryGetValue(downloaded.Candidate.StableId, out StoredPaper? current)
+                        ? current with
+                        {
+                            Candidate = downloaded.Candidate,
+                            PdfRelativePath = stored.RelativePath,
+                            PdfSha256 = stored.Sha256
+                        }
+                        : new StoredPaper(downloaded.Candidate, stored.RelativePath, stored.Sha256, DateTimeOffset.UtcNow, false);
+                    await Task.Run(() => repository.SavePaper(paper, feed.Id));
+                    existing[paper.Candidate.StableId] = paper;
+                    saved++;
+                }
+                catch
+                {
+                    writeFailures++;
+                }
+            }
+
             await ReloadAsync(feed.Id);
-            Status = result.Failures.Count == 0 ? $"Found {result.Candidates.Count} papers." : $"Found {result.Candidates.Count}; {result.Failures.Count} sources unavailable.";
+            int skipped = result.Failures.Count + writeFailures;
+            Status = $"{saved} saved, {skipped} skipped.";
+            string failureSummary = DescribePushFailures(result.Failures, writeFailures);
+            if (failureSummary.Length > 0) Status += $" {failureSummary}";
+            if (result.SourceFailures.Count > 0) Status += $" {result.SourceFailures.Count} sources unavailable.";
         }
-        catch (Exception error) { Status = error.Message; }
+        catch { Status = "Could not finish this subscription push."; }
         finally { IsRefreshing = false; }
     }
 
@@ -174,36 +207,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     public void ToggleFavoritesFilter() => FavoritesOnly = !FavoritesOnly;
-
-    public async Task DownloadSelectedPdfAsync()
-    {
-        if (SelectedPaper is null || IsDownloadingPdf) return;
-        StoredPaper paper = SelectedPaper;
-        IsDownloadingPdf = true;
-        Status = $"Downloading PDF for {paper.Candidate.Title}...";
-        try
-        {
-            DownloadedPaperPdf downloaded = await pdfDownloader.DownloadAsync(paper.Candidate);
-            await using MemoryStream input = new(downloaded.Content, writable: false);
-            StoredFile stored = await fileStore.WritePdfAsync(paper.Candidate.StableId, input);
-            StoredPaper updated = paper with { PdfRelativePath = stored.RelativePath, PdfSha256 = stored.Sha256 };
-            await Task.Run(() => repository.SavePaper(updated));
-            ReplacePaper(updated);
-            Status = "PDF downloaded.";
-        }
-        catch (PaperPdfDownloadException error)
-        {
-            Status = error.Message;
-        }
-        catch (Exception error)
-        {
-            Status = $"Could not download PDF: {error.Message}";
-        }
-        finally
-        {
-            IsDownloadingPdf = false;
-        }
-    }
 
     public async Task SaveFeedAsync(FeedConfig feed)
     {
@@ -303,12 +306,21 @@ public sealed partial class MainWindowViewModel : ObservableObject
         if (SelectedPaper is not null && !LibraryGroups.SelectMany(group => group.Papers).Any(paper => paper.Candidate.StableId == SelectedPaper.Candidate.StableId)) SelectedPaper = null;
     }
 
-    private void ReplacePaper(StoredPaper updated)
+    private bool HasStoredPdf(StoredPaper paper)
     {
-        int index = Papers.ToList().FindIndex(paper => paper.Candidate.StableId == updated.Candidate.StableId);
-        if (index >= 0) Papers[index] = updated;
-        SelectedPaper = updated;
-        RefreshLibraryGroups(focusSelectedFeed: false);
+        if (paper.PdfRelativePath is not { Length: > 0 } relativePath) return false;
+        try { return File.Exists(fileStore.ResolveRelativePath(relativePath)); }
+        catch (InvalidOperationException) { return false; }
+    }
+
+    private static string DescribePushFailures(IReadOnlyList<PaperPushFailure> failures, int writeFailures)
+    {
+        List<string> messages = [];
+        if (failures.Any(failure => failure.Failure == PaperPdfDownloadFailure.HttpStatus)) messages.Add("Some sources refused direct PDF access.");
+        if (failures.Any(failure => failure.Failure is PaperPdfDownloadFailure.UnverifiedOpenAccess or PaperPdfDownloadFailure.MissingPdfUrl)) messages.Add("Some papers have no verified open-access PDF.");
+        if (failures.Any(failure => failure.Failure is PaperPdfDownloadFailure.InvalidMimeType or PaperPdfDownloadFailure.InvalidPdfSignature or PaperPdfDownloadFailure.FileTooSmall or PaperPdfDownloadFailure.FileTooLarge)) messages.Add("Some sources did not return a valid PDF.");
+        if (writeFailures > 0) messages.Add("Some local PDF files could not be saved.");
+        return string.Join(" ", messages);
     }
 
     private static StoredPaper NormalizeForDisplay(StoredPaper paper) => paper with

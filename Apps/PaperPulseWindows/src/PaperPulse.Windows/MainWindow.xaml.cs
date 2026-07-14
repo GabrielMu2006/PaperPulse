@@ -20,12 +20,6 @@ public sealed partial class MainWindow : Window
 
     private async void Favorite_Click(object sender, RoutedEventArgs e) => await ViewModel.ToggleFavoriteAsync();
 
-    private async void DownloadPdf_Click(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.DownloadSelectedPdfAsync();
-        await ShowSelectedPdfAsync();
-    }
-
     private async void OpenPdf_Click(object sender, RoutedEventArgs e) => await ShowSelectedPdfAsync();
 
     private void FavoritesFilter_Click(object sender, RoutedEventArgs e) => ViewModel.ToggleFavoritesFilter();
@@ -51,11 +45,11 @@ public sealed partial class MainWindow : Window
         if (await confirmation.ShowAsync() == ContentDialogResult.Primary) await ViewModel.DeleteSelectedFeedAsync();
     }
 
-    private void PaperList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void PaperList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (sender is not ListView { SelectedItem: StoredPaper paper }) return;
         ViewModel.SelectPaper(paper);
-        HidePdfViewer();
+        await ShowSelectedPdfAsync();
     }
 
     private async Task EditFeedAsync(FeedConfig? existing)
@@ -104,9 +98,9 @@ public sealed partial class MainWindow : Window
             PdfViewer.Visibility = Visibility.Visible;
             PdfEmptyState.Visibility = Visibility.Collapsed;
         }
-        catch (Exception error)
+        catch (Exception)
         {
-            PdfEmptyState.Text = $"Could not open PDF: {error.Message}";
+            PdfEmptyState.Text = "Could not open the local PDF. Push the subscription again to retry.";
             PdfEmptyState.Visibility = Visibility.Visible;
             PdfViewer.Visibility = Visibility.Collapsed;
         }
@@ -116,7 +110,7 @@ public sealed partial class MainWindow : Window
     {
         PdfViewer.Source = null;
         PdfViewer.Visibility = Visibility.Collapsed;
-        PdfEmptyState.Text = "Download a verified open-access PDF to read it here.";
+        PdfEmptyState.Text = "This paper has no local PDF. Push its subscription again to retry.";
         PdfEmptyState.Visibility = Visibility.Visible;
     }
 }
