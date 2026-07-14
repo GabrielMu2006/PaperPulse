@@ -44,6 +44,7 @@
                 SourceRequested="PaperDetailPane_SourceRequested" />
 
             <presentation:WorkspaceSplitter
+                x:Uid="WorkspaceSplitter"
                 x:Name="WorkspaceSplitter"
                 Grid.Column="1"
                 HorizontalAlignment="Stretch"

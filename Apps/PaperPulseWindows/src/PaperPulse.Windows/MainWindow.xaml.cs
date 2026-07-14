@@ -33,7 +33,7 @@ public sealed partial class MainWindow : Window
     private async void PaperDetailPane_SourceRequested(object sender, EventArgs e)
     {
         if (ViewModel.SelectedSourceUri is not { } sourceUri) return;
-        if (!await Launcher.LaunchUriAsync(sourceUri)) ViewModel.Status = "Could not open the source page.";
+        if (!await Launcher.LaunchUriAsync(sourceUri)) ViewModel.Status = PaperPulseStrings.Get("CouldNotOpenSourcePage");
     }
 
     private async void LibrarySidebar_AddFeedRequested(object sender, EventArgs e) => await EditFeedAsync(null);
@@ -59,10 +59,10 @@ public sealed partial class MainWindow : Window
         ContentDialog confirmation = new()
         {
             XamlRoot = ((FrameworkElement)Content).XamlRoot,
-            Title = "Clear unclassified papers?",
-            Content = "This deletes unclassified papers, their local PDFs, and their saved interpretations.",
-            PrimaryButtonText = "Clear",
-            CloseButtonText = "Cancel",
+            Title = PaperPulseStrings.Get("ClearUnclassifiedTitle"),
+            Content = PaperPulseStrings.Get("ClearUnclassifiedContent"),
+            PrimaryButtonText = PaperPulseStrings.Get("Clear"),
+            CloseButtonText = PaperPulseStrings.Get("Cancel"),
             DefaultButton = ContentDialogButton.Close
         };
         if (await confirmation.ShowAsync() == ContentDialogResult.Primary)
@@ -80,10 +80,10 @@ public sealed partial class MainWindow : Window
         ContentDialog confirmation = new()
         {
             XamlRoot = ((FrameworkElement)Content).XamlRoot,
-            Title = "Delete subscription?",
-            Content = $"Papers remain in the library, but {e.Feed.Name} will no longer group them.",
-            PrimaryButtonText = "Delete",
-            CloseButtonText = "Cancel",
+            Title = PaperPulseStrings.Get("DeleteSubscriptionTitle"),
+            Content = PaperPulseStrings.Format("DeleteSubscriptionContent", e.Feed.Name),
+            PrimaryButtonText = PaperPulseStrings.Get("Delete"),
+            CloseButtonText = PaperPulseStrings.Get("Cancel"),
             DefaultButton = ContentDialogButton.Close
         };
 

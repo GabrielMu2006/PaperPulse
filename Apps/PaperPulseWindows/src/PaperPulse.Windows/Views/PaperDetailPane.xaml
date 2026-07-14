@@ -16,11 +16,13 @@
                     Foreground="{StaticResource PulseMagentaBrush}"
                     Symbol="Document" />
                 <TextBlock
+                    x:Uid="PaperDetailEmptyTitle"
                     Foreground="{StaticResource ShellTextBrush}"
                     Text="No paper selected"
                     TextAlignment="Center"
                     FontWeight="SemiBold" />
                 <TextBlock
+                    x:Uid="PaperDetailEmptyMessage"
                     Foreground="{StaticResource ShellSecondaryTextBrush}"
                     Text="Choose a paper from the library to start reading."
                     TextAlignment="Center"
@@ -70,6 +72,7 @@
                         </StackPanel>
                         <Button
                             x:Name="FavoriteButton"
+                            x:Uid="PaperDetailFavorite"
                             AutomationProperties.Name="Toggle favorite for selected paper"
                             Click="Favorite_Click"
                             HorizontalAlignment="Right"
@@ -84,6 +87,7 @@
                 <Border Style="{StaticResource PaperPulsePaperSurfaceStyle}">
                     <StackPanel Spacing="10">
                         <TextBlock
+                            x:Uid="PaperDetailBrief"
                             Foreground="{StaticResource PaperInkBrush}"
                             Text="Brief"
                             FontWeight="SemiBold" />
@@ -97,13 +101,14 @@
 
                 <Button
                     x:Name="SourceButton"
+                    x:Uid="PaperDetailSource"
                     AutomationProperties.Name="Open paper source page"
                     Click="Source_Click"
                     HorizontalAlignment="Left"
                     ToolTipService.ToolTip="Open paper source page">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <SymbolIcon Symbol="OpenFile" />
-                        <TextBlock Text="Open source page" />
+                        <TextBlock x:Uid="PaperDetailSourceText" Text="Open source page" />
                     </StackPanel>
                 </Button>
             </StackPanel>

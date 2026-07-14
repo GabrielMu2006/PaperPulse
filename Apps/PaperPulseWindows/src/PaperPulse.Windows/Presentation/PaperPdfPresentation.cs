@@ -16,11 +16,7 @@ public sealed record PaperPdfPresentation(PaperPdfState State, string? LocalPath
     {
         if (paper is null)
         {
-            return new PaperPdfPresentation(
-                PaperPdfState.NoSelection,
-                null,
-                "No paper selected",
-                "Choose a paper from the library to open its local PDF.");
+            return NoSelection();
         }
 
         if (hasLocalPdf && !string.IsNullOrWhiteSpace(localPath))
@@ -31,13 +27,19 @@ public sealed record PaperPdfPresentation(PaperPdfState State, string? LocalPath
         return new PaperPdfPresentation(
             PaperPdfState.MissingLegacyFile,
             null,
-            "No local PDF available",
-            "Push this paper's subscription again to retry verified open-access PDF retrieval.");
+            PaperPulseStrings.Get("NoLocalPdf"),
+            PaperPulseStrings.Get("RetryFeedPush"));
     }
 
     public PaperPdfPresentation AsUnavailable() => new(
         PaperPdfState.Unavailable,
         null,
-        "Could not open the local PDF",
-        "Push this paper's subscription again to retry verified open-access PDF retrieval.");
+        PaperPulseStrings.Get("CouldNotOpenLocalPdf"),
+        PaperPulseStrings.Get("RetryFeedPush"));
+
+    public static PaperPdfPresentation NoSelection() => new(
+        PaperPdfState.NoSelection,
+        null,
+        PaperPulseStrings.Get("NoPaperSelected"),
+        PaperPulseStrings.Get("ChoosePaperToOpenPdf"));
 }

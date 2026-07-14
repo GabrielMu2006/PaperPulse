@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using PaperPulse.Contracts;
+using PaperPulse.Windows.Presentation;
 
 namespace PaperPulse.Windows.Views;
 
@@ -12,7 +13,7 @@ public sealed partial class FeedEditorDialog : ContentDialog
     {
         this.existing = existing;
         InitializeComponent();
-        Title = existing is null ? "New subscription" : "Edit subscription";
+        Title = existing is null ? PaperPulseStrings.Get("FeedEditorNewTitle") : PaperPulseStrings.Get("FeedEditorEditTitle");
         Populate(existing);
     }
 
@@ -44,7 +45,7 @@ public sealed partial class FeedEditorDialog : ContentDialog
 
         if (string.IsNullOrWhiteSpace(NameBox.Text) || (categories.Count == 0 && keywords.Count == 0) || sources.Count == 0)
         {
-            ValidationText.Text = "Enter a name, at least one category or keyword, and one academic source.";
+            ValidationText.Text = PaperPulseStrings.Get("FeedEditorValidation");
             ValidationText.Visibility = Visibility.Visible;
             args.Cancel = true;
             return;

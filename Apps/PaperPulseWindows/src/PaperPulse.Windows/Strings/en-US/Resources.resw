@@ -10,4 +10,102 @@
   <data name="SettingsKeywordLibraryBox.PlaceholderText" xml:space="preserve"><value>agent, retrieval, multimodal</value></data>
   <data name="SettingsStorageHeading.Text" xml:space="preserve"><value>Storage</value></data>
   <data name="SettingsClearUnclassified.Text" xml:space="preserve"><value>Clear unclassified papers</value></data>
+  <data name="LibrarySearch.PlaceholderText" xml:space="preserve"><value>Search papers</value></data>
+  <data name="LibraryAllPapers.Content" xml:space="preserve"><value>All papers</value></data>
+  <data name="LibraryFavorites.Content" xml:space="preserve"><value>Favorites</value></data>
+  <data name="LibraryNewSubscription.Text" xml:space="preserve"><value>New subscription</value></data>
+  <data name="LibrarySettings.Text" xml:space="preserve"><value>Settings</value></data>
+  <data name="LibraryFeeds.Text" xml:space="preserve"><value>Feeds</value></data>
+  <data name="LibraryEditSubscription.Text" xml:space="preserve"><value>Edit subscription</value></data>
+  <data name="LibraryDeleteSubscription.Text" xml:space="preserve"><value>Delete subscription</value></data>
+  <data name="LibraryHeading.Text" xml:space="preserve"><value>Library</value></data>
+  <data name="LibraryNoPapers.Text" xml:space="preserve"><value>No papers pushed yet.</value></data>
+  <data name="LibraryAllPapers.AutomationProperties.Name" xml:space="preserve"><value>Show all papers</value></data>
+  <data name="LibraryFavorites.AutomationProperties.Name" xml:space="preserve"><value>Show favorite papers</value></data>
+  <data name="FeedEditorDialog.CloseButtonText" xml:space="preserve"><value>Cancel</value></data>
+  <data name="FeedEditorDialog.PrimaryButtonText" xml:space="preserve"><value>Save subscription</value></data>
+  <data name="FeedEditorHeading.Text" xml:space="preserve"><value>Subscription</value></data>
+  <data name="FeedEditorDescription.Text" xml:space="preserve"><value>Configure sources and filters for this manual paper push.</value></data>
+  <data name="FeedEditorName.Text" xml:space="preserve"><value>Name</value></data>
+  <data name="FeedEditorNameBox.PlaceholderText" xml:space="preserve"><value>Subscription name</value></data>
+  <data name="FeedEditorCategories.Text" xml:space="preserve"><value>arXiv categories</value></data>
+  <data name="FeedEditorCategoriesBox.PlaceholderText" xml:space="preserve"><value>cs.AI, cs.CL</value></data>
+  <data name="FeedEditorKeywords.Text" xml:space="preserve"><value>Keywords (any match)</value></data>
+  <data name="FeedEditorKeywordsBox.PlaceholderText" xml:space="preserve"><value>agent, retrieval</value></data>
+  <data name="FeedEditorExcludedKeywords.Text" xml:space="preserve"><value>Excluded keywords</value></data>
+  <data name="FeedEditorExcludedKeywordsBox.PlaceholderText" xml:space="preserve"><value>survey, editorial</value></data>
+  <data name="FeedEditorAuthority.Text" xml:space="preserve"><value>Authority filters</value></data>
+  <data name="FeedEditorInstitutionsBox.PlaceholderText" xml:space="preserve"><value>Required institutions, separated by commas</value></data>
+  <data name="FeedEditorVenuesBox.PlaceholderText" xml:space="preserve"><value>Required venues, separated by commas</value></data>
+  <data name="FeedEditorAuthorityHint.Text" xml:space="preserve"><value>Leave institutions and venues empty to allow any, while authority evaluation still applies.</value></data>
+  <data name="FeedEditorSources.Text" xml:space="preserve"><value>Academic sources</value></data>
+  <data name="FeedEditorLimit.Text" xml:space="preserve"><value>Papers per push</value></data>
+  <data name="FeedEditorLookback.Text" xml:space="preserve"><value>Lookback days</value></data>
+  <data name="PaperDetailEmptyTitle.Text" xml:space="preserve"><value>No paper selected</value></data>
+  <data name="PaperDetailEmptyMessage.Text" xml:space="preserve"><value>Choose a paper from the library to start reading.</value></data>
+  <data name="PaperDetailFavorite.AutomationProperties.Name" xml:space="preserve"><value>Toggle favorite for selected paper</value></data>
+  <data name="PaperDetailFavorite.ToolTipService.ToolTip" xml:space="preserve"><value>Toggle favorite for selected paper</value></data>
+  <data name="PaperDetailBrief.Text" xml:space="preserve"><value>Brief</value></data>
+  <data name="PaperDetailSource.AutomationProperties.Name" xml:space="preserve"><value>Open paper source page</value></data>
+  <data name="PaperDetailSource.ToolTipService.ToolTip" xml:space="preserve"><value>Open paper source page</value></data>
+  <data name="PaperDetailSourceText.Text" xml:space="preserve"><value>Open source page</value></data>
+  <data name="FeedEditorNewTitle" xml:space="preserve"><value>New subscription</value></data>
+  <data name="FeedEditorEditTitle" xml:space="preserve"><value>Edit subscription</value></data>
+  <data name="FeedEditorValidation" xml:space="preserve"><value>Enter a name, at least one category or keyword, and one academic source.</value></data>
+  <data name="NoPaperSelected" xml:space="preserve"><value>No paper selected</value></data>
+  <data name="ChoosePaperToRead" xml:space="preserve"><value>Choose a paper from the library to start reading.</value></data>
+  <data name="ChoosePaperToOpenPdf" xml:space="preserve"><value>Choose a paper from the library to open its local PDF.</value></data>
+  <data name="UnknownAuthor" xml:space="preserve"><value>Unknown author</value></data>
+  <data name="VenueUnavailable" xml:space="preserve"><value>Venue unavailable</value></data>
+  <data name="DateUnavailable" xml:space="preserve"><value>Date unavailable</value></data>
+  <data name="CitationCount" xml:space="preserve"><value>{0} citations</value></data>
+  <data name="CitationsUnavailable" xml:space="preserve"><value>Citations unavailable</value></data>
+  <data name="NoLocalPdf" xml:space="preserve"><value>No local PDF available</value></data>
+  <data name="CouldNotOpenLocalPdf" xml:space="preserve"><value>Could not open the local PDF</value></data>
+  <data name="RetryFeedPush" xml:space="preserve"><value>Push this paper's subscription again to retry verified open-access PDF retrieval.</value></data>
+  <data name="AllConfiguredSources" xml:space="preserve"><value>All configured sources</value></data>
+  <data name="CouldNotOpenSourcePage" xml:space="preserve"><value>Could not open the source page.</value></data>
+  <data name="ClearUnclassifiedTitle" xml:space="preserve"><value>Clear unclassified papers?</value></data>
+  <data name="ClearUnclassifiedContent" xml:space="preserve"><value>This deletes unclassified papers, their local PDFs, and their saved interpretations.</value></data>
+  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="DeleteSubscriptionTitle" xml:space="preserve"><value>Delete subscription?</value></data>
+  <data name="DeleteSubscriptionContent" xml:space="preserve"><value>Papers remain in the library, but {0} will no longer group them.</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="StartingPaperPulse" xml:space="preserve"><value>Starting PaperPulse...</value></data>
+  <data name="SelectPaper" xml:space="preserve"><value>Select a paper</value></data>
+  <data name="SelectPaperToViewAbstract" xml:space="preserve"><value>Select a paper to view its abstract.</value></data>
+  <data name="SettingsSavedRestart" xml:space="preserve"><value>Saved settings. Restart PaperPulse to apply the interface language.</value></data>
+  <data name="NoUnclassifiedPapers" xml:space="preserve"><value>No unclassified papers to clear.</value></data>
+  <data name="ClearedUnclassifiedPapers" xml:space="preserve"><value>Cleared {0} unclassified papers.</value></data>
+  <data name="SearchingFeed" xml:space="preserve"><value>Searching {0}...</value></data>
+  <data name="ProcessingFeed" xml:space="preserve"><value>Processing {0} of {1}...</value></data>
+  <data name="PushResult" xml:space="preserve"><value>{0} saved, {1} skipped.</value></data>
+  <data name="SourcesUnavailable" xml:space="preserve"><value>{0} sources unavailable.</value></data>
+  <data name="CouldNotFinishPush" xml:space="preserve"><value>Could not finish this subscription push.</value></data>
+  <data name="AddedToFavorites" xml:space="preserve"><value>Added to favorites.</value></data>
+  <data name="RemovedFromFavorites" xml:space="preserve"><value>Removed from favorites.</value></data>
+  <data name="CouldNotUpdateFavorite" xml:space="preserve"><value>Could not update favorite: {0}</value></data>
+  <data name="SubscriptionNeedsName" xml:space="preserve"><value>A subscription needs a name.</value></data>
+  <data name="SavedFeed" xml:space="preserve"><value>Saved {0}.</value></data>
+  <data name="DeletedFeed" xml:space="preserve"><value>Deleted {0}.</value></data>
+  <data name="LoadingLibrary" xml:space="preserve"><value>Loading library...</value></data>
+  <data name="Ready" xml:space="preserve"><value>Ready</value></data>
+  <data name="CouldNotLoadLibrary" xml:space="preserve"><value>Could not load the library: {0}</value></data>
+  <data name="SourcesRefusedDirectPdf" xml:space="preserve"><value>Some sources refused direct PDF access.</value></data>
+  <data name="NoVerifiedOpenAccessPdf" xml:space="preserve"><value>Some papers have no verified open-access PDF.</value></data>
+  <data name="InvalidPdfResponse" xml:space="preserve"><value>Some sources did not return a valid PDF.</value></data>
+  <data name="CouldNotSaveLocalPdf" xml:space="preserve"><value>Some local PDF files could not be saved.</value></data>
+  <data name="NoAbstractProvided" xml:space="preserve"><value>No abstract provided by this source.</value></data>
+  <data name="SettingsEnglish.Content" xml:space="preserve"><value>English</value></data>
+  <data name="SettingsChinese.Content" xml:space="preserve"><value>Chinese</value></data>
+  <data name="SettingsBriefEnglish.Content" xml:space="preserve"><value>English</value></data>
+  <data name="SettingsBriefChinese.Content" xml:space="preserve"><value>Chinese</value></data>
+  <data name="LibraryNewSubscriptionButton.AutomationProperties.Name" xml:space="preserve"><value>New subscription</value></data>
+  <data name="LibraryNewSubscriptionButton.ToolTipService.ToolTip" xml:space="preserve"><value>New subscription</value></data>
+  <data name="LibrarySettingsButton.AutomationProperties.Name" xml:space="preserve"><value>Open settings</value></data>
+  <data name="LibrarySettingsButton.ToolTipService.ToolTip" xml:space="preserve"><value>Open settings</value></data>
+  <data name="LibraryPushSubscription.AutomationProperties.Name" xml:space="preserve"><value>Push this subscription</value></data>
+  <data name="LibraryPushSubscription.ToolTipService.ToolTip" xml:space="preserve"><value>Push this subscription</value></data>
+  <data name="WorkspaceSplitter.ToolTipService.ToolTip" xml:space="preserve"><value>Resize paper details and PDF</value></data>
 </root>

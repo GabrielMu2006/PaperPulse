@@ -11,13 +11,13 @@
         <TextBlock x:Uid="SettingsLanguageHeading" Text="Language" FontSize="20" FontWeight="SemiBold" />
         <TextBlock x:Uid="SettingsInterfaceLanguage" Text="Interface language" FontWeight="SemiBold" />
         <ComboBox x:Name="UiLanguageBox" SelectedIndex="0">
-            <ComboBoxItem Content="English" Tag="en-US" />
-            <ComboBoxItem Content="Chinese" Tag="zh-CN" />
+            <ComboBoxItem x:Uid="SettingsEnglish" Content="English" Tag="en-US" />
+            <ComboBoxItem x:Uid="SettingsChinese" Content="Chinese" Tag="zh-CN" />
         </ComboBox>
         <TextBlock x:Uid="SettingsBriefLanguage" Text="Brief language" FontWeight="SemiBold" />
         <ComboBox x:Name="SummaryLanguageBox" SelectedIndex="0">
-            <ComboBoxItem Content="English" Tag="en-US" />
-            <ComboBoxItem Content="Chinese" Tag="zh-CN" />
+            <ComboBoxItem x:Uid="SettingsBriefEnglish" Content="English" Tag="en-US" />
+            <ComboBoxItem x:Uid="SettingsBriefChinese" Content="Chinese" Tag="zh-CN" />
         </ComboBox>
         <TextBlock x:Uid="SettingsKeywordLibrary" Text="Keyword library" FontWeight="SemiBold" />
         <TextBox x:Name="KeywordLibraryBox" x:Uid="SettingsKeywordLibraryBox" AcceptsReturn="True" MinHeight="84" PlaceholderText="agent, retrieval, multimodal" TextWrapping="Wrap" />

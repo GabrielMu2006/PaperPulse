@@ -37,17 +37,20 @@
             </Grid>
 
             <TextBox
+                x:Uid="LibrarySearch"
                 PlaceholderText="Search papers"
                 Style="{StaticResource PaperPulseInputStyle}"
                 Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
             <Grid ColumnSpacing="6">
                 <Button
+                    x:Uid="LibraryAllPapers"
                     AutomationProperties.Name="Show all papers"
                     Click="AllPapers_Click"
                     Content="All papers"
                     HorizontalAlignment="Stretch" />
                 <ToggleButton
+                    x:Uid="LibraryFavorites"
                     Grid.Column="1"
                     AutomationProperties.Name="Show favorite papers"
                     Content="Favorites"
@@ -60,28 +63,30 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Button
+                    x:Uid="LibraryNewSubscriptionButton"
                     AutomationProperties.Name="New subscription"
                     Click="AddFeed_Click"
                     HorizontalAlignment="Stretch"
                     ToolTipService.ToolTip="New subscription">
                     <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="6">
                         <SymbolIcon Symbol="Add" />
-                        <TextBlock Text="New subscription" />
+                        <TextBlock x:Uid="LibraryNewSubscription" Text="New subscription" />
                     </StackPanel>
                 </Button>
                 <Button
                     Grid.Column="1"
+                    x:Uid="LibrarySettingsButton"
                     AutomationProperties.Name="Open settings"
                     Click="Settings_Click"
                     ToolTipService.ToolTip="Open settings">
                     <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="6">
                         <SymbolIcon Symbol="Setting" />
-                        <TextBlock Text="Settings" />
+                        <TextBlock x:Uid="LibrarySettings" Text="Settings" />
                     </StackPanel>
                 </Button>
             </Grid>
 
-            <TextBlock Foreground="{StaticResource ShellSecondaryTextBrush}" Text="Feeds" FontWeight="SemiBold" />
+            <TextBlock x:Uid="LibraryFeeds" Foreground="{StaticResource ShellSecondaryTextBrush}" Text="Feeds" FontWeight="SemiBold" />
 
             <ListView
                 Background="Transparent"
@@ -95,8 +100,8 @@
                         <Grid Padding="6" ColumnSpacing="8">
                             <Grid.ContextFlyout>
                                 <MenuFlyout>
-                                    <MenuFlyoutItem Click="EditFeed_Click" Tag="{Binding}" Text="Edit subscription" />
-                                    <MenuFlyoutItem Click="DeleteFeed_Click" Tag="{Binding}" Text="Delete subscription" />
+                                    <MenuFlyoutItem x:Uid="LibraryEditSubscription" Click="EditFeed_Click" Tag="{Binding}" Text="Edit subscription" />
+                                    <MenuFlyoutItem x:Uid="LibraryDeleteSubscription" Click="DeleteFeed_Click" Tag="{Binding}" Text="Delete subscription" />
                                 </MenuFlyout>
                             </Grid.ContextFlyout>
                             <Grid.ColumnDefinitions>
@@ -129,6 +134,7 @@
                                     TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                             <Button
+                                x:Uid="LibraryPushSubscription"
                                 Grid.Column="2"
                                 AutomationProperties.Name="Push this subscription"
                                 Click="FeedPush_Click"
@@ -144,6 +150,7 @@
             <Grid>
                 <TextBlock
                     Foreground="{StaticResource ShellTextBrush}"
+                    x:Uid="LibraryHeading"
                     Text="Library"
                     FontWeight="SemiBold" />
                 <TextBlock
@@ -187,6 +194,7 @@
                                     Margin="8,2"
                                     Foreground="{StaticResource ShellSecondaryTextBrush}"
                                     Opacity="{Binding EmptyStateOpacity}"
+                                    x:Uid="LibraryNoPapers"
                                     Text="No papers pushed yet." />
                                 <ListView
                                     Background="Transparent"

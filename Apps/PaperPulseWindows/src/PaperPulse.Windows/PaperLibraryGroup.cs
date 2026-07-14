@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using PaperPulse.Storage;
+using PaperPulse.Windows.Presentation;
 
 namespace PaperPulse.Windows;
 
@@ -42,9 +43,9 @@ public sealed partial class PaperLibraryItem : ObservableObject
 
     public StoredPaper Paper { get; }
     public string Title => Paper.Candidate.Title;
-    public string Authors => Paper.Candidate.Authors.Count == 0 ? "Unknown author" : string.Join(", ", Paper.Candidate.Authors);
+    public string Authors => Paper.Candidate.Authors.Count == 0 ? PaperPulseStrings.Get("UnknownAuthor") : string.Join(", ", Paper.Candidate.Authors);
     public string Brief => Paper.Candidate.Summary;
-    public string Date => Paper.Candidate.PublishedAt?.ToLocalTime().ToString("yyyy-MM-dd") ?? "Date unavailable";
+    public string Date => Paper.Candidate.PublishedAt?.ToLocalTime().ToString("yyyy-MM-dd") ?? PaperPulseStrings.Get("DateUnavailable");
     public double FavoriteOpacity => Paper.IsFavorite ? 1 : 0;
     public double SelectionAccentOpacity => IsSelected ? 1 : 0;
 

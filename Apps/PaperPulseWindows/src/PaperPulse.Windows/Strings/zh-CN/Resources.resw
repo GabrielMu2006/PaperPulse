@@ -10,4 +10,102 @@
   <data name="SettingsKeywordLibraryBox.PlaceholderText" xml:space="preserve"><value>智能体，检索，多模态</value></data>
   <data name="SettingsStorageHeading.Text" xml:space="preserve"><value>存储</value></data>
   <data name="SettingsClearUnclassified.Text" xml:space="preserve"><value>清理未分类论文</value></data>
+  <data name="LibrarySearch.PlaceholderText" xml:space="preserve"><value>搜索论文</value></data>
+  <data name="LibraryAllPapers.Content" xml:space="preserve"><value>全部论文</value></data>
+  <data name="LibraryFavorites.Content" xml:space="preserve"><value>收藏</value></data>
+  <data name="LibraryNewSubscription.Text" xml:space="preserve"><value>新建订阅</value></data>
+  <data name="LibrarySettings.Text" xml:space="preserve"><value>设置</value></data>
+  <data name="LibraryFeeds.Text" xml:space="preserve"><value>订阅</value></data>
+  <data name="LibraryEditSubscription.Text" xml:space="preserve"><value>编辑订阅</value></data>
+  <data name="LibraryDeleteSubscription.Text" xml:space="preserve"><value>删除订阅</value></data>
+  <data name="LibraryHeading.Text" xml:space="preserve"><value>论文库</value></data>
+  <data name="LibraryNoPapers.Text" xml:space="preserve"><value>尚未推送论文。</value></data>
+  <data name="LibraryAllPapers.AutomationProperties.Name" xml:space="preserve"><value>显示全部论文</value></data>
+  <data name="LibraryFavorites.AutomationProperties.Name" xml:space="preserve"><value>显示收藏论文</value></data>
+  <data name="FeedEditorDialog.CloseButtonText" xml:space="preserve"><value>取消</value></data>
+  <data name="FeedEditorDialog.PrimaryButtonText" xml:space="preserve"><value>保存订阅</value></data>
+  <data name="FeedEditorHeading.Text" xml:space="preserve"><value>订阅</value></data>
+  <data name="FeedEditorDescription.Text" xml:space="preserve"><value>配置这次手动推送论文所用的来源与筛选条件。</value></data>
+  <data name="FeedEditorName.Text" xml:space="preserve"><value>名称</value></data>
+  <data name="FeedEditorNameBox.PlaceholderText" xml:space="preserve"><value>订阅名称</value></data>
+  <data name="FeedEditorCategories.Text" xml:space="preserve"><value>arXiv 分类</value></data>
+  <data name="FeedEditorCategoriesBox.PlaceholderText" xml:space="preserve"><value>cs.AI, cs.CL</value></data>
+  <data name="FeedEditorKeywords.Text" xml:space="preserve"><value>关键词（任一匹配）</value></data>
+  <data name="FeedEditorKeywordsBox.PlaceholderText" xml:space="preserve"><value>智能体，检索</value></data>
+  <data name="FeedEditorExcludedKeywords.Text" xml:space="preserve"><value>排除关键词</value></data>
+  <data name="FeedEditorExcludedKeywordsBox.PlaceholderText" xml:space="preserve"><value>综述，社论</value></data>
+  <data name="FeedEditorAuthority.Text" xml:space="preserve"><value>权威性筛选</value></data>
+  <data name="FeedEditorInstitutionsBox.PlaceholderText" xml:space="preserve"><value>必需机构，以逗号分隔</value></data>
+  <data name="FeedEditorVenuesBox.PlaceholderText" xml:space="preserve"><value>必需期刊或会议，以逗号分隔</value></data>
+  <data name="FeedEditorAuthorityHint.Text" xml:space="preserve"><value>机构和期刊留空表示不限制，但仍会执行权威性评估。</value></data>
+  <data name="FeedEditorSources.Text" xml:space="preserve"><value>学术来源</value></data>
+  <data name="FeedEditorLimit.Text" xml:space="preserve"><value>每次推送论文数</value></data>
+  <data name="FeedEditorLookback.Text" xml:space="preserve"><value>回溯天数</value></data>
+  <data name="PaperDetailEmptyTitle.Text" xml:space="preserve"><value>尚未选择论文</value></data>
+  <data name="PaperDetailEmptyMessage.Text" xml:space="preserve"><value>从论文库选择一篇论文开始阅读。</value></data>
+  <data name="PaperDetailFavorite.AutomationProperties.Name" xml:space="preserve"><value>切换所选论文的收藏状态</value></data>
+  <data name="PaperDetailFavorite.ToolTipService.ToolTip" xml:space="preserve"><value>切换所选论文的收藏状态</value></data>
+  <data name="PaperDetailBrief.Text" xml:space="preserve"><value>简介</value></data>
+  <data name="PaperDetailSource.AutomationProperties.Name" xml:space="preserve"><value>打开论文来源页面</value></data>
+  <data name="PaperDetailSource.ToolTipService.ToolTip" xml:space="preserve"><value>打开论文来源页面</value></data>
+  <data name="PaperDetailSourceText.Text" xml:space="preserve"><value>打开来源页面</value></data>
+  <data name="FeedEditorNewTitle" xml:space="preserve"><value>新建订阅</value></data>
+  <data name="FeedEditorEditTitle" xml:space="preserve"><value>编辑订阅</value></data>
+  <data name="FeedEditorValidation" xml:space="preserve"><value>请填写名称、至少一个分类或关键词，以及一个学术来源。</value></data>
+  <data name="NoPaperSelected" xml:space="preserve"><value>尚未选择论文</value></data>
+  <data name="ChoosePaperToRead" xml:space="preserve"><value>从论文库选择一篇论文开始阅读。</value></data>
+  <data name="ChoosePaperToOpenPdf" xml:space="preserve"><value>从论文库选择一篇论文以打开其本地 PDF。</value></data>
+  <data name="UnknownAuthor" xml:space="preserve"><value>作者未知</value></data>
+  <data name="VenueUnavailable" xml:space="preserve"><value>期刊或会议未知</value></data>
+  <data name="DateUnavailable" xml:space="preserve"><value>日期未知</value></data>
+  <data name="CitationCount" xml:space="preserve"><value>{0} 次引用</value></data>
+  <data name="CitationsUnavailable" xml:space="preserve"><value>引用数未知</value></data>
+  <data name="NoLocalPdf" xml:space="preserve"><value>没有可用的本地 PDF</value></data>
+  <data name="CouldNotOpenLocalPdf" xml:space="preserve"><value>无法打开本地 PDF</value></data>
+  <data name="RetryFeedPush" xml:space="preserve"><value>请再次推送该论文所在的订阅，以重新尝试获取已验证的开放获取 PDF。</value></data>
+  <data name="AllConfiguredSources" xml:space="preserve"><value>全部已配置来源</value></data>
+  <data name="CouldNotOpenSourcePage" xml:space="preserve"><value>无法打开来源页面。</value></data>
+  <data name="ClearUnclassifiedTitle" xml:space="preserve"><value>清理未分类论文？</value></data>
+  <data name="ClearUnclassifiedContent" xml:space="preserve"><value>这会删除未分类论文、其本地 PDF 和已保存的全文解读。</value></data>
+  <data name="Clear" xml:space="preserve"><value>清理</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="DeleteSubscriptionTitle" xml:space="preserve"><value>删除订阅？</value></data>
+  <data name="DeleteSubscriptionContent" xml:space="preserve"><value>论文仍会保留在论文库中，但 {0} 不再对它们分组。</value></data>
+  <data name="Delete" xml:space="preserve"><value>删除</value></data>
+  <data name="StartingPaperPulse" xml:space="preserve"><value>正在启动 PaperPulse...</value></data>
+  <data name="SelectPaper" xml:space="preserve"><value>选择一篇论文</value></data>
+  <data name="SelectPaperToViewAbstract" xml:space="preserve"><value>选择一篇论文以查看其摘要。</value></data>
+  <data name="SettingsSavedRestart" xml:space="preserve"><value>设置已保存。请重启 PaperPulse 以应用界面语言。</value></data>
+  <data name="NoUnclassifiedPapers" xml:space="preserve"><value>没有可清理的未分类论文。</value></data>
+  <data name="ClearedUnclassifiedPapers" xml:space="preserve"><value>已清理 {0} 篇未分类论文。</value></data>
+  <data name="SearchingFeed" xml:space="preserve"><value>正在检索 {0}...</value></data>
+  <data name="ProcessingFeed" xml:space="preserve"><value>正在处理第 {0} / {1} 篇...</value></data>
+  <data name="PushResult" xml:space="preserve"><value>已保存 {0} 篇，已跳过 {1} 篇。</value></data>
+  <data name="SourcesUnavailable" xml:space="preserve"><value>{0} 个来源不可用。</value></data>
+  <data name="CouldNotFinishPush" xml:space="preserve"><value>无法完成本次订阅推送。</value></data>
+  <data name="AddedToFavorites" xml:space="preserve"><value>已添加到收藏。</value></data>
+  <data name="RemovedFromFavorites" xml:space="preserve"><value>已从收藏中移除。</value></data>
+  <data name="CouldNotUpdateFavorite" xml:space="preserve"><value>无法更新收藏状态：{0}</value></data>
+  <data name="SubscriptionNeedsName" xml:space="preserve"><value>订阅需要名称。</value></data>
+  <data name="SavedFeed" xml:space="preserve"><value>已保存 {0}。</value></data>
+  <data name="DeletedFeed" xml:space="preserve"><value>已删除 {0}。</value></data>
+  <data name="LoadingLibrary" xml:space="preserve"><value>正在加载论文库...</value></data>
+  <data name="Ready" xml:space="preserve"><value>就绪</value></data>
+  <data name="CouldNotLoadLibrary" xml:space="preserve"><value>无法加载论文库：{0}</value></data>
+  <data name="SourcesRefusedDirectPdf" xml:space="preserve"><value>部分来源拒绝提供直接 PDF 访问。</value></data>
+  <data name="NoVerifiedOpenAccessPdf" xml:space="preserve"><value>部分论文没有已验证的开放获取 PDF。</value></data>
+  <data name="InvalidPdfResponse" xml:space="preserve"><value>部分来源未返回有效 PDF。</value></data>
+  <data name="CouldNotSaveLocalPdf" xml:space="preserve"><value>部分本地 PDF 文件无法保存。</value></data>
+  <data name="NoAbstractProvided" xml:space="preserve"><value>该来源未提供摘要。</value></data>
+  <data name="SettingsEnglish.Content" xml:space="preserve"><value>英文</value></data>
+  <data name="SettingsChinese.Content" xml:space="preserve"><value>中文</value></data>
+  <data name="SettingsBriefEnglish.Content" xml:space="preserve"><value>英文</value></data>
+  <data name="SettingsBriefChinese.Content" xml:space="preserve"><value>中文</value></data>
+  <data name="LibraryNewSubscriptionButton.AutomationProperties.Name" xml:space="preserve"><value>新建订阅</value></data>
+  <data name="LibraryNewSubscriptionButton.ToolTipService.ToolTip" xml:space="preserve"><value>新建订阅</value></data>
+  <data name="LibrarySettingsButton.AutomationProperties.Name" xml:space="preserve"><value>打开设置</value></data>
+  <data name="LibrarySettingsButton.ToolTipService.ToolTip" xml:space="preserve"><value>打开设置</value></data>
+  <data name="LibraryPushSubscription.AutomationProperties.Name" xml:space="preserve"><value>推送此订阅</value></data>
+  <data name="LibraryPushSubscription.ToolTipService.ToolTip" xml:space="preserve"><value>推送此订阅</value></data>
+  <data name="WorkspaceSplitter.ToolTipService.ToolTip" xml:space="preserve"><value>调整论文详情与 PDF 的宽度</value></data>
 </root>

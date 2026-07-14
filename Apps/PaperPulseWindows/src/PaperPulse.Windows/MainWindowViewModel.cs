@@ -23,7 +23,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private FeedConfig? selectedFeed;
     private StoredPaper? selectedPaper;
     private string searchText = string.Empty;
-    private string status = "Starting PaperPulse...";
+    private string status = PaperPulseStrings.Get("StartingPaperPulse");
     private bool isRefreshing;
     private bool favoritesOnly;
     private bool isInitialized;
@@ -61,8 +61,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    public string SelectedPaperTitle => SelectedPaper?.Candidate.Title ?? "Select a paper";
-    public string SelectedPaperSummary => SelectedPaper?.Candidate.Summary ?? "Select a paper to view its abstract.";
+    public string SelectedPaperTitle => SelectedPaper?.Candidate.Title ?? PaperPulseStrings.Get("SelectPaper");
+    public string SelectedPaperSummary => SelectedPaper?.Candidate.Summary ?? PaperPulseStrings.Get("SelectPaperToViewAbstract");
     public bool HasSelectedPaper => SelectedPaper is not null;
 
     public PaperDetailPresentation SelectedPaperPresentation => PaperDetailPresentation.Create(SelectedPaper);
@@ -175,7 +175,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             repository.SetSetting("summaryLanguage", SummaryLanguage);
             repository.SetSetting("keywordLibrary", KeywordLibraryText);
         });
-        Status = "Saved settings. Restart PaperPulse to apply the interface language.";
+        Status = PaperPulseStrings.Get("SettingsSavedRestart");
     }
 
     public async Task<int> ClearUnclassifiedPapersAsync()
@@ -193,7 +193,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
             }
         });
         await ReloadAsync();
-        Status = cleared.Papers.Count == 0 ? "No unclassified papers to clear." : $"Cleared {cleared.Papers.Count} unclassified papers.";
+        Status = cleared.Papers.Count == 0
+            ? PaperPulseStrings.Get("NoUnclassifiedPapers")
+            : PaperPulseStrings.Format("ClearedUnclassifiedPapers", cleared.Papers.Count);
         return cleared.Papers.Count;
     }
 
@@ -214,7 +216,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         if (IsRefreshing) return;
         IsRefreshing = true;
-        Status = $"Searching {feed.Name}...";
+        Status = PaperPulseStrings.Format("SearchingFeed", feed.Name);
         try
         {
             Dictionary<string, StoredPaper> existing = Papers.ToDictionary(paper => paper.Candidate.StableId);
@@ -225,7 +227,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
                 .Where(HasStoredPdf)
                 .Select(paper => paper.Candidate.StableId)
                 .ToHashSet(StringComparer.Ordinal);
-            Progress<PaperPushProgress> progress = new(item => Status = $"Processing {item.Current} of {item.Total}...");
+            Progress<PaperPushProgress> progress = new(item => Status = PaperPulseStrings.Format("ProcessingFeed", item.Current, item.Total));
             PaperPushResult result = await paperPush.RunAsync(feed, alreadyLinked, reusableLocal, progress);
             int saved = 0;
             int writeFailures = 0;
@@ -266,12 +268,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
             await ReloadAsync(feed.Id);
             int skipped = result.Failures.Count + writeFailures;
-            Status = $"{saved} saved, {skipped} skipped.";
+            Status = PaperPulseStrings.Format("PushResult", saved, skipped);
             string failureSummary = DescribePushFailures(result.Failures, writeFailures);
             if (failureSummary.Length > 0) Status += $" {failureSummary}";
-            if (result.SourceFailures.Count > 0) Status += $" {result.SourceFailures.Count} sources unavailable.";
+            if (result.SourceFailures.Count > 0) Status += $" {PaperPulseStrings.Format("SourcesUnavailable", result.SourceFailures.Count)}";
         }
-        catch { Status = "Could not finish this subscription push."; }
+        catch { Status = PaperPulseStrings.Get("CouldNotFinishPush"); }
         finally { IsRefreshing = false; }
     }
 
@@ -288,11 +290,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
             if (index >= 0) Papers[index] = updated;
             SelectedPaper = updated;
             RefreshLibraryGroups(focusSelectedFeed: false);
-            Status = isFavorite ? "Added to favorites." : "Removed from favorites.";
+            Status = isFavorite ? PaperPulseStrings.Get("AddedToFavorites") : PaperPulseStrings.Get("RemovedFromFavorites");
         }
         catch (Exception error)
         {
-            Status = $"Could not update favorite: {error.Message}";
+            Status = PaperPulseStrings.Format("CouldNotUpdateFavorite", error.Message);
         }
     }
 
@@ -306,13 +308,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(feed.Name))
         {
-            Status = "A subscription needs a name.";
+            Status = PaperPulseStrings.Get("SubscriptionNeedsName");
             return;
         }
 
         await Task.Run(() => repository.SaveFeed(feed));
         await ReloadAsync(feed.Id);
-        Status = $"Saved {feed.Name}.";
+        Status = PaperPulseStrings.Format("SavedFeed", feed.Name);
     }
 
     public async Task<bool> DeleteSelectedFeedAsync()
@@ -323,7 +325,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         SelectedFeed = null;
         await Task.Run(() => repository.DeleteFeed(id));
         await ReloadAsync();
-        Status = $"Deleted {name}.";
+        Status = PaperPulseStrings.Format("DeletedFeed", name);
         return true;
     }
 
@@ -334,16 +336,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     private async Task ReloadAsync(Guid? preferredFeedId = null)
     {
-        Status = "Loading library...";
+        Status = PaperPulseStrings.Get("LoadingLibrary");
         try
         {
             LibrarySnapshot snapshot = await Task.Run(ReadLibrarySnapshot);
             ApplySnapshot(snapshot, preferredFeedId);
-            Status = "Ready";
+            Status = PaperPulseStrings.Get("Ready");
         }
         catch (Exception error)
         {
-            Status = $"Could not load the library: {error.Message}";
+            Status = PaperPulseStrings.Format("CouldNotLoadLibrary", error.Message);
         }
     }
 
@@ -419,10 +421,10 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private static string DescribePushFailures(IReadOnlyList<PaperPushFailure> failures, int writeFailures)
     {
         List<string> messages = [];
-        if (failures.Any(failure => failure.Failure == PaperPdfDownloadFailure.HttpStatus)) messages.Add("Some sources refused direct PDF access.");
-        if (failures.Any(failure => failure.Failure is PaperPdfDownloadFailure.UnverifiedOpenAccess or PaperPdfDownloadFailure.MissingPdfUrl)) messages.Add("Some papers have no verified open-access PDF.");
-        if (failures.Any(failure => failure.Failure is PaperPdfDownloadFailure.InvalidMimeType or PaperPdfDownloadFailure.InvalidPdfSignature or PaperPdfDownloadFailure.FileTooSmall or PaperPdfDownloadFailure.FileTooLarge)) messages.Add("Some sources did not return a valid PDF.");
-        if (writeFailures > 0) messages.Add("Some local PDF files could not be saved.");
+        if (failures.Any(failure => failure.Failure == PaperPdfDownloadFailure.HttpStatus)) messages.Add(PaperPulseStrings.Get("SourcesRefusedDirectPdf"));
+        if (failures.Any(failure => failure.Failure is PaperPdfDownloadFailure.UnverifiedOpenAccess or PaperPdfDownloadFailure.MissingPdfUrl)) messages.Add(PaperPulseStrings.Get("NoVerifiedOpenAccessPdf"));
+        if (failures.Any(failure => failure.Failure is PaperPdfDownloadFailure.InvalidMimeType or PaperPdfDownloadFailure.InvalidPdfSignature or PaperPdfDownloadFailure.FileTooSmall or PaperPdfDownloadFailure.FileTooLarge)) messages.Add(PaperPulseStrings.Get("InvalidPdfResponse"));
+        if (writeFailures > 0) messages.Add(PaperPulseStrings.Get("CouldNotSaveLocalPdf"));
         return string.Join(" ", messages);
     }
 
@@ -433,10 +435,10 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     private static string DisplaySummary(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value)) return "No abstract provided by this source.";
+        if (string.IsNullOrWhiteSpace(value)) return PaperPulseStrings.Get("NoAbstractProvided");
         string decoded = WebUtility.HtmlDecode(value);
         string plainText = Whitespace.Replace(Markup.Replace(decoded, " "), " ").Trim();
-        return plainText.Length == 0 ? "No abstract provided by this source." : plainText;
+        return plainText.Length == 0 ? PaperPulseStrings.Get("NoAbstractProvided") : plainText;
     }
 
     private sealed record LibrarySnapshot(

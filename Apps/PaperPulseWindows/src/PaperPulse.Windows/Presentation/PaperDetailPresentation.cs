@@ -23,8 +23,8 @@ public sealed record PaperDetailPresentation(
         {
             return new PaperDetailPresentation(
                 false,
-                "No paper selected",
-                "Choose a paper from the library to start reading.",
+                PaperPulseStrings.Get("NoPaperSelected"),
+                PaperPulseStrings.Get("ChoosePaperToRead"),
                 string.Empty,
                 string.Empty,
                 string.Empty,
@@ -40,12 +40,12 @@ public sealed record PaperDetailPresentation(
         return new PaperDetailPresentation(
             true,
             candidate.Title,
-            candidate.Authors.Count == 0 ? "Unknown author" : string.Join(", ", candidate.Authors),
+            candidate.Authors.Count == 0 ? PaperPulseStrings.Get("UnknownAuthor") : string.Join(", ", candidate.Authors),
             candidate.Summary,
             PaperPulseJson.SourceName(candidate.Source),
-            string.IsNullOrWhiteSpace(candidate.Venue) ? "Venue unavailable" : candidate.Venue,
-            candidate.PublishedAt?.ToLocalTime().ToString("yyyy-MM-dd") ?? "Date unavailable",
-            candidate.CitationCount is int citations ? $"{citations} citations" : "Citations unavailable",
+            string.IsNullOrWhiteSpace(candidate.Venue) ? PaperPulseStrings.Get("VenueUnavailable") : candidate.Venue,
+            candidate.PublishedAt?.ToLocalTime().ToString("yyyy-MM-dd") ?? PaperPulseStrings.Get("DateUnavailable"),
+            candidate.CitationCount is int citations ? PaperPulseStrings.Format("CitationCount", citations) : PaperPulseStrings.Get("CitationsUnavailable"),
             paper.IsFavorite,
             sourceUri);
     }

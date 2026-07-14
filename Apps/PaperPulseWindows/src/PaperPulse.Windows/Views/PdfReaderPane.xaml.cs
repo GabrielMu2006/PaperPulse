@@ -34,11 +34,7 @@ public sealed partial class PdfReaderPane : UserControl
     {
         if (presentation?.State != PaperPdfState.Ready || string.IsNullOrWhiteSpace(presentation.LocalPath))
         {
-            ShowState(presentation ?? new PaperPdfPresentation(
-                PaperPdfState.NoSelection,
-                null,
-                "No paper selected",
-                "Choose a paper from the library to open its local PDF."));
+            ShowState(presentation ?? PaperPdfPresentation.NoSelection());
             return;
         }
 
