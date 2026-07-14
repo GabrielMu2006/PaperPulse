@@ -50,6 +50,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             OnPropertyChanged(nameof(HasSelectedPaper));
             OnPropertyChanged(nameof(SelectedPdfPath));
             OnPropertyChanged(nameof(HasSelectedPdf));
+            UpdatePaperSelection();
         }
     }
 
@@ -137,8 +138,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     public async Task RefreshSelectedFeedAsync()
     {
-        if (SelectedFeed is null || IsRefreshing) return;
-        FeedConfig feed = SelectedFeed;
+        if (SelectedFeed is null) return;
+        await RefreshFeedAsync(SelectedFeed);
+    }
+
+    public async Task RefreshFeedAsync(FeedConfig feed)
+    {
+        if (IsRefreshing) return;
         IsRefreshing = true;
         Status = $"Searching {feed.Name}...";
         try
@@ -223,6 +229,10 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     public void ToggleFavoritesFilter() => FavoritesOnly = !FavoritesOnly;
+
+    public void ShowAllPapers() => FavoritesOnly = false;
+
+    public void ShowFavoritePapers() => FavoritesOnly = true;
 
     public async Task SaveFeedAsync(FeedConfig feed)
     {
@@ -316,10 +326,19 @@ public sealed partial class MainWindowViewModel : ObservableObject
                 SelectedFeed?.Id,
                 focusSelectedFeed,
                 expanded);
-            LibraryGroups.Add(new PaperLibraryGroup(definition, isExpanded));
+            LibraryGroups.Add(new PaperLibraryGroup(definition, isExpanded, SelectedPaper?.Candidate.StableId));
         }
 
-        if (SelectedPaper is not null && !LibraryGroups.SelectMany(group => group.Papers).Any(paper => paper.Candidate.StableId == SelectedPaper.Candidate.StableId)) SelectedPaper = null;
+        if (SelectedPaper is not null && !LibraryGroups.SelectMany(group => group.Papers).Any(item => item.Paper.Candidate.StableId == SelectedPaper.Candidate.StableId)) SelectedPaper = null;
+    }
+
+    private void UpdatePaperSelection()
+    {
+        string? selectedId = SelectedPaper?.Candidate.StableId;
+        foreach (PaperLibraryItem item in LibraryGroups.SelectMany(group => group.Papers))
+        {
+            item.IsSelected = item.Paper.Candidate.StableId == selectedId;
+        }
     }
 
     private bool HasStoredPdf(StoredPaper paper)

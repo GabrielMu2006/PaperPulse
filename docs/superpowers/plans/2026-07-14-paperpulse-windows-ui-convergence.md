@@ -149,8 +149,8 @@ Expected: portable tests pass; Windows presentation tests are deferred to GitHub
 - [x] Load `splitRatio` on startup and save after a completed drag, not continuously on every pointer move.
 - [x] Preserve the selected paper and WebView2 source while resizing or maximizing.
 - [x] Enforce a practical 900 x 600 minimum content experience and verify that text wraps rather than overlaps at the minimum.
-- [ ] Run GitHub Windows validation after the focused commit.
-- [ ] Commit this task as `feat: balance windows reading workspace`.
+- [x] Run GitHub Windows validation after the focused commit.
+- [x] Commit this task as `feat: balance windows reading workspace`.
 
 **Acceptance:** At 1920 x 1080 maximized, the sidebar stays near 340 px and the rest of the window is divided approximately 1:1 between details and PDF. Resizing does not create the giant center list/tiny side panes shown in screenshot 1050, and the user-adjusted ratio survives restart.
 
@@ -174,14 +174,14 @@ Expected: portable tests pass; Windows presentation tests are deferred to GitHub
 - Each group exposes its expanded state and paper count; selecting a feed expands it and collapses other feeds plus unclassified.
 - Paper rows expose title, favorite, author, short brief, and date with the documented line limits.
 
-- [ ] Move search and favorites filtering from the center shell into the sidebar header.
-- [ ] Replace the current global bottom paper-plane button with one icon button per feed row.
-- [ ] Keep edit in the feed context menu and show delete only where allowed by the existing behavior.
-- [ ] Render feed and unclassified groups as collapsible sections inside one sidebar scroll surface.
-- [ ] Keep selected-paper state independent from favorite refreshes so favoriting does not select another feed or collapse the unclassified group.
-- [ ] Add the 3 px selected-paper emphasis line, gold favorite star, two-line title, one-line author, two-line brief, date, and low-emphasis empty-group row.
-- [ ] Verify search covers title, author, and abstract using the existing filtering behavior.
-- [ ] Commit this task as `feat: rebuild windows library sidebar`.
+- [x] Move search and favorites filtering from the center shell into the sidebar header.
+- [x] Replace the current global bottom paper-plane button with one icon button per feed row.
+- [x] Keep edit in the feed context menu and show delete only where allowed by the existing behavior.
+- [x] Render feed and unclassified groups as collapsible sections inside one sidebar scroll surface.
+- [x] Keep selected-paper state independent from favorite refreshes so favoriting does not select another feed or collapse the unclassified group.
+- [x] Add the 3 px selected-paper emphasis line, gold favorite star, two-line title, one-line author, two-line brief, date, and low-emphasis empty-group row.
+- [x] Verify search covers title, author, and abstract using the existing filtering behavior.
+- [x] Commit this task as `feat: rebuild windows library sidebar`.
 
 **Acceptance:** The sidebar is dense but readable, every feed has the correct manual push action, group expansion follows the preserved contract, favoriting does not disturb selection/expansion, and paper rows remain stable in English and Chinese-length content.
 

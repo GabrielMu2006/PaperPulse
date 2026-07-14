@@ -1,4 +1,6 @@
 using Xunit;
+using PaperPulse.Contracts;
+using PaperPulse.Storage;
 using PaperPulse.Windows.Presentation;
 
 namespace PaperPulse.Windows.Tests;
@@ -28,5 +30,26 @@ public sealed class WindowsShellTests
         Assert.Equal(0.25, WorkspaceSplitState.Parse("0.1"));
         Assert.Equal(0.625, WorkspaceSplitState.Parse("0.625"));
         Assert.Equal("0.625", WorkspaceSplitState.Format(0.625));
+    }
+
+    [Fact]
+    public void LibraryItemExposesFavoriteAndSelectionState()
+    {
+        StoredPaper paper = new(
+            new PaperCandidate(PaperSourceKind.Arxiv, "2607.00001v1", "Selected paper", "A short abstract.", authors: ["Ada"]),
+            null,
+            null,
+            DateTimeOffset.UnixEpoch,
+            isFavorite: true);
+
+        PaperLibraryItem item = new(paper, isSelected: false);
+
+        Assert.Equal(1, item.FavoriteOpacity);
+        Assert.Equal(0, item.SelectionAccentOpacity);
+        Assert.Equal("Ada", item.Authors);
+
+        item.IsSelected = true;
+
+        Assert.Equal(1, item.SelectionAccentOpacity);
     }
 }

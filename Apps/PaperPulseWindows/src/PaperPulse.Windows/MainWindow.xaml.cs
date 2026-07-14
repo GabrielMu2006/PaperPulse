@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Input;
 using PaperPulse.Contracts;
 using PaperPulse.Storage;
 using PaperPulse.Windows.Presentation;
+using PaperPulse.Windows.Views;
 
 namespace PaperPulse.Windows;
 
@@ -27,27 +28,23 @@ public sealed partial class MainWindow : Window
         });
     }
 
-    private async void Refresh_Click(object sender, RoutedEventArgs e) => await ViewModel.RefreshSelectedFeedAsync();
-
     private async void Favorite_Click(object sender, RoutedEventArgs e) => await ViewModel.ToggleFavoriteAsync();
 
     private async void OpenPdf_Click(object sender, RoutedEventArgs e) => await ShowSelectedPdfAsync();
 
-    private void FavoritesFilter_Click(object sender, RoutedEventArgs e) => ViewModel.ToggleFavoritesFilter();
+    private async void LibrarySidebar_AddFeedRequested(object sender, EventArgs e) => await EditFeedAsync(null);
 
-    private async void AddFeed_Click(object sender, RoutedEventArgs e) => await EditFeedAsync(null);
+    private async void LibrarySidebar_EditFeedRequested(object sender, FeedRequestEventArgs e) => await EditFeedAsync(e.Feed);
 
-    private async void EditFeed_Click(object sender, RoutedEventArgs e) => await EditFeedAsync(ViewModel.SelectedFeed);
-
-    private async void DeleteFeed_Click(object sender, RoutedEventArgs e)
+    private async void LibrarySidebar_DeleteFeedRequested(object sender, FeedRequestEventArgs e)
     {
-        if (ViewModel.SelectedFeed is null) return;
+        ViewModel.SelectedFeed = e.Feed;
 
         ContentDialog confirmation = new()
         {
             XamlRoot = ((FrameworkElement)Content).XamlRoot,
             Title = "Delete subscription?",
-            Content = $"Papers remain in the library, but {ViewModel.SelectedFeed.Name} will no longer group them.",
+            Content = $"Papers remain in the library, but {e.Feed.Name} will no longer group them.",
             PrimaryButtonText = "Delete",
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Close
@@ -56,10 +53,8 @@ public sealed partial class MainWindow : Window
         if (await confirmation.ShowAsync() == ContentDialogResult.Primary) await ViewModel.DeleteSelectedFeedAsync();
     }
 
-    private async void PaperList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void LibrarySidebar_PaperSelected(object sender, PaperSelectionEventArgs e)
     {
-        if (sender is not ListView { SelectedItem: StoredPaper paper }) return;
-        ViewModel.SelectPaper(paper);
         await ShowSelectedPdfAsync();
     }
 

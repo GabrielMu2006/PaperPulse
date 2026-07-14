@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:presentation="using:PaperPulse.Windows.Presentation"
+    xmlns:views="using:PaperPulse.Windows.Views"
     Title="PaperPulse">
     <Grid
         MinHeight="600"
@@ -21,127 +22,11 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Style="{StaticResource PaperPulseGlassPanelStyle}">
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-                <StackPanel Spacing="14">
-                    <StackPanel Spacing="2">
-                        <TextBlock
-                            Foreground="{StaticResource ShellTextBrush}"
-                            Text="PaperPulse"
-                            FontSize="24"
-                            FontWeight="SemiBold" />
-                        <TextBlock
-                            Foreground="{StaticResource ShellSecondaryTextBrush}"
-                            Text="Research library"
-                            FontSize="12" />
-                    </StackPanel>
-
-                    <Grid>
-                        <TextBlock
-                            Foreground="{StaticResource ShellTextBrush}"
-                            Text="Subscriptions"
-                            FontWeight="SemiBold" />
-                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="4">
-                            <Button
-                                AutomationProperties.Name="New subscription"
-                                Click="AddFeed_Click"
-                                Style="{StaticResource PaperPulseIconButtonStyle}"
-                                ToolTipService.ToolTip="New subscription">
-                                <SymbolIcon Symbol="Add" />
-                            </Button>
-                            <Button
-                                AutomationProperties.Name="Edit selected subscription"
-                                Click="EditFeed_Click"
-                                Style="{StaticResource PaperPulseIconButtonStyle}"
-                                ToolTipService.ToolTip="Edit selected subscription">
-                                <SymbolIcon Symbol="Edit" />
-                            </Button>
-                            <Button
-                                AutomationProperties.Name="Delete selected subscription"
-                                Click="DeleteFeed_Click"
-                                Style="{StaticResource PaperPulseIconButtonStyle}"
-                                ToolTipService.ToolTip="Delete selected subscription">
-                                <SymbolIcon Symbol="Delete" />
-                            </Button>
-                        </StackPanel>
-                    </Grid>
-
-                    <ListView
-                        MaxHeight="260"
-                        Background="Transparent"
-                        BorderBrush="{StaticResource GlassStrokeBrush}"
-                        BorderThickness="{StaticResource OnePixelThickness}"
-                        DisplayMemberPath="Name"
-                        Foreground="{StaticResource ShellTextBrush}"
-                        ItemContainerStyle="{StaticResource PaperPulseListViewItemStyle}"
-                        ItemsSource="{Binding Feeds}"
-                        SelectedItem="{Binding SelectedFeed, Mode=TwoWay}" />
-
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button
-                            AutomationProperties.Name="Search selected subscription"
-                            Click="Refresh_Click"
-                            Style="{StaticResource PaperPulseIconButtonStyle}"
-                            ToolTipService.ToolTip="Search selected subscription">
-                            <SymbolIcon Symbol="Send" />
-                        </Button>
-                        <Button
-                            AutomationProperties.Name="Show only favorites"
-                            Click="FavoritesFilter_Click"
-                            Style="{StaticResource PaperPulseIconButtonStyle}"
-                            ToolTipService.ToolTip="Show only favorites">
-                            <SymbolIcon Symbol="Favorite" />
-                        </Button>
-                    </StackPanel>
-
-                    <TextBox
-                        PlaceholderText="Search papers"
-                        Style="{StaticResource PaperPulseInputStyle}"
-                        Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
-                    <TextBlock
-                        Foreground="{StaticResource ShellTextBrush}"
-                        Text="Library"
-                        FontWeight="SemiBold" />
-                    <ItemsControl ItemsSource="{Binding LibraryGroups}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Expander
-                                    Foreground="{StaticResource ShellTextBrush}"
-                                    Header="{Binding Header}"
-                                    IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
-                                    <ListView
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Foreground="{StaticResource ShellTextBrush}"
-                                        ItemContainerStyle="{StaticResource PaperPulseListViewItemStyle}"
-                                        ItemsSource="{Binding Papers}"
-                                        SelectionChanged="PaperList_SelectionChanged">
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Padding="8" Spacing="3">
-                                                    <TextBlock
-                                                        Foreground="{StaticResource ShellTextBrush}"
-                                                        FontWeight="SemiBold"
-                                                        Text="{Binding Candidate.Title}"
-                                                        TextWrapping="Wrap" />
-                                                    <TextBlock
-                                                        Foreground="{StaticResource ShellSecondaryTextBrush}"
-                                                        Text="{Binding Candidate.SourceId}" />
-                                                    <TextBlock
-                                                        Foreground="{StaticResource ShellSecondaryTextBrush}"
-                                                        MaxLines="2"
-                                                        Text="{Binding Candidate.Summary}"
-                                                        TextWrapping="Wrap" />
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                    </ListView>
-                                </Expander>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </ScrollViewer>
+            <views:LibrarySidebar
+                AddFeedRequested="LibrarySidebar_AddFeedRequested"
+                DeleteFeedRequested="LibrarySidebar_DeleteFeedRequested"
+                EditFeedRequested="LibrarySidebar_EditFeedRequested"
+                PaperSelected="LibrarySidebar_PaperSelected" />
         </Border>
 
         <Grid Grid.Column="1" x:Name="WorkspaceGrid">
