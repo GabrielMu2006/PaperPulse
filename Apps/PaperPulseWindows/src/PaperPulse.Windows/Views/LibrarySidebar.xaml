@@ -89,19 +89,19 @@
             <TextBlock x:Uid="LibraryFeeds" Foreground="{StaticResource ShellSecondaryTextBrush}" Text="Feeds" FontWeight="SemiBold" />
 
             <ListView
+                x:Name="FeedsList"
                 Background="Transparent"
                 BorderThickness="0"
                 Foreground="{StaticResource ShellTextBrush}"
                 ItemContainerStyle="{StaticResource PaperPulseListViewItemStyle}"
                 ItemsSource="{Binding Feeds}"
+                SelectionChanged="FeedsList_SelectionChanged"
                 SelectedItem="{Binding SelectedFeed, Mode=TwoWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid
                             Padding="6"
-                            ColumnSpacing="8"
-                            PointerEntered="FeedRow_PointerEntered"
-                            PointerExited="FeedRow_PointerExited">
+                            ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="22" />
                                 <ColumnDefinition Width="*" />
@@ -132,7 +132,15 @@
                                     TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                             <Grid Grid.Column="2">
-                                <StackPanel x:Name="FeedActions" HorizontalAlignment="Left" Orientation="Horizontal" Spacing="4" Opacity="0" IsHitTestVisible="False">
+                                <StackPanel
+                                    x:Name="FeedActions"
+                                    HorizontalAlignment="Left"
+                                    IsHitTestVisible="False"
+                                    Loaded="FeedActions_Loaded"
+                                    Opacity="0"
+                                    Orientation="Horizontal"
+                                    Spacing="4"
+                                    Unloaded="FeedActions_Unloaded">
                                     <Button
                                         x:Uid="LibraryEditSubscriptionButton"
                                         AutomationProperties.Name="Edit subscription"

@@ -121,44 +121,55 @@ public sealed partial class MainWindow : Window
         if (await confirmation.ShowAsync() == ContentDialogResult.Primary) await ViewModel.DeleteSelectedFeedAsync();
     }
 
-    private void WorkspaceSplitter_PointerPressed(object sender, PointerRoutedEventArgs e)
+    private bool IsPointerOverWorkspaceDivider(PointerRoutedEventArgs e)
     {
+        double x = e.GetCurrentPoint(WorkspaceGrid).Position.X;
+        double dividerStart = InfoColumn.ActualWidth;
+        return x >= dividerStart && x <= dividerStart + WorkspaceSplitter.ActualWidth;
+    }
+
+    private void WorkspaceGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        if (!IsPointerOverWorkspaceDivider(e)) return;
         workspaceAvailableWidth = InfoColumn.ActualWidth + PdfColumn.ActualWidth;
         if (workspaceAvailableWidth <= 0) return;
         workspaceStartInfoWidth = InfoColumn.ActualWidth;
         workspaceStartPointerX = e.GetCurrentPoint(WorkspaceGrid).Position.X;
-        isResizingWorkspace = WorkspaceSplitter.CapturePointer(e.Pointer);
+        isResizingWorkspace = WorkspaceGrid.CapturePointer(e.Pointer);
         WorkspaceSplitterGrip.Opacity = isResizingWorkspace ? 1 : 0.7;
         e.Handled = isResizingWorkspace;
     }
 
-    private void WorkspaceSplitter_PointerEntered(object sender, PointerRoutedEventArgs e) => WorkspaceSplitterGrip.Opacity = 1;
-
-    private void WorkspaceSplitter_PointerExited(object sender, PointerRoutedEventArgs e)
+    private void WorkspaceGrid_PointerExited(object sender, PointerRoutedEventArgs e)
     {
         if (!isResizingWorkspace) WorkspaceSplitterGrip.Opacity = 0.7;
     }
 
-    private void WorkspaceSplitter_PointerMoved(object sender, PointerRoutedEventArgs e)
+    private void WorkspaceGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
     {
-        if (!isResizingWorkspace) return;
+        if (!isResizingWorkspace)
+        {
+            WorkspaceSplitterGrip.Opacity = IsPointerOverWorkspaceDivider(e) ? 1 : 0.7;
+            return;
+        }
+
         double offset = e.GetCurrentPoint(WorkspaceGrid).Position.X - workspaceStartPointerX;
         ApplyWorkspaceSplit((workspaceStartInfoWidth + offset) / workspaceAvailableWidth);
         e.Handled = true;
     }
 
-    private async void WorkspaceSplitter_PointerReleased(object sender, PointerRoutedEventArgs e)
+    private async void WorkspaceGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
     {
         if (!isResizingWorkspace) return;
         isResizingWorkspace = false;
-        WorkspaceSplitter.ReleasePointerCaptures();
+        WorkspaceGrid.ReleasePointerCaptures();
         WorkspaceSplitterGrip.Opacity = 0.7;
         double workspaceWidth = InfoColumn.ActualWidth + PdfColumn.ActualWidth;
         if (workspaceWidth > 0) await ViewModel.SaveWorkspaceSplitRatioAsync(InfoColumn.ActualWidth / workspaceWidth);
         e.Handled = true;
     }
 
-    private void WorkspaceSplitter_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+    private void WorkspaceGrid_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
     {
         isResizingWorkspace = false;
         WorkspaceSplitterGrip.Opacity = 0.7;

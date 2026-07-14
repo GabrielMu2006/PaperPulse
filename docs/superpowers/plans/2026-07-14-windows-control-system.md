@@ -179,7 +179,7 @@ git commit -m "feat: unify PaperPulse dialog controls"
 - Consumes: `MainWindowViewModel.SaveWorkspaceSplitRatioAsync(double)`, `WorkspaceSplitState.Clamp(double)`, and `SelectedFeed` binding.
 - Produces: `WorkspaceGrid_PointerPressed`, `WorkspaceGrid_PointerMoved`, `WorkspaceGrid_PointerReleased`, `WorkspaceGrid_PointerCaptureLost`, and `FeedsList_SelectionChanged` UI event handlers. No public domain API changes.
 
-- [ ] **Step 1: Put pointer capture on a full-height workspace hit surface**
+- [x] **Step 1: Put pointer capture on a full-height workspace hit surface**
 
 Set `WorkspaceGrid.Background="Transparent"` and attach the four pointer handlers to `WorkspaceGrid`. Keep the 8 px `WorkspaceSplitter` visual column and its centered 2 px x 48 px grip. On press, begin resize only when the pointer x-coordinate falls in the divider column:
 
@@ -206,7 +206,7 @@ private void WorkspaceGrid_PointerPressed(object sender, PointerRoutedEventArgs 
 
 Move/release/capture-lost handlers keep the existing ratio calculation and persistence but operate on `WorkspaceGrid`. Keep `WorkspaceSplitter` solely for its full-height visual and resize cursor; remove its direct pointer handlers. This makes the entire divider column actionable even when the visual grip is short.
 
-- [ ] **Step 2: Replace hover handlers with selected-feed action state**
+- [x] **Step 2: Replace hover handlers with selected-feed action state**
 
 Name the feed `ListView` `FeedsList`, remove `FeedRow_PointerEntered` and `FeedRow_PointerExited`, and add `SelectionChanged="FeedsList_SelectionChanged"`. Name the action stack `FeedActions` and register its `Loaded`/`Unloaded` events.
 
@@ -238,7 +238,7 @@ private void UpdateSelectedFeedActions()
 
 On `Unloaded`, remove the action element only if it is the currently registered instance for that feed. Leave paper-plane button markup and existing edit/delete events untouched. This preserves selection behavior for keyboard and mouse without new feed properties.
 
-- [ ] **Step 3: Keep the splitter control's layout full-height**
+- [x] **Step 3: Keep the splitter control's layout full-height**
 
 Make `WorkspaceSplitter` expose its resize cursor and stretch its XAML content across the final arrangement rectangle so the visual track and the parent hit-test column remain coherent:
 
@@ -256,7 +256,7 @@ public sealed class WorkspaceSplitter : ContentControl
 
 Do not alter the splitter width, ratio clamp, or persisted setting key.
 
-- [ ] **Step 4: Perform focused static validation**
+- [x] **Step 4: Perform focused static validation**
 
 Run:
 
@@ -267,7 +267,7 @@ rg -n 'WorkspaceGrid_Pointer|IsPointerOverWorkspaceDivider|FeedsList_SelectionCh
 
 Expected: `WorkspaceGrid_Pointer*` and `FeedsList_SelectionChanged` are present; `FeedRow_Pointer*` is absent; no whitespace errors occur.
 
-- [ ] **Step 5: Commit the interaction repairs**
+- [x] **Step 5: Commit the interaction repairs**
 
 ```bash
 git add Apps/PaperPulseWindows/src/PaperPulse.Windows/MainWindow.xaml Apps/PaperPulseWindows/src/PaperPulse.Windows/MainWindow.xaml.cs Apps/PaperPulseWindows/src/PaperPulse.Windows/Views/LibrarySidebar.xaml Apps/PaperPulseWindows/src/PaperPulse.Windows/Views/LibrarySidebar.xaml.cs Apps/PaperPulseWindows/src/PaperPulse.Windows/Presentation/WorkspaceSplitter.cs

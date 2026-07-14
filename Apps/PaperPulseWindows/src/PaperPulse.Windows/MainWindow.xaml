@@ -29,7 +29,15 @@
                 SettingsRequested="LibrarySidebar_SettingsRequested" />
         </Border>
 
-        <Grid Grid.Column="1" x:Name="WorkspaceGrid">
+        <Grid
+            x:Name="WorkspaceGrid"
+            Grid.Column="1"
+            Background="Transparent"
+            PointerCaptureLost="WorkspaceGrid_PointerCaptureLost"
+            PointerExited="WorkspaceGrid_PointerExited"
+            PointerMoved="WorkspaceGrid_PointerMoved"
+            PointerPressed="WorkspaceGrid_PointerPressed"
+            PointerReleased="WorkspaceGrid_PointerReleased">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="InfoColumn" Width="*" />
                 <ColumnDefinition Width="8" />
@@ -50,12 +58,6 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Background="{StaticResource GlassStrokeStrongBrush}"
-                PointerCaptureLost="WorkspaceSplitter_PointerCaptureLost"
-                PointerEntered="WorkspaceSplitter_PointerEntered"
-                PointerExited="WorkspaceSplitter_PointerExited"
-                PointerMoved="WorkspaceSplitter_PointerMoved"
-                PointerPressed="WorkspaceSplitter_PointerPressed"
-                PointerReleased="WorkspaceSplitter_PointerReleased"
                 ToolTipService.ToolTip="Resize paper details and PDF">
                 <Grid Background="Transparent">
                     <Border

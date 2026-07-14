@@ -7,6 +7,8 @@ namespace PaperPulse.Windows.Views;
 
 public sealed partial class LibrarySidebar : UserControl
 {
+    private readonly Dictionary<Guid, FrameworkElement> feedActionsById = new();
+
     public LibrarySidebar()
     {
         InitializeComponent();
@@ -52,15 +54,33 @@ public sealed partial class LibrarySidebar : UserControl
         if (sender is Button { Tag: FeedConfig feed }) DeleteFeedRequested?.Invoke(this, new FeedRequestEventArgs(feed));
     }
 
-    private void FeedRow_PointerEntered(object sender, PointerRoutedEventArgs e) => SetFeedActionsVisible(sender, true);
-
-    private void FeedRow_PointerExited(object sender, PointerRoutedEventArgs e) => SetFeedActionsVisible(sender, false);
-
-    private static void SetFeedActionsVisible(object sender, bool visible)
+    private void FeedActions_Loaded(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement row || row.FindName("FeedActions") is not FrameworkElement actions) return;
-        actions.Opacity = visible ? 1 : 0;
-        actions.IsHitTestVisible = visible;
+        if (sender is not FrameworkElement { DataContext: FeedConfig feed } actions) return;
+        feedActionsById[feed.Id] = actions;
+        UpdateSelectedFeedActions();
+    }
+
+    private void FeedActions_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: FeedConfig feed } actions) return;
+        if (feedActionsById.TryGetValue(feed.Id, out FrameworkElement? registered) && ReferenceEquals(registered, actions))
+        {
+            feedActionsById.Remove(feed.Id);
+        }
+    }
+
+    private void FeedsList_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateSelectedFeedActions();
+
+    private void UpdateSelectedFeedActions()
+    {
+        Guid? selectedId = FeedsList.SelectedItem is FeedConfig feed ? feed.Id : null;
+        foreach ((Guid feedId, FrameworkElement actions) in feedActionsById)
+        {
+            bool visible = feedId == selectedId;
+            actions.Opacity = visible ? 1 : 0;
+            actions.IsHitTestVisible = visible;
+        }
     }
 
     private void PaperList_SelectionChanged(object sender, SelectionChangedEventArgs e)
