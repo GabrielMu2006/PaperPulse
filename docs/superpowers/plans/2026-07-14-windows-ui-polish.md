@@ -87,6 +87,6 @@
 - Modify: `docs/superpowers/plans/2026-07-14-windows-ui-polish.md`
 
 - [x] Run local resource-key completeness checks and `git diff --check`.
-- [ ] Commit the implementation as `feat: polish windows native UI` and push the migration branch.
-- [ ] Confirm Windows CI build, tests, and MSIX package are green.
+- [x] Commit the implementation as `feat: polish windows native UI` and push the migration branch.
+- [x] Confirm Windows CI build, tests, and MSIX package are green.
 - [ ] Request one Windows Phase 3 F5 visual gate for normal/maximized splitter drag, favorite transition, hover feed actions, English/Chinese dialog wrapping, and save/restart acknowledgement.
