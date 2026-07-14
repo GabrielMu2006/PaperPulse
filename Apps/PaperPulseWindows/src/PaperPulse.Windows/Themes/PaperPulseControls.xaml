@@ -117,65 +117,6 @@
         <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
         <Setter Property="CornerRadius" Value="{StaticResource InputCornerRadius}" />
         <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ToggleButton">
-                    <Border
-                        x:Name="Root"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                        <ContentPresenter
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Foreground="{TemplateBinding Foreground}"
-                            Padding="{TemplateBinding Padding}" />
-                    </Border>
-                    <VisualStateManager.VisualStateGroups>
-                        <VisualStateGroup x:Name="CommonStates">
-                            <VisualState x:Name="Normal" />
-                            <VisualState x:Name="PointerOver">
-                                <VisualState.Setters>
-                                    <Setter Target="Root.BorderBrush" Value="{StaticResource GlassStrokeStrongBrush}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Pressed">
-                                <VisualState.Setters>
-                                    <Setter Target="Root.Opacity" Value="0.82" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Disabled">
-                                <VisualState.Setters>
-                                    <Setter Target="Root.Opacity" Value="0.42" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                        <VisualStateGroup x:Name="CheckStates">
-                            <VisualState x:Name="Unchecked" />
-                            <VisualState x:Name="Checked">
-                                <VisualState.Setters>
-                                    <Setter Target="Root.Background" Value="{StaticResource PulseAccentBrush}" />
-                                    <Setter Target="Root.BorderBrush" Value="{StaticResource PulseMagentaBrush}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Indeterminate" />
-                        </VisualStateGroup>
-                        <VisualStateGroup x:Name="FocusStates">
-                            <VisualState x:Name="Focused">
-                                <VisualState.Setters>
-                                    <Setter Target="Root.BorderBrush" Value="{StaticResource PulseMagentaBrush}" />
-                                    <Setter Target="Root.BorderThickness" Value="2" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Unfocused" />
-                        </VisualStateGroup>
-                    </VisualStateManager.VisualStateGroups>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <Style TargetType="ToggleButton" BasedOn="{StaticResource PaperPulseToggleButtonStyle}" />
