@@ -111,13 +111,13 @@ Expected: portable tests pass; Windows presentation tests are deferred to GitHub
 - `PaperPulseControls.xaml` owns reusable styles for glass panels, paper surfaces, icon buttons, metadata pills, selected rows, form fields, and prominent actions.
 - Views consume semantic resource keys rather than literal colors.
 
-- [ ] Add the documented color roles: `midnight #05030F`, `deepBlue #080D29`, `deepPurple #290538`, `pulseRed #F01A1F`, `pulseMagenta #EB1FA3`, `pulsePurple #6B2BEB`, `warmGold #FFA11F`, `paper #FFF7E8`, `paperSoft #FFEEDA`, `paperInk #1F1A21`, and `paperSecondary #5C4F5C`.
-- [ ] Implement the fixed dark shell and warm paper reading surfaces. Do not follow system light mode, and do not create nested cards.
-- [ ] Define native focus, hover, pressed, disabled, selected, and destructive states with sufficient contrast.
-- [ ] Keep icon-only commands stable in size and attach tooltips plus accessible names.
-- [ ] Replace default black/gray surfaces in the root shell with semantic resources, without yet moving interaction logic.
-- [ ] Run `git diff --check`, then push the focused commit only after user approval so GitHub Windows validation catches XAML resource failures.
-- [ ] Commit this task as `feat: add windows visual system`.
+- [x] Add the documented color roles: `midnight #05030F`, `deepBlue #080D29`, `deepPurple #290538`, `pulseRed #F01A1F`, `pulseMagenta #EB1FA3`, `pulsePurple #6B2BEB`, `warmGold #FFA11F`, `paper #FFF7E8`, `paperSoft #FFEEDA`, `paperInk #1F1A21`, and `paperSecondary #5C4F5C`.
+- [x] Implement the fixed dark shell and warm paper reading surfaces. Do not follow system light mode, and do not create nested cards.
+- [x] Define native focus, hover, pressed, disabled, selected, and destructive states with sufficient contrast.
+- [x] Keep icon-only commands stable in size and attach tooltips plus accessible names.
+- [x] Replace default black/gray surfaces in the root shell with semantic resources, without yet moving interaction logic.
+- [x] Run `git diff --check`, then push the focused commit after user approval so GitHub Windows validation catches XAML resource failures.
+- [x] Commit this task as `feat: add windows visual system`.
 
 **Acceptance:** The app has one coherent dark research-workbench palette, warm reading surfaces, restrained emphasis, no default white/gray source-list background, no clipped icon controls, and no resource lookup failures.
 
@@ -141,14 +141,14 @@ Expected: portable tests pass; Windows presentation tests are deferred to GitHub
 - `WorkspaceSplitState.Clamp(double)` limits the detail/PDF ratio to `0.25...0.75`; the default is `0.5`.
 - The persisted setting key remains `splitRatio` in the existing SQLite `settings` table.
 
-- [ ] Add focused tests for default `0.5`, lower/upper clamping, invalid persisted text, and round-trip invariant formatting.
-- [ ] Remove the `250 / * / 360` top-level layout.
-- [ ] Move the paper library into the sidebar below feeds, matching the documented information order.
-- [ ] Split all remaining width 1:1 between paper information and PDF; do not place both inside a 360 px inspector.
-- [ ] Add an 8 px splitter with a visible 2 x 48 grip and pointer cursor.
-- [ ] Load `splitRatio` on startup and save after a completed drag, not continuously on every pointer move.
-- [ ] Preserve the selected paper and WebView2 source while resizing or maximizing.
-- [ ] Enforce a practical 900 x 600 minimum content experience and verify that text wraps rather than overlaps at the minimum.
+- [x] Add focused tests for default `0.5`, lower/upper clamping, invalid persisted text, and round-trip invariant formatting.
+- [x] Remove the `250 / * / 360` top-level layout.
+- [x] Move the paper library into the sidebar below feeds, matching the documented information order.
+- [x] Split all remaining width 1:1 between paper information and PDF; do not place both inside a 360 px inspector.
+- [x] Add an 8 px splitter with a visible 2 x 48 grip and pointer cursor.
+- [x] Load `splitRatio` on startup and save after a completed drag, not continuously on every pointer move.
+- [x] Preserve the selected paper and WebView2 source while resizing or maximizing.
+- [x] Enforce a practical 900 x 600 minimum content experience and verify that text wraps rather than overlaps at the minimum.
 - [ ] Run GitHub Windows validation after the focused commit.
 - [ ] Commit this task as `feat: balance windows reading workspace`.
 

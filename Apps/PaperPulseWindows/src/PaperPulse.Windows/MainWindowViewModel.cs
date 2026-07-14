@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using PaperPulse.Contracts;
 using PaperPulse.Engine;
 using PaperPulse.Storage;
+using PaperPulse.Windows.Presentation;
 
 namespace PaperPulse.Windows;
 
@@ -25,6 +26,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private bool isRefreshing;
     private bool favoritesOnly;
     private bool isInitialized;
+    private double workspaceSplitRatio = WorkspaceSplitState.DefaultRatio;
     private IReadOnlyDictionary<Guid, IReadOnlySet<string>> paperIdsByFeed = new Dictionary<Guid, IReadOnlySet<string>>();
     private IReadOnlySet<string> unclassifiedPaperIds = EmptyPaperIds;
 
@@ -97,6 +99,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    public double WorkspaceSplitRatio
+    {
+        get => workspaceSplitRatio;
+        private set => SetProperty(ref workspaceSplitRatio, WorkspaceSplitState.Clamp(value));
+    }
+
     public ObservableCollection<FeedConfig> Feeds { get; } = [];
     public ObservableCollection<StoredPaper> Papers { get; } = [];
     public ObservableCollection<PaperLibraryGroup> LibraryGroups { get; } = [];
@@ -116,7 +124,15 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         if (isInitialized) return;
         isInitialized = true;
+        WorkspaceSplitRatio = await Task.Run(() => WorkspaceSplitState.Parse(repository.GetSetting("splitRatio")));
         await ReloadAsync();
+    }
+
+    public async Task SaveWorkspaceSplitRatioAsync(double ratio)
+    {
+        WorkspaceSplitRatio = ratio;
+        string persisted = WorkspaceSplitState.Format(WorkspaceSplitRatio);
+        await Task.Run(() => repository.SetSetting("splitRatio", persisted));
     }
 
     public async Task RefreshSelectedFeedAsync()

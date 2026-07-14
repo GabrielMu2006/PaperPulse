@@ -1,19 +1,30 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using PaperPulse.Contracts;
 using PaperPulse.Storage;
+using PaperPulse.Windows.Presentation;
 
 namespace PaperPulse.Windows;
 
 public sealed partial class MainWindow : Window
 {
+    private bool isResizingWorkspace;
+    private double workspaceAvailableWidth;
+    private double workspaceStartInfoWidth;
+    private double workspaceStartPointerX;
+
     public MainWindowViewModel ViewModel { get; } = new();
 
     public MainWindow()
     {
         InitializeComponent();
         ((FrameworkElement)Content).DataContext = ViewModel;
-        DispatcherQueue.TryEnqueue(async () => await ViewModel.InitializeAsync());
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            await ViewModel.InitializeAsync();
+            ApplyWorkspaceSplit(ViewModel.WorkspaceSplitRatio);
+        });
     }
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await ViewModel.RefreshSelectedFeedAsync();
@@ -50,6 +61,39 @@ public sealed partial class MainWindow : Window
         if (sender is not ListView { SelectedItem: StoredPaper paper }) return;
         ViewModel.SelectPaper(paper);
         await ShowSelectedPdfAsync();
+    }
+
+    private void WorkspaceSplitter_PointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        workspaceAvailableWidth = InfoColumn.ActualWidth + PdfColumn.ActualWidth;
+        if (workspaceAvailableWidth <= 0) return;
+        workspaceStartInfoWidth = InfoColumn.ActualWidth;
+        workspaceStartPointerX = e.GetCurrentPoint(WorkspaceGrid).Position.X;
+        isResizingWorkspace = WorkspaceSplitter.CapturePointer(e.Pointer);
+        e.Handled = isResizingWorkspace;
+    }
+
+    private void WorkspaceSplitter_PointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        if (!isResizingWorkspace) return;
+        double offset = e.GetCurrentPoint(WorkspaceGrid).Position.X - workspaceStartPointerX;
+        ApplyWorkspaceSplit((workspaceStartInfoWidth + offset) / workspaceAvailableWidth);
+        e.Handled = true;
+    }
+
+    private async void WorkspaceSplitter_PointerReleased(object sender, PointerRoutedEventArgs e)
+    {
+        if (!isResizingWorkspace) return;
+        isResizingWorkspace = false;
+        WorkspaceSplitter.ReleasePointerCaptures();
+        double workspaceWidth = InfoColumn.ActualWidth + PdfColumn.ActualWidth;
+        if (workspaceWidth > 0) await ViewModel.SaveWorkspaceSplitRatioAsync(InfoColumn.ActualWidth / workspaceWidth);
+        e.Handled = true;
+    }
+
+    private void WorkspaceSplitter_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+    {
+        isResizingWorkspace = false;
     }
 
     private async Task EditFeedAsync(FeedConfig? existing)
@@ -112,5 +156,12 @@ public sealed partial class MainWindow : Window
         PdfViewer.Visibility = Visibility.Collapsed;
         PdfEmptyState.Text = "This paper has no local PDF. Push its subscription again to retry.";
         PdfEmptyState.Visibility = Visibility.Visible;
+    }
+
+    private void ApplyWorkspaceSplit(double ratio)
+    {
+        double clamped = WorkspaceSplitState.Clamp(ratio);
+        InfoColumn.Width = new GridLength(clamped, GridUnitType.Star);
+        PdfColumn.Width = new GridLength(1 - clamped, GridUnitType.Star);
     }
 }
