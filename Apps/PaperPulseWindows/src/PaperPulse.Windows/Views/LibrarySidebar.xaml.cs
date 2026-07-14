@@ -43,12 +43,23 @@ public sealed partial class LibrarySidebar : UserControl
 
     private void EditFeed_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is MenuFlyoutItem { Tag: FeedConfig feed }) EditFeedRequested?.Invoke(this, new FeedRequestEventArgs(feed));
+        if (sender is Button { Tag: FeedConfig feed }) EditFeedRequested?.Invoke(this, new FeedRequestEventArgs(feed));
     }
 
     private void DeleteFeed_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is MenuFlyoutItem { Tag: FeedConfig feed }) DeleteFeedRequested?.Invoke(this, new FeedRequestEventArgs(feed));
+        if (sender is Button { Tag: FeedConfig feed }) DeleteFeedRequested?.Invoke(this, new FeedRequestEventArgs(feed));
+    }
+
+    private void FeedRow_PointerEntered(object sender, PointerRoutedEventArgs e) => SetFeedActionsVisible(sender, true);
+
+    private void FeedRow_PointerExited(object sender, PointerRoutedEventArgs e) => SetFeedActionsVisible(sender, false);
+
+    private static void SetFeedActionsVisible(object sender, bool visible)
+    {
+        if (sender is not FrameworkElement row || row.FindName("FeedActions") is not FrameworkElement actions) return;
+        actions.Opacity = visible ? 1 : 0;
+        actions.IsHitTestVisible = visible;
     }
 
     private void PaperList_SelectionChanged(object sender, SelectionChangedEventArgs e)

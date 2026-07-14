@@ -17,7 +17,68 @@
         <Setter Property="Padding" Value="{StaticResource CardPadding}" />
     </Style>
 
-    <Style x:Key="PaperPulseIconButtonStyle" TargetType="Button">
+    <Style x:Key="PaperPulseQuietButtonStyle" TargetType="Button">
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Padding" Value="12,7" />
+        <Setter Property="Background" Value="{StaticResource GlassFillBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource GlassStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
+        <Setter Property="CornerRadius" Value="{StaticResource InputCornerRadius}" />
+        <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        x:Name="Root"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                        <ContentPresenter
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Padding="{TemplateBinding Padding}" />
+                    </Border>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal" />
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Target="Root.BorderBrush" Value="{StaticResource GlassStrokeStrongBrush}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Target="Root.Opacity" Value="0.82" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Target="Root.Opacity" Value="0.42" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                        <VisualStateGroup x:Name="FocusStates">
+                            <VisualState x:Name="Focused">
+                                <VisualState.Setters>
+                                    <Setter Target="Root.BorderBrush" Value="{StaticResource PulseMagentaBrush}" />
+                                    <Setter Target="Root.BorderThickness" Value="2" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Unfocused" />
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" BasedOn="{StaticResource PaperPulseQuietButtonStyle}" />
+
+    <Style x:Key="PaperPulseIconButtonStyle" TargetType="Button" BasedOn="{StaticResource PaperPulseQuietButtonStyle}">
         <Setter Property="Width" Value="{StaticResource CompactIconButtonSize}" />
         <Setter Property="Height" Value="{StaticResource CompactIconButtonSize}" />
         <Setter Property="Padding" Value="0" />
@@ -28,7 +89,7 @@
         <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
     </Style>
 
-    <Style x:Key="PaperPulseProminentButtonStyle" TargetType="Button">
+    <Style x:Key="PaperPulseProminentButtonStyle" TargetType="Button" BasedOn="{StaticResource PaperPulseQuietButtonStyle}">
         <Setter Property="MinHeight" Value="36" />
         <Setter Property="Padding" Value="16,8" />
         <Setter Property="Background" Value="{StaticResource PulseAccentBrush}" />
@@ -38,7 +99,7 @@
         <Setter Property="Foreground" Value="White" />
     </Style>
 
-    <Style x:Key="PaperPulseDestructiveButtonStyle" TargetType="Button">
+    <Style x:Key="PaperPulseDestructiveButtonStyle" TargetType="Button" BasedOn="{StaticResource PaperPulseQuietButtonStyle}">
         <Setter Property="MinHeight" Value="36" />
         <Setter Property="Padding" Value="16,8" />
         <Setter Property="Background" Value="#33F01A1F" />
@@ -48,6 +109,77 @@
         <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
     </Style>
 
+    <Style x:Key="PaperPulseToggleButtonStyle" TargetType="ToggleButton">
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Padding" Value="12,7" />
+        <Setter Property="Background" Value="{StaticResource GlassFillBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource GlassStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
+        <Setter Property="CornerRadius" Value="{StaticResource InputCornerRadius}" />
+        <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border
+                        x:Name="Root"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                        <ContentPresenter
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Padding="{TemplateBinding Padding}" />
+                    </Border>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal" />
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Target="Root.BorderBrush" Value="{StaticResource GlassStrokeStrongBrush}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Target="Root.Opacity" Value="0.82" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Target="Root.Opacity" Value="0.42" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                        <VisualStateGroup x:Name="CheckStates">
+                            <VisualState x:Name="Unchecked" />
+                            <VisualState x:Name="Checked">
+                                <VisualState.Setters>
+                                    <Setter Target="Root.Background" Value="{StaticResource PulseAccentBrush}" />
+                                    <Setter Target="Root.BorderBrush" Value="{StaticResource PulseMagentaBrush}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Indeterminate" />
+                        </VisualStateGroup>
+                        <VisualStateGroup x:Name="FocusStates">
+                            <VisualState x:Name="Focused">
+                                <VisualState.Setters>
+                                    <Setter Target="Root.BorderBrush" Value="{StaticResource PulseMagentaBrush}" />
+                                    <Setter Target="Root.BorderThickness" Value="2" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Unfocused" />
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="ToggleButton" BasedOn="{StaticResource PaperPulseToggleButtonStyle}" />
+
     <Style x:Key="PaperPulseInputStyle" TargetType="TextBox">
         <Setter Property="Background" Value="#1AFFFFFF" />
         <Setter Property="BorderBrush" Value="{StaticResource GlassStrokeBrush}" />
@@ -56,6 +188,40 @@
         <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
         <Setter Property="PlaceholderForeground" Value="{StaticResource ShellSecondaryTextBrush}" />
         <Setter Property="SelectionHighlightColor" Value="#806B2BEB" />
+    </Style>
+
+    <Style x:Key="PaperPulseComboBoxStyle" TargetType="ComboBox">
+        <Setter Property="Background" Value="#1AFFFFFF" />
+        <Setter Property="BorderBrush" Value="{StaticResource GlassStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
+        <Setter Property="CornerRadius" Value="{StaticResource InputCornerRadius}" />
+        <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
+        <Setter Property="Padding" Value="10,5" />
+    </Style>
+
+    <Style x:Key="PaperPulseNumberBoxStyle" TargetType="NumberBox">
+        <Setter Property="Background" Value="#1AFFFFFF" />
+        <Setter Property="BorderBrush" Value="{StaticResource GlassStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
+        <Setter Property="CornerRadius" Value="{StaticResource InputCornerRadius}" />
+        <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
+    </Style>
+
+    <Style x:Key="PaperPulseFormSectionStyle" TargetType="Border">
+        <Setter Property="Background" Value="#0FFFFFFF" />
+        <Setter Property="BorderBrush" Value="{StaticResource GlassStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
+        <Setter Property="CornerRadius" Value="{StaticResource SurfaceCornerRadius}" />
+        <Setter Property="Padding" Value="18" />
+    </Style>
+
+    <Style x:Key="PaperPulseDialogStyle" TargetType="ContentDialog">
+        <Setter Property="Background" Value="{StaticResource MidnightBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource GlassStrokeStrongBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource OnePixelThickness}" />
+        <Setter Property="CornerRadius" Value="{StaticResource SurfaceCornerRadius}" />
+        <Setter Property="Foreground" Value="{StaticResource ShellTextBrush}" />
+        <Setter Property="Padding" Value="0" />
     </Style>
 
     <Style x:Key="PaperPulseListViewItemStyle" TargetType="ListViewItem">

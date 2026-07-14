@@ -175,7 +175,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             repository.SetSetting("summaryLanguage", SummaryLanguage);
             repository.SetSetting("keywordLibrary", KeywordLibraryText);
         });
-        Status = PaperPulseStrings.Get("SettingsSavedRestart");
+        Status = PaperPulseStrings.Get("SettingsSaved");
     }
 
     public async Task<int> ClearUnclassifiedPapersAsync()

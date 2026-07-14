@@ -6,9 +6,9 @@
   <data name="SettingsLanguageHeading.Text" xml:space="preserve"><value>语言</value></data>
   <data name="SettingsInterfaceLanguage.Text" xml:space="preserve"><value>界面语言</value></data>
   <data name="SettingsBriefLanguage.Text" xml:space="preserve"><value>简介语言</value></data>
-  <data name="SettingsKeywordLibrary.Text" xml:space="preserve"><value>关键词库</value></data>
-  <data name="SettingsKeywordLibraryBox.PlaceholderText" xml:space="preserve"><value>智能体，检索，多模态</value></data>
   <data name="SettingsStorageHeading.Text" xml:space="preserve"><value>存储</value></data>
+  <data name="SettingsDialogHeading.Text" xml:space="preserve"><value>设置</value></data>
+  <data name="SettingsSaveHint.Text" xml:space="preserve"><value>所有改动均需保存后才会生效。</value></data>
   <data name="SettingsClearUnclassified.Text" xml:space="preserve"><value>清理未分类论文</value></data>
   <data name="LibrarySearch.PlaceholderText" xml:space="preserve"><value>搜索论文</value></data>
   <data name="LibraryAllPapers.Content" xml:space="preserve"><value>全部论文</value></data>
@@ -76,6 +76,9 @@
   <data name="SelectPaper" xml:space="preserve"><value>选择一篇论文</value></data>
   <data name="SelectPaperToViewAbstract" xml:space="preserve"><value>选择一篇论文以查看其摘要。</value></data>
   <data name="SettingsSavedRestart" xml:space="preserve"><value>设置已保存。请重启 PaperPulse 以应用界面语言。</value></data>
+  <data name="SettingsSavedTitle" xml:space="preserve"><value>设置已保存</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>你的改动已保存。</value></data>
+  <data name="Okay" xml:space="preserve"><value>确定</value></data>
   <data name="NoUnclassifiedPapers" xml:space="preserve"><value>没有可清理的未分类论文。</value></data>
   <data name="ClearedUnclassifiedPapers" xml:space="preserve"><value>已清理 {0} 篇未分类论文。</value></data>
   <data name="SearchingFeed" xml:space="preserve"><value>正在检索 {0}...</value></data>
@@ -107,5 +110,9 @@
   <data name="LibrarySettingsButton.ToolTipService.ToolTip" xml:space="preserve"><value>打开设置</value></data>
   <data name="LibraryPushSubscription.AutomationProperties.Name" xml:space="preserve"><value>推送此订阅</value></data>
   <data name="LibraryPushSubscription.ToolTipService.ToolTip" xml:space="preserve"><value>推送此订阅</value></data>
+  <data name="LibraryEditSubscriptionButton.AutomationProperties.Name" xml:space="preserve"><value>编辑订阅</value></data>
+  <data name="LibraryEditSubscriptionButton.ToolTipService.ToolTip" xml:space="preserve"><value>编辑订阅</value></data>
+  <data name="LibraryDeleteSubscriptionButton.AutomationProperties.Name" xml:space="preserve"><value>删除订阅</value></data>
+  <data name="LibraryDeleteSubscriptionButton.ToolTipService.ToolTip" xml:space="preserve"><value>删除订阅</value></data>
   <data name="WorkspaceSplitter.ToolTipService.ToolTip" xml:space="preserve"><value>调整论文详情与 PDF 的宽度</value></data>
 </root>

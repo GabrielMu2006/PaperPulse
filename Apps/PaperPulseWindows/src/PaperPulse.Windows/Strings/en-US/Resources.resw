@@ -6,9 +6,9 @@
   <data name="SettingsLanguageHeading.Text" xml:space="preserve"><value>Language</value></data>
   <data name="SettingsInterfaceLanguage.Text" xml:space="preserve"><value>Interface language</value></data>
   <data name="SettingsBriefLanguage.Text" xml:space="preserve"><value>Brief language</value></data>
-  <data name="SettingsKeywordLibrary.Text" xml:space="preserve"><value>Keyword library</value></data>
-  <data name="SettingsKeywordLibraryBox.PlaceholderText" xml:space="preserve"><value>agent, retrieval, multimodal</value></data>
   <data name="SettingsStorageHeading.Text" xml:space="preserve"><value>Storage</value></data>
+  <data name="SettingsDialogHeading.Text" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsSaveHint.Text" xml:space="preserve"><value>Changes are applied only after Save.</value></data>
   <data name="SettingsClearUnclassified.Text" xml:space="preserve"><value>Clear unclassified papers</value></data>
   <data name="LibrarySearch.PlaceholderText" xml:space="preserve"><value>Search papers</value></data>
   <data name="LibraryAllPapers.Content" xml:space="preserve"><value>All papers</value></data>
@@ -76,6 +76,9 @@
   <data name="SelectPaper" xml:space="preserve"><value>Select a paper</value></data>
   <data name="SelectPaperToViewAbstract" xml:space="preserve"><value>Select a paper to view its abstract.</value></data>
   <data name="SettingsSavedRestart" xml:space="preserve"><value>Saved settings. Restart PaperPulse to apply the interface language.</value></data>
+  <data name="SettingsSavedTitle" xml:space="preserve"><value>Settings saved</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>Your changes have been saved.</value></data>
+  <data name="Okay" xml:space="preserve"><value>OK</value></data>
   <data name="NoUnclassifiedPapers" xml:space="preserve"><value>No unclassified papers to clear.</value></data>
   <data name="ClearedUnclassifiedPapers" xml:space="preserve"><value>Cleared {0} unclassified papers.</value></data>
   <data name="SearchingFeed" xml:space="preserve"><value>Searching {0}...</value></data>
@@ -107,5 +110,9 @@
   <data name="LibrarySettingsButton.ToolTipService.ToolTip" xml:space="preserve"><value>Open settings</value></data>
   <data name="LibraryPushSubscription.AutomationProperties.Name" xml:space="preserve"><value>Push this subscription</value></data>
   <data name="LibraryPushSubscription.ToolTipService.ToolTip" xml:space="preserve"><value>Push this subscription</value></data>
+  <data name="LibraryEditSubscriptionButton.AutomationProperties.Name" xml:space="preserve"><value>Edit subscription</value></data>
+  <data name="LibraryEditSubscriptionButton.ToolTipService.ToolTip" xml:space="preserve"><value>Edit subscription</value></data>
+  <data name="LibraryDeleteSubscriptionButton.AutomationProperties.Name" xml:space="preserve"><value>Delete subscription</value></data>
+  <data name="LibraryDeleteSubscriptionButton.ToolTipService.ToolTip" xml:space="preserve"><value>Delete subscription</value></data>
   <data name="WorkspaceSplitter.ToolTipService.ToolTip" xml:space="preserve"><value>Resize paper details and PDF</value></data>
 </root>

@@ -51,17 +51,23 @@
                 VerticalAlignment="Stretch"
                 Background="{StaticResource GlassStrokeStrongBrush}"
                 PointerCaptureLost="WorkspaceSplitter_PointerCaptureLost"
+                PointerEntered="WorkspaceSplitter_PointerEntered"
+                PointerExited="WorkspaceSplitter_PointerExited"
                 PointerMoved="WorkspaceSplitter_PointerMoved"
                 PointerPressed="WorkspaceSplitter_PointerPressed"
                 PointerReleased="WorkspaceSplitter_PointerReleased"
                 ToolTipService.ToolTip="Resize paper details and PDF">
-                <Border
-                    Width="2"
-                    Height="48"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="{StaticResource ShellSecondaryTextBrush}"
-                    CornerRadius="{StaticResource SmallCornerRadius}" />
+                <Grid Background="Transparent">
+                    <Border
+                        x:Name="WorkspaceSplitterGrip"
+                        Width="2"
+                        Height="48"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="{StaticResource ShellSecondaryTextBrush}"
+                        CornerRadius="{StaticResource SmallCornerRadius}"
+                        Opacity="0.7" />
+                </Grid>
             </presentation:WorkspaceSplitter>
 
             <views:PdfReaderPane

@@ -13,7 +13,7 @@ public sealed partial class FeedEditorDialog : ContentDialog
     {
         this.existing = existing;
         InitializeComponent();
-        Title = existing is null ? PaperPulseStrings.Get("FeedEditorNewTitle") : PaperPulseStrings.Get("FeedEditorEditTitle");
+        DialogTitleText.Text = existing is null ? PaperPulseStrings.Get("FeedEditorNewTitle") : PaperPulseStrings.Get("FeedEditorEditTitle");
         Populate(existing);
     }
 

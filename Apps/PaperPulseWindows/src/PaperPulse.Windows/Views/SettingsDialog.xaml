@@ -4,29 +4,65 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:Uid="SettingsDialog"
     CloseButtonText="Cancel"
+    CloseButtonStyle="{StaticResource PaperPulseQuietButtonStyle}"
     PrimaryButtonClick="Save_Click"
     PrimaryButtonText="Save settings"
-    Title="Settings">
-    <StackPanel Width="520" Spacing="16">
-        <TextBlock x:Uid="SettingsLanguageHeading" Text="Language" FontSize="20" FontWeight="SemiBold" />
-        <TextBlock x:Uid="SettingsInterfaceLanguage" Text="Interface language" FontWeight="SemiBold" />
-        <ComboBox x:Name="UiLanguageBox" SelectedIndex="0">
-            <ComboBoxItem x:Uid="SettingsEnglish" Content="English" Tag="en-US" />
-            <ComboBoxItem x:Uid="SettingsChinese" Content="Chinese" Tag="zh-CN" />
-        </ComboBox>
-        <TextBlock x:Uid="SettingsBriefLanguage" Text="Brief language" FontWeight="SemiBold" />
-        <ComboBox x:Name="SummaryLanguageBox" SelectedIndex="0">
-            <ComboBoxItem x:Uid="SettingsBriefEnglish" Content="English" Tag="en-US" />
-            <ComboBoxItem x:Uid="SettingsBriefChinese" Content="Chinese" Tag="zh-CN" />
-        </ComboBox>
-        <TextBlock x:Uid="SettingsKeywordLibrary" Text="Keyword library" FontWeight="SemiBold" />
-        <TextBox x:Name="KeywordLibraryBox" x:Uid="SettingsKeywordLibraryBox" AcceptsReturn="True" MinHeight="84" PlaceholderText="agent, retrieval, multimodal" TextWrapping="Wrap" />
-        <TextBlock x:Uid="SettingsStorageHeading" Text="Storage" FontSize="20" FontWeight="SemiBold" />
-        <Button Click="ClearUnclassified_Click" HorizontalAlignment="Left" Style="{StaticResource PaperPulseDestructiveButtonStyle}">
-            <StackPanel Orientation="Horizontal" Spacing="6">
-                <SymbolIcon Symbol="Delete" />
-                <TextBlock x:Uid="SettingsClearUnclassified" Text="Clear unclassified papers" />
-            </StackPanel>
-        </Button>
-    </StackPanel>
+    PrimaryButtonStyle="{StaticResource PaperPulseProminentButtonStyle}"
+    Style="{StaticResource PaperPulseDialogStyle}">
+    <ScrollViewer MaxHeight="620" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Width="560" Margin="24" Spacing="16">
+            <Grid ColumnSpacing="12">
+                <Border
+                    Width="38"
+                    Height="38"
+                    Background="{StaticResource PulseAccentBrush}"
+                    CornerRadius="{StaticResource SmallCornerRadius}">
+                    <SymbolIcon
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="White"
+                        Symbol="Setting" />
+                </Border>
+                <StackPanel Grid.Column="1" Spacing="2">
+                    <TextBlock x:Uid="SettingsDialogHeading" Foreground="{StaticResource ShellTextBrush}" Text="Settings" FontSize="24" FontWeight="SemiBold" />
+                    <TextBlock x:Uid="SettingsSaveHint" Foreground="{StaticResource ShellSecondaryTextBrush}" Text="Changes are applied only after Save." TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+
+            <Border Style="{StaticResource PaperPulseFormSectionStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Uid="SettingsLanguageHeading" Text="Language" FontSize="20" FontWeight="SemiBold" />
+                    <TextBlock x:Uid="SettingsInterfaceLanguage" Text="Interface language" FontWeight="SemiBold" />
+                    <ComboBox x:Name="UiLanguageBox" SelectedIndex="0" Style="{StaticResource PaperPulseComboBoxStyle}">
+                        <ComboBoxItem x:Uid="SettingsEnglish" Content="English" Tag="en-US" />
+                        <ComboBoxItem x:Uid="SettingsChinese" Content="Chinese" Tag="zh-CN" />
+                    </ComboBox>
+                    <TextBlock x:Uid="SettingsBriefLanguage" Text="Brief language" FontWeight="SemiBold" />
+                    <ComboBox x:Name="SummaryLanguageBox" SelectedIndex="0" Style="{StaticResource PaperPulseComboBoxStyle}">
+                        <ComboBoxItem x:Uid="SettingsBriefEnglish" Content="English" Tag="en-US" />
+                        <ComboBoxItem x:Uid="SettingsBriefChinese" Content="Chinese" Tag="zh-CN" />
+                    </ComboBox>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource PaperPulseFormSectionStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Keyword library" FontWeight="SemiBold" />
+                    <TextBox x:Name="KeywordLibraryBox" AcceptsReturn="True" MinHeight="84" PlaceholderText="agent, retrieval, multimodal" Style="{StaticResource PaperPulseInputStyle}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource PaperPulseFormSectionStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Uid="SettingsStorageHeading" Text="Storage" FontSize="20" FontWeight="SemiBold" />
+                    <Button Click="ClearUnclassified_Click" HorizontalAlignment="Left" Style="{StaticResource PaperPulseDestructiveButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <SymbolIcon Symbol="Delete" />
+                            <TextBlock x:Uid="SettingsClearUnclassified" Text="Clear unclassified papers" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
 </ContentDialog>

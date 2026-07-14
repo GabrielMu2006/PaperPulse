@@ -97,17 +97,15 @@
                 SelectedItem="{Binding SelectedFeed, Mode=TwoWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Padding="6" ColumnSpacing="8">
-                            <Grid.ContextFlyout>
-                                <MenuFlyout>
-                                    <MenuFlyoutItem x:Uid="LibraryEditSubscription" Click="EditFeed_Click" Tag="{Binding}" Text="Edit subscription" />
-                                    <MenuFlyoutItem x:Uid="LibraryDeleteSubscription" Click="DeleteFeed_Click" Tag="{Binding}" Text="Delete subscription" />
-                                </MenuFlyout>
-                            </Grid.ContextFlyout>
+                        <Grid
+                            Padding="6"
+                            ColumnSpacing="8"
+                            PointerEntered="FeedRow_PointerEntered"
+                            PointerExited="FeedRow_PointerExited">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="22" />
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="40" />
+                                <ColumnDefinition Width="128" />
                             </Grid.ColumnDefinitions>
                             <Border
                                 Width="22"
@@ -133,15 +131,37 @@
                                     Text="{Binding Converter={StaticResource FeedSummaryConverter}}"
                                     TextTrimming="CharacterEllipsis" />
                             </StackPanel>
-                            <Button
-                                x:Uid="LibraryPushSubscription"
-                                Grid.Column="2"
-                                AutomationProperties.Name="Push this subscription"
-                                Click="FeedPush_Click"
-                                Style="{StaticResource PaperPulseIconButtonStyle}"
-                                ToolTipService.ToolTip="Push this subscription">
-                                <SymbolIcon Symbol="Send" />
-                            </Button>
+                            <Grid Grid.Column="2">
+                                <StackPanel x:Name="FeedActions" HorizontalAlignment="Left" Orientation="Horizontal" Spacing="4" Opacity="0" IsHitTestVisible="False">
+                                    <Button
+                                        x:Uid="LibraryEditSubscriptionButton"
+                                        AutomationProperties.Name="Edit subscription"
+                                        Click="EditFeed_Click"
+                                        Style="{StaticResource PaperPulseIconButtonStyle}"
+                                        Tag="{Binding}"
+                                        ToolTipService.ToolTip="Edit subscription">
+                                        <SymbolIcon Symbol="Edit" />
+                                    </Button>
+                                    <Button
+                                        x:Uid="LibraryDeleteSubscriptionButton"
+                                        AutomationProperties.Name="Delete subscription"
+                                        Click="DeleteFeed_Click"
+                                        Style="{StaticResource PaperPulseIconButtonStyle}"
+                                        Tag="{Binding}"
+                                        ToolTipService.ToolTip="Delete subscription">
+                                        <SymbolIcon Symbol="Delete" />
+                                    </Button>
+                                </StackPanel>
+                                <Button
+                                    x:Uid="LibraryPushSubscription"
+                                    HorizontalAlignment="Right"
+                                    AutomationProperties.Name="Push this subscription"
+                                    Click="FeedPush_Click"
+                                    Style="{StaticResource PaperPulseIconButtonStyle}"
+                                    ToolTipService.ToolTip="Push this subscription">
+                                    <SymbolIcon Symbol="Send" />
+                                </Button>
+                            </Grid>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>

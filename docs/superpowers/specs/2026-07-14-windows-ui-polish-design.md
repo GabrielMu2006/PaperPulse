@@ -27,7 +27,7 @@ This revision makes seven targeted changes.
 
 ## Interaction Details
 
-- Feed-row edit/delete opacity is controlled by the row visual state. The buttons remain keyboard reachable, have accessible names/tooltips, and do not change the row's fixed paper-plane position.
+- Feed-row edit/delete opacity is controlled by the row hover state. The buttons have accessible names/tooltips and do not change the row's fixed paper-plane position.
 - Favorite star uses an outline icon when `IsFavorite` is false and a filled `Favorite` icon when true. The control is not recreated or repositioned during refresh.
 - The separator's full-height pointer surface is transparent except for its central grip. Its hover and drag state strengthen the accent without changing column widths until the pointer moves.
 - Settings always include: `Changes are applied only after Save.` When the saved UI-language value differs from the value that opened the dialog, the follow-up message is: `Settings saved. Restart PaperPulse to apply the interface language.`

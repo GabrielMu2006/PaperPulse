@@ -47,11 +47,36 @@ public sealed partial class MainWindow : Window
         if (await dialog.ShowAsync() == ContentDialogResult.Primary)
         {
             await ViewModel.SaveSettingsAsync(dialog.UiLanguage, dialog.SummaryLanguage, dialog.KeywordLibrary);
+            await ShowSettingsSavedAsync(dialog.UiLanguageChanged);
         }
         else if (dialog.ClearUnclassifiedRequested)
         {
             await ConfirmClearUnclassifiedAsync();
         }
+    }
+
+    private async Task ShowSettingsSavedAsync(bool requiresRestart)
+    {
+        ContentDialog acknowledgement = new()
+        {
+            XamlRoot = ((FrameworkElement)Content).XamlRoot,
+            Style = (Style)Application.Current.Resources["PaperPulseDialogStyle"],
+            PrimaryButtonText = PaperPulseStrings.Get("Okay"),
+            PrimaryButtonStyle = (Style)Application.Current.Resources["PaperPulseProminentButtonStyle"],
+            Content = new StackPanel
+            {
+                Width = 360,
+                Padding = new Thickness(24),
+                Spacing = 10,
+                Children =
+                {
+                    new SymbolIcon { Symbol = Symbol.Accept, Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["PulseMagentaBrush"] },
+                    new TextBlock { Text = PaperPulseStrings.Get("SettingsSavedTitle"), FontSize = 20, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    new TextBlock { Text = PaperPulseStrings.Get(requiresRestart ? "SettingsSavedRestart" : "SettingsSaved"), TextWrapping = TextWrapping.Wrap }
+                }
+            }
+        };
+        await acknowledgement.ShowAsync();
     }
 
     private async Task ConfirmClearUnclassifiedAsync()
@@ -97,7 +122,15 @@ public sealed partial class MainWindow : Window
         workspaceStartInfoWidth = InfoColumn.ActualWidth;
         workspaceStartPointerX = e.GetCurrentPoint(WorkspaceGrid).Position.X;
         isResizingWorkspace = WorkspaceSplitter.CapturePointer(e.Pointer);
+        WorkspaceSplitterGrip.Opacity = isResizingWorkspace ? 1 : 0.7;
         e.Handled = isResizingWorkspace;
+    }
+
+    private void WorkspaceSplitter_PointerEntered(object sender, PointerRoutedEventArgs e) => WorkspaceSplitterGrip.Opacity = 1;
+
+    private void WorkspaceSplitter_PointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        if (!isResizingWorkspace) WorkspaceSplitterGrip.Opacity = 0.7;
     }
 
     private void WorkspaceSplitter_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -113,6 +146,7 @@ public sealed partial class MainWindow : Window
         if (!isResizingWorkspace) return;
         isResizingWorkspace = false;
         WorkspaceSplitter.ReleasePointerCaptures();
+        WorkspaceSplitterGrip.Opacity = 0.7;
         double workspaceWidth = InfoColumn.ActualWidth + PdfColumn.ActualWidth;
         if (workspaceWidth > 0) await ViewModel.SaveWorkspaceSplitRatioAsync(InfoColumn.ActualWidth / workspaceWidth);
         e.Handled = true;
@@ -121,6 +155,7 @@ public sealed partial class MainWindow : Window
     private void WorkspaceSplitter_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
     {
         isResizingWorkspace = false;
+        WorkspaceSplitterGrip.Opacity = 0.7;
     }
 
     private async Task EditFeedAsync(FeedConfig? existing)

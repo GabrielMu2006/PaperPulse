@@ -37,6 +37,8 @@ public sealed partial class PaperDetailPane : UserControl
         EmptyState.Visibility = hasPaper ? Visibility.Collapsed : Visibility.Visible;
         PaperContent.Visibility = hasPaper ? Visibility.Visible : Visibility.Collapsed;
         FavoriteButton.IsEnabled = hasPaper;
+        FavoriteOutlineIcon.Visibility = presentation?.IsFavorite == true ? Visibility.Collapsed : Visibility.Visible;
+        FavoriteFilledIcon.Visibility = presentation?.IsFavorite == true ? Visibility.Visible : Visibility.Collapsed;
         SourceButton.Visibility = presentation?.HasSourceUri == true ? Visibility.Visible : Visibility.Collapsed;
         PaperContent.DataContext = presentation;
     }

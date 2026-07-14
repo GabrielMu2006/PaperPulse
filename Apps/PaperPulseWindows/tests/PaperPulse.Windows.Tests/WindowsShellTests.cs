@@ -51,6 +51,10 @@ public sealed class WindowsShellTests
         item.IsSelected = true;
 
         Assert.Equal(1, item.SelectionAccentOpacity);
+
+        PaperDetailPresentation presentation = PaperDetailPresentation.Create(paper);
+
+        Assert.True(presentation.IsFavorite);
     }
 
     [Fact]

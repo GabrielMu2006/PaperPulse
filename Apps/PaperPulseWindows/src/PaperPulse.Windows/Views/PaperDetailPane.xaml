@@ -79,7 +79,10 @@
                             VerticalAlignment="Top"
                             Style="{StaticResource PaperPulseIconButtonStyle}"
                             ToolTipService.ToolTip="Toggle favorite for selected paper">
-                            <SymbolIcon Foreground="{StaticResource WarmGoldBrush}" Symbol="Favorite" />
+                            <Grid Width="20" Height="20">
+                                <SymbolIcon x:Name="FavoriteOutlineIcon" Foreground="{StaticResource WarmGoldBrush}" Symbol="Favorite" />
+                                <SymbolIcon x:Name="FavoriteFilledIcon" Foreground="{StaticResource WarmGoldBrush}" Symbol="SolidStar" Visibility="Collapsed" />
+                            </Grid>
                         </Button>
                     </Grid>
                 </Border>
