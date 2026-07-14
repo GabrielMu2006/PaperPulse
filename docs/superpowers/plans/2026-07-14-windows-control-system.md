@@ -117,7 +117,7 @@ git commit -m "feat: add PaperPulse control templates"
 - Consumes: all style keys from Task 1; existing `FeedEditorDialog.EditedFeed`, `SettingsDialog.UiLanguageChanged`, and existing ContentDialog button events.
 - Produces: a shared left-aligned icon/title/subtitle layout in both dialogs, with every visible form control using the PaperPulse template system.
 
-- [ ] **Step 1: Repair the shared dialog header grid**
+- [x] **Step 1: Repair the shared dialog header grid**
 
 Add explicit columns in both dialog headers so the icon and text form a single left-aligned unit:
 
@@ -140,15 +140,15 @@ Add explicit columns in both dialog headers so the icon and text form a single l
 
 Use `Symbol="Setting"` and the existing settings resource identifiers for the Settings header. Do not put the icon in a separate right column or change dialog commands.
 
-- [ ] **Step 2: Apply explicit styles to every dialog control**
+- [x] **Step 2: Apply explicit styles to every dialog control**
 
 Use `PaperPulseInputStyle` on every `TextBox`, `PaperPulseComboBoxStyle` on every `ComboBox`, `PaperPulseNumberBoxStyle` on every `NumberBox`, and the new password/check styles wherever those controls appear. Keep field names, `x:Uid` values, placeholders, `AcceptsReturn`, `Minimum`, `Maximum`, `SpinButtonPlacementMode`, and event handlers unchanged.
 
-- [ ] **Step 3: Make acknowledgement and confirmation dialogs inherit the PaperPulse dialog style**
+- [x] **Step 3: Make acknowledgement and confirmation dialogs inherit the PaperPulse dialog style**
 
 In `MainWindow.xaml.cs`, set `Style = (Style)Application.Current.Resources["PaperPulseDialogStyle"]`, `PrimaryButtonStyle`, and `CloseButtonStyle` on existing clear/delete confirmations, matching the already-styled settings-save acknowledgement. Do not change confirmation text or delete/clear behavior.
 
-- [ ] **Step 4: Perform focused static validation**
+- [x] **Step 4: Perform focused static validation**
 
 Run:
 
@@ -159,7 +159,7 @@ rg -n 'Grid.ColumnDefinitions|PaperPulse(Input|ComboBox|NumberBox|PasswordBox|Ch
 
 Expected: both headers have explicit two-column layouts and all form-control style references resolve to Task 1 keys.
 
-- [ ] **Step 5: Commit the dialog integration**
+- [x] **Step 5: Commit the dialog integration**
 
 ```bash
 git add Apps/PaperPulseWindows/src/PaperPulse.Windows/Views/FeedEditorDialog.xaml Apps/PaperPulseWindows/src/PaperPulse.Windows/Views/SettingsDialog.xaml Apps/PaperPulseWindows/src/PaperPulse.Windows/MainWindow.xaml.cs

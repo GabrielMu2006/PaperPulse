@@ -12,6 +12,10 @@
     <ScrollViewer MaxHeight="620" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Width="560" Margin="24" Spacing="16">
             <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="38" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
                 <Border
                     Width="38"
                     Height="38"
@@ -23,7 +27,7 @@
                         Foreground="White"
                         Symbol="Setting" />
                 </Border>
-                <StackPanel Grid.Column="1" Spacing="2">
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                     <TextBlock x:Uid="SettingsDialogHeading" Foreground="{StaticResource ShellTextBrush}" Text="Settings" FontSize="24" FontWeight="SemiBold" />
                     <TextBlock x:Uid="SettingsSaveHint" Foreground="{StaticResource ShellSecondaryTextBrush}" Text="Changes are applied only after Save." TextWrapping="Wrap" />
                 </StackPanel>

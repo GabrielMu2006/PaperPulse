@@ -84,10 +84,13 @@ public sealed partial class MainWindow : Window
         ContentDialog confirmation = new()
         {
             XamlRoot = ((FrameworkElement)Content).XamlRoot,
+            Style = (Style)Application.Current.Resources["PaperPulseDialogStyle"],
             Title = PaperPulseStrings.Get("ClearUnclassifiedTitle"),
             Content = PaperPulseStrings.Get("ClearUnclassifiedContent"),
             PrimaryButtonText = PaperPulseStrings.Get("Clear"),
+            PrimaryButtonStyle = (Style)Application.Current.Resources["PaperPulseDestructiveButtonStyle"],
             CloseButtonText = PaperPulseStrings.Get("Cancel"),
+            CloseButtonStyle = (Style)Application.Current.Resources["PaperPulseQuietButtonStyle"],
             DefaultButton = ContentDialogButton.Close
         };
         if (await confirmation.ShowAsync() == ContentDialogResult.Primary)
@@ -105,10 +108,13 @@ public sealed partial class MainWindow : Window
         ContentDialog confirmation = new()
         {
             XamlRoot = ((FrameworkElement)Content).XamlRoot,
+            Style = (Style)Application.Current.Resources["PaperPulseDialogStyle"],
             Title = PaperPulseStrings.Get("DeleteSubscriptionTitle"),
             Content = PaperPulseStrings.Format("DeleteSubscriptionContent", e.Feed.Name),
             PrimaryButtonText = PaperPulseStrings.Get("Delete"),
+            PrimaryButtonStyle = (Style)Application.Current.Resources["PaperPulseDestructiveButtonStyle"],
             CloseButtonText = PaperPulseStrings.Get("Cancel"),
+            CloseButtonStyle = (Style)Application.Current.Resources["PaperPulseQuietButtonStyle"],
             DefaultButton = ContentDialogButton.Close
         };
 
