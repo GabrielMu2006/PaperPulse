@@ -29,6 +29,7 @@ public sealed record PaperDetailPresentation(
                 string.Empty,
                 string.Empty,
                 string.Empty,
+                string.Empty,
                 false,
                 null);
         }
