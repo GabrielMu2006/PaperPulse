@@ -26,6 +26,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private bool isRefreshing;
     private bool favoritesOnly;
     private bool isInitialized;
+    private string uiLanguage = "en-US";
+    private string summaryLanguage = "en-US";
     private double workspaceSplitRatio = WorkspaceSplitState.DefaultRatio;
     private IReadOnlyDictionary<Guid, IReadOnlySet<string>> paperIdsByFeed = new Dictionary<Guid, IReadOnlySet<string>>();
     private IReadOnlySet<string> unclassifiedPaperIds = EmptyPaperIds;
@@ -109,6 +111,18 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    public string UiLanguage
+    {
+        get => uiLanguage;
+        set => SetProperty(ref uiLanguage, value);
+    }
+
+    public string SummaryLanguage
+    {
+        get => summaryLanguage;
+        set => SetProperty(ref summaryLanguage, value);
+    }
+
     public double WorkspaceSplitRatio
     {
         get => workspaceSplitRatio;
@@ -135,7 +149,21 @@ public sealed partial class MainWindowViewModel : ObservableObject
         if (isInitialized) return;
         isInitialized = true;
         WorkspaceSplitRatio = await Task.Run(() => WorkspaceSplitState.Parse(repository.GetSetting("splitRatio")));
+        UiLanguage = await Task.Run(() => repository.GetSetting("uiLanguage") ?? "en-US");
+        SummaryLanguage = await Task.Run(() => repository.GetSetting("summaryLanguage") ?? "en-US");
         await ReloadAsync();
+    }
+
+    public async Task SaveLanguageSettingsAsync(string uiLanguage, string summaryLanguage)
+    {
+        UiLanguage = uiLanguage;
+        SummaryLanguage = summaryLanguage;
+        await Task.Run(() =>
+        {
+            repository.SetSetting("uiLanguage", UiLanguage);
+            repository.SetSetting("summaryLanguage", SummaryLanguage);
+        });
+        Status = "Saved settings.";
     }
 
     public async Task SaveWorkspaceSplitRatioAsync(double ratio)

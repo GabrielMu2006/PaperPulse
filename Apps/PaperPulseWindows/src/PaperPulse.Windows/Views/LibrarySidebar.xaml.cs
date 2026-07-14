@@ -12,12 +12,14 @@ public sealed partial class LibrarySidebar : UserControl
     }
 
     public event EventHandler? AddFeedRequested;
+    public event EventHandler? SettingsRequested;
     public event EventHandler<FeedRequestEventArgs>? EditFeedRequested;
     public event EventHandler<FeedRequestEventArgs>? DeleteFeedRequested;
 
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
     private void AddFeed_Click(object sender, RoutedEventArgs e) => AddFeedRequested?.Invoke(this, EventArgs.Empty);
+    private void Settings_Click(object sender, RoutedEventArgs e) => SettingsRequested?.Invoke(this, EventArgs.Empty);
 
     private void AllPapers_Click(object sender, RoutedEventArgs e) => ViewModel?.ShowAllPapers();
 

@@ -38,6 +38,12 @@ public sealed partial class MainWindow : Window
 
     private async void LibrarySidebar_AddFeedRequested(object sender, EventArgs e) => await EditFeedAsync(null);
 
+    private async void LibrarySidebar_SettingsRequested(object sender, EventArgs e)
+    {
+        SettingsDialog dialog = new(ViewModel.UiLanguage, ViewModel.SummaryLanguage) { XamlRoot = ((FrameworkElement)Content).XamlRoot };
+        if (await dialog.ShowAsync() == ContentDialogResult.Primary) await ViewModel.SaveLanguageSettingsAsync(dialog.UiLanguage, dialog.SummaryLanguage);
+    }
+
     private async void LibrarySidebar_EditFeedRequested(object sender, FeedRequestEventArgs e) => await EditFeedAsync(e.Feed);
 
     private async void LibrarySidebar_DeleteFeedRequested(object sender, FeedRequestEventArgs e)

@@ -25,7 +25,8 @@
             <views:LibrarySidebar
                 AddFeedRequested="LibrarySidebar_AddFeedRequested"
                 DeleteFeedRequested="LibrarySidebar_DeleteFeedRequested"
-                EditFeedRequested="LibrarySidebar_EditFeedRequested" />
+                EditFeedRequested="LibrarySidebar_EditFeedRequested"
+                SettingsRequested="LibrarySidebar_SettingsRequested" />
         </Border>
 
         <Grid Grid.Column="1" x:Name="WorkspaceGrid">

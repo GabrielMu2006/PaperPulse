@@ -55,6 +55,10 @@
             </Grid>
 
             <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
                 <Button
                     AutomationProperties.Name="New subscription"
                     Click="AddFeed_Click"
@@ -65,13 +69,19 @@
                         <TextBlock Text="New subscription" />
                     </StackPanel>
                 </Button>
-                <TextBlock
+                <Button
                     Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Foreground="{StaticResource ShellSecondaryTextBrush}"
-                    Text="Feeds"
-                    FontWeight="SemiBold" />
+                    AutomationProperties.Name="Open settings"
+                    Click="Settings_Click"
+                    ToolTipService.ToolTip="Open settings">
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="6">
+                        <SymbolIcon Symbol="Setting" />
+                        <TextBlock Text="Settings" />
+                    </StackPanel>
+                </Button>
             </Grid>
+
+            <TextBlock Foreground="{StaticResource ShellSecondaryTextBrush}" Text="Feeds" FontWeight="SemiBold" />
 
             <ListView
                 Background="Transparent"

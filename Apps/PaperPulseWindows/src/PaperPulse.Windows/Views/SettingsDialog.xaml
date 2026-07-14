@@ -1,0 +1,22 @@
+<ContentDialog
+    x:Class="PaperPulse.Windows.Views.SettingsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    CloseButtonText="Cancel"
+    PrimaryButtonClick="Save_Click"
+    PrimaryButtonText="Save settings"
+    Title="Settings">
+    <StackPanel Width="520" Spacing="16">
+        <TextBlock Text="Language" FontSize="20" FontWeight="SemiBold" />
+        <TextBlock Text="Interface language" FontWeight="SemiBold" />
+        <ComboBox x:Name="UiLanguageBox" SelectedIndex="0">
+            <ComboBoxItem Content="English" Tag="en-US" />
+            <ComboBoxItem Content="Chinese" Tag="zh-CN" />
+        </ComboBox>
+        <TextBlock Text="Brief language" FontWeight="SemiBold" />
+        <ComboBox x:Name="SummaryLanguageBox" SelectedIndex="0">
+            <ComboBoxItem Content="English" Tag="en-US" />
+            <ComboBoxItem Content="Chinese" Tag="zh-CN" />
+        </ComboBox>
+    </StackPanel>
+</ContentDialog>
