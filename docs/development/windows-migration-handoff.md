@@ -15,6 +15,10 @@
 - 以 Swift `PaperCore` 的模型、JSON 编码和测试 fixtures 为行为规范，新增跨平台契约测试，避免检索、筛选、去重和 LLM 行为漂移。
 - 第一版优先面向 Windows 11 x64；在测试与发布稳定后再增加 Windows on ARM64。
 
+## UI 设计基准
+
+在开始或继续 Windows UI 工作前，必须阅读 [PaperPulse UI 设计规格](../macos/ui-design-specification.md)。该文档以已实现的 macOS 版本为信息架构与视觉层级基准，并明确了 WinUI 的映射规则；当前 Windows `MainWindow.xaml` 只作为功能验证壳，不应被视为最终视觉设计。
+
 ## 当前实施与验证模式
 
 - Mac 是日常实现机，负责可移植 C# 模块、测试、文档、提交与推送。
