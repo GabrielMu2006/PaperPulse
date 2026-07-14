@@ -40,7 +40,7 @@ public sealed class WindowsShellTests
             null,
             null,
             DateTimeOffset.UnixEpoch,
-            isFavorite: true);
+            IsFavorite: true);
 
         PaperLibraryItem item = new(paper, isSelected: false);
 
