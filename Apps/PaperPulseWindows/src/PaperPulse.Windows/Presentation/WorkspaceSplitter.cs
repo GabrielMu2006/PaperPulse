@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace PaperPulse.Windows.Presentation;
 
-public sealed class WorkspaceSplitter : Border
+public sealed class WorkspaceSplitter : ContentControl
 {
     public WorkspaceSplitter()
     {
