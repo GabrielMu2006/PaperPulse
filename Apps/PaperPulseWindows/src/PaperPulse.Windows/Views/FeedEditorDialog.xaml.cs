@@ -30,7 +30,7 @@ public sealed partial class FeedEditorDialog : ContentDialog
         ArxivCheckBox.IsChecked = Enabled(feed, PaperSourceKind.Arxiv);
         OpenAlexCheckBox.IsChecked = Enabled(feed, PaperSourceKind.OpenAlex);
         CrossrefCheckBox.IsChecked = Enabled(feed, PaperSourceKind.Crossref);
-        DailyLimitBox.Value = Clamp(feed?.AuthorityPolicy.DailyLimit ?? 8, 1, 10);
+        DailyLimitBox.Text = Clamp(feed?.AuthorityPolicy.DailyLimit ?? 8, 1, 10).ToString();
         LookbackDaysBox.Text = Clamp(feed?.LookbackDays ?? 7, 1, 365).ToString();
     }
 
@@ -53,7 +53,7 @@ public sealed partial class FeedEditorDialog : ContentDialog
 
         AuthorityPolicy authority = (existing?.AuthorityPolicy ?? new AuthorityPolicy()) with
         {
-            DailyLimit = Clamp(DailyLimitBox.Value, 1, 10)
+            DailyLimit = Clamp(DailyLimitBox.Text, 1, 10)
         };
         EditedFeed = (existing ?? new FeedConfig()) with
         {
@@ -69,7 +69,7 @@ public sealed partial class FeedEditorDialog : ContentDialog
         };
     }
 
-    private void LookbackDaysBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+    private void NumericBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
     {
         args.Cancel = args.NewText.Any(character => !char.IsAsciiDigit(character));
     }

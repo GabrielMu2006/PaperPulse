@@ -9,8 +9,9 @@
     PrimaryButtonClick="Save_Click"
     PrimaryButtonStyle="{StaticResource PaperPulseProminentButtonStyle}"
     PrimaryButtonText="Save subscription"
+    HorizontalContentAlignment="Center"
     Style="{StaticResource PaperPulseDialogStyle}">
-    <ScrollViewer MaxHeight="620" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer Width="668" MaxHeight="620" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Width="620" Margin="24" Spacing="16">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
@@ -84,13 +85,17 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="8">
                         <TextBlock x:Uid="FeedEditorLimit" Text="Papers per push" FontWeight="SemiBold" />
-                        <NumberBox x:Name="DailyLimitBox" Minimum="1" Maximum="10" SpinButtonPlacementMode="Compact" Style="{StaticResource PaperPulseNumberBoxStyle}" />
+                        <TextBox
+                            x:Name="DailyLimitBox"
+                            BeforeTextChanging="NumericBox_BeforeTextChanging"
+                            PlaceholderText="8"
+                            Style="{StaticResource PaperPulseInputStyle}" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Spacing="8">
                         <TextBlock x:Uid="FeedEditorLookback" Text="Lookback days" FontWeight="SemiBold" />
                         <TextBox
                             x:Name="LookbackDaysBox"
-                            BeforeTextChanging="LookbackDaysBox_BeforeTextChanging"
+                            BeforeTextChanging="NumericBox_BeforeTextChanging"
                             PlaceholderText="7"
                             Style="{StaticResource PaperPulseInputStyle}" />
                     </StackPanel>

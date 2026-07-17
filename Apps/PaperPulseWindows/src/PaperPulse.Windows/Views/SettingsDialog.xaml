@@ -8,8 +8,9 @@
     PrimaryButtonClick="Save_Click"
     PrimaryButtonText="Save settings"
     PrimaryButtonStyle="{StaticResource PaperPulseProminentButtonStyle}"
+    HorizontalContentAlignment="Center"
     Style="{StaticResource PaperPulseDialogStyle}">
-    <ScrollViewer MaxHeight="620" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer Width="608" MaxHeight="620" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Width="560" Margin="24" Spacing="16">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
@@ -38,13 +39,13 @@
                     <TextBlock x:Uid="SettingsLanguageHeading" Text="Language" FontSize="20" FontWeight="SemiBold" />
                     <TextBlock x:Uid="SettingsInterfaceLanguage" Text="Interface language" FontWeight="SemiBold" />
                     <ComboBox x:Name="UiLanguageBox" ItemContainerStyle="{StaticResource PaperPulseComboBoxItemStyle}" SelectedIndex="0" Style="{StaticResource PaperPulseComboBoxStyle}">
-                        <ComboBoxItem x:Uid="SettingsEnglish" Content="English" Tag="en-US" />
-                        <ComboBoxItem x:Uid="SettingsChinese" Content="Chinese" Tag="zh-CN" />
+                        <ComboBoxItem x:Uid="SettingsEnglish" Content="English" Style="{StaticResource PaperPulseComboBoxItemStyle}" Tag="en-US" />
+                        <ComboBoxItem x:Uid="SettingsChinese" Content="Chinese" Style="{StaticResource PaperPulseComboBoxItemStyle}" Tag="zh-CN" />
                     </ComboBox>
                     <TextBlock x:Uid="SettingsBriefLanguage" Text="Brief language" FontWeight="SemiBold" />
                     <ComboBox x:Name="SummaryLanguageBox" ItemContainerStyle="{StaticResource PaperPulseComboBoxItemStyle}" SelectedIndex="0" Style="{StaticResource PaperPulseComboBoxStyle}">
-                        <ComboBoxItem x:Uid="SettingsBriefEnglish" Content="English" Tag="en-US" />
-                        <ComboBoxItem x:Uid="SettingsBriefChinese" Content="Chinese" Tag="zh-CN" />
+                        <ComboBoxItem x:Uid="SettingsBriefEnglish" Content="English" Style="{StaticResource PaperPulseComboBoxItemStyle}" Tag="en-US" />
+                        <ComboBoxItem x:Uid="SettingsBriefChinese" Content="Chinese" Style="{StaticResource PaperPulseComboBoxItemStyle}" Tag="zh-CN" />
                     </ComboBox>
                 </StackPanel>
             </Border>
