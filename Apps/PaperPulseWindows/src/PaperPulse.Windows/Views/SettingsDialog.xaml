@@ -11,6 +11,9 @@
     HorizontalContentAlignment="Center"
     Style="{StaticResource PaperPulseDialogStyle}">
     <ScrollViewer Width="608" MaxHeight="620" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer.RenderTransform>
+            <TranslateTransform X="-16" />
+        </ScrollViewer.RenderTransform>
         <StackPanel Width="560" Margin="24" Spacing="16">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>

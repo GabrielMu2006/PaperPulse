@@ -67,8 +67,9 @@
             <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPointerOver" Color="#FFF9FC" />
             <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedDisabled" Color="#7A7281" />
             <SolidColorBrush x:Key="ComboBoxItemForegroundDisabled" Color="#7A7281" />
-            <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
-            <Thickness x:Key="ComboBoxDropdownContentMargin">4</Thickness>
+            <CornerRadius x:Key="OverlayCornerRadius">12</CornerRadius>
+            <Thickness x:Key="ComboBoxDropdownBorderPadding">6</Thickness>
+            <Thickness x:Key="ComboBoxDropdownContentMargin">0</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
