@@ -12,8 +12,8 @@ public sealed partial class SettingsDialog : ContentDialog
         initialUiLanguage = uiLanguage;
         InitializeComponent();
         Title = null;
-        UiLanguageBox.SelectedIndex = uiLanguage == "zh-CN" ? 1 : 0;
-        SummaryLanguageBox.SelectedIndex = summaryLanguage == "zh-CN" ? 1 : 0;
+        SetUiLanguage(uiLanguage);
+        SetSummaryLanguage(summaryLanguage);
         KeywordLibraryBox.Text = keywordLibrary;
     }
 
@@ -25,9 +25,37 @@ public sealed partial class SettingsDialog : ContentDialog
 
     private void Save_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        UiLanguage = ((ComboBoxItem)UiLanguageBox.SelectedItem).Tag.ToString()!;
-        SummaryLanguage = ((ComboBoxItem)SummaryLanguageBox.SelectedItem).Tag.ToString()!;
         KeywordLibrary = KeywordLibraryBox.Text.Trim();
+    }
+
+    private void UiLanguageOption_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string language } option)
+        {
+            SetUiLanguage(language, option.Content?.ToString());
+            UiLanguageButton.Flyout?.Hide();
+        }
+    }
+
+    private void SummaryLanguageOption_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string language } option)
+        {
+            SetSummaryLanguage(language, option.Content?.ToString());
+            SummaryLanguageButton.Flyout?.Hide();
+        }
+    }
+
+    private void SetUiLanguage(string language, string? displayName = null)
+    {
+        UiLanguage = language;
+        UiLanguageText.Text = displayName ?? (language == "zh-CN" ? UiChineseOption.Content?.ToString() : UiEnglishOption.Content?.ToString());
+    }
+
+    private void SetSummaryLanguage(string language, string? displayName = null)
+    {
+        SummaryLanguage = language;
+        SummaryLanguageText.Text = displayName ?? (language == "zh-CN" ? SummaryChineseOption.Content?.ToString() : SummaryEnglishOption.Content?.ToString());
     }
 
     private void ClearUnclassified_Click(object sender, RoutedEventArgs e)

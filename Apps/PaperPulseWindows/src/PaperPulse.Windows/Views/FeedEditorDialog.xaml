@@ -11,10 +11,11 @@
     PrimaryButtonText="Save subscription"
     HorizontalContentAlignment="Center"
     Style="{StaticResource PaperPulseDialogStyle}">
-    <ScrollViewer Width="668" MaxHeight="620" HorizontalScrollBarVisibility="Disabled">
-        <ScrollViewer.RenderTransform>
-            <TranslateTransform X="-16" />
-        </ScrollViewer.RenderTransform>
+    <ScrollViewer
+        Width="668"
+        MaxHeight="620"
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Hidden">
         <StackPanel Width="620" Margin="24" Spacing="16">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
