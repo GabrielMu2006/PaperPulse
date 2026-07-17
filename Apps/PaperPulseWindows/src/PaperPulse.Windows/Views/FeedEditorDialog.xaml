@@ -16,6 +16,9 @@
         MaxHeight="620"
         HorizontalScrollBarVisibility="Disabled"
         VerticalScrollBarVisibility="Hidden">
+        <ScrollViewer.RenderTransform>
+            <TranslateTransform X="-18" />
+        </ScrollViewer.RenderTransform>
         <StackPanel Width="620" Margin="24" Spacing="16">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
